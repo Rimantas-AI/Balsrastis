@@ -99,6 +99,18 @@ Raktus gauni:
 
 ---
 
+## 3a. Diktavimo trukmė (limitai)
+
+- **Kol kalbi be ~2 sek. pauzės** — įrašoma toliau, fiksuoto laiko limito nėra.
+- Nutildžius ~2 sek. — įrašymas **sustoja automatiškai** (arba paspausk ⌥Space).
+- Vienas diktavimas patikimai veikia **iki kelių minučių** (transkripcijos užklausos
+  riba — 120 s; OpenAI failo riba — 25 MB ≈ ~13 min garso).
+- Labai ilgo teksto **redaguotas** rezultatas gali būti apkarpytas (Claude ~8000
+  token'ų riba, ~5000 žodžių).
+
+💡 **Patarimas:** diktuok sakiniais ar pastraipomis, nutildamas tarp jų — natūraliausia
+ir patikimiausia. Ilgesniems tekstams — kelios trumpos „porcijos".
+
 ## 4. Problemų sprendimas
 
 | Problema | Sprendimas |

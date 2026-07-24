@@ -235,4 +235,26 @@ This only disappears with a real Developer ID signature.
   the agent cannot supply them).
 - Always: change code → commit → **user** does `git push` → CI builds → user downloads
   the new artifact and re-grants Accessibility.
+
+---
+
+## 11. Limits & tunables (dictation length)
+
+There is **no hard recording time cap** — `AudioSessionManager` accumulates samples
+in memory (~1.9 MB/min as a 16 kHz mono 16-bit WAV) and stops on VAD silence
+(~2 s) or a second ⌥Space. The binding constraints are:
+
+| Limit | Value | Where to change |
+|---|---|---|
+| VAD silence auto-stop | ~2 s | `VoiceActivityDetector` (`silenceDuration`) |
+| Transcription request timeout | **120 s** | `CloudWhisperService.init` (`timeoutIntervalForResource`) |
+| OpenAI Whisper file cap | 25 MB ≈ ~13 min audio | OpenAI API (hard) |
+| Claude reshape output cap | **8192 tokens** (~5000 words) | `ClaudeService.init` (`maxTokens`) |
+| Claude request timeout | **60 s** | `ClaudeService.init` |
+
+Practical guidance for users: dictate in sentences/paragraphs (pause < 2 s to keep
+going). A single dictation is reliable up to a few minutes; beyond that the
+transcription request approaches the 120 s timeout and the reshaped output may hit
+the 8192-token cap. Raise the two timeouts + `maxTokens` if longer single takes are
+needed.
 ```

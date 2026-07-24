@@ -20,14 +20,15 @@ final class ClaudeService: AIProviderProtocol {
     private let anthropicVersion = "2023-06-01"
     private let session: URLSession
 
-    init(model: String = "claude-opus-4-8", maxTokens: Int = 4096) {
+    init(model: String = "claude-opus-4-8", maxTokens: Int = 8192) {
         self.model = model
         self.maxTokens = maxTokens
 
-        // Hard 10-second ceiling per the spec's timeout requirement.
+        // 60 s covers longer reshapes (a multi-minute dictation can produce a long
+        // paragraph); short dictations still return in a second or two.
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 10
-        config.timeoutIntervalForResource = 10
+        config.timeoutIntervalForRequest = 60
+        config.timeoutIntervalForResource = 60
         config.waitsForConnectivity = false
         self.session = URLSession(configuration: config)
     }

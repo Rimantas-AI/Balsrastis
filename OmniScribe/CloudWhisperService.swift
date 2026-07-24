@@ -59,9 +59,11 @@ actor CloudWhisperService {
         self.language = language
 
         let config = URLSessionConfiguration.default
-        // Audio upload + transcription can take a few seconds; allow generous time.
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 30
+        // Audio upload + transcription time grows with clip length. 120 s comfortably
+        // covers multi-minute dictations (a 16 kHz mono 16-bit WAV is ~1.9 MB/min;
+        // OpenAI's own hard cap is a 25 MB file, i.e. ~13 min of audio).
+        config.timeoutIntervalForRequest = 120
+        config.timeoutIntervalForResource = 120
         config.waitsForConnectivity = false
         self.session = URLSession(configuration: config)
     }
