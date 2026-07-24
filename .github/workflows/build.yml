@@ -6,11 +6,14 @@ name: Build OmniScribe
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]       # pushing a tag like v1.0.0 also publishes a Release
   workflow_dispatch:   # lets you trigger a build manually from the Actions tab
 
 jobs:
   build:
     runs-on: macos-15   # macOS Sequoia runner — ships modern Xcode 16 toolchains
+    permissions:
+      contents: write   # needed to create the GitHub Release on a tag push
 
     steps:
       - name: Checkout code
@@ -63,3 +66,26 @@ jobs:
           name: OmniScribe-app
           path: build/Build/Products/Release/OmniScribe.zip
           if-no-files-found: error
+
+      # On a version tag (e.g. v1.0.0) publish a GitHub Release with a direct,
+      # login-free download link. On normal branch pushes this step is skipped.
+      - name: Publish Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: OmniScribe ${{ github.ref_name }}
+          files: build/Build/Products/Release/OmniScribe.zip
+          body: |
+            ## OmniScribe ${{ github.ref_name }}
+
+            Voice dictation for macOS (OpenAI Whisper + Claude). Menu-bar app.
+
+            ### Download & run
+            1. Download **OmniScribe.zip** below and unzip → `OmniScribe.app`.
+            2. Move it to **Applications**.
+            3. First launch (ad-hoc signed) — in Terminal:
+               `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`
+            4. Grant **Microphone** + **Accessibility** (see README), and enter your
+               **OpenAI** and **Claude** API keys in Settings → API Keys.
+
+            Requires macOS 12+ and internet. Full guide: see the repository README.

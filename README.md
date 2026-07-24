@@ -1,7 +1,15 @@
 # OmniScribe — naudojimo instrukcija
 
+[![Build OmniScribe](https://github.com/g4me2011-lang/omniScribe/actions/workflows/build.yml/badge.svg)](https://github.com/g4me2011-lang/omniScribe/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Balso diktavimo įrankis macOS'ui. Paspaudi **⌥Space**, kalbi lietuviškai — ir
 sutvarkytas tekstas atsiranda ten, kur tavo žymeklis (bet kurioje programoje).
+
+> 💡 **Paprasčiausias parsisiuntimas:** eik į repo
+> [**Releases**](https://github.com/g4me2011-lang/omniScribe/releases) skiltį ir
+> parsisiųsk `OmniScribe.zip` — vienu paspaudimu, be prisijungimo. (Jei Releases dar
+> tuščias, naudok Actions Artifacts, kaip aprašyta žemiau.)
 
 Po nugara: balsą į tekstą verčia **OpenAI Whisper**, tekstą sutvarko **Claude**, o
 rezultatas įterpiamas per iškarpinę. Programa gyvena **meniu juostoje** — jokio lango,
