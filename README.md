@@ -162,6 +162,16 @@ problemų sprendimui.
 
 ---
 
+## ☕ Patiko? Pavaišink kava
+
+OmniScribe yra **nemokamas ir atviro kodo**. Jei sutaupė tau laiko ir nori padėkoti —
+gali įmesti kelias EUR kavai. Kiekvienas puodelis motyvuoja tobulinti toliau 🙏
+
+<!-- Įrašyk savo nuorodą, kai turėsi (Ko-fi / Buy Me a Coffee / Revolut.me): -->
+<!-- 👉 https://ko-fi.com/jusu_vardas -->
+
+*(Ačiū, kad naudoji!)*
+
 ## 6. Naujos versijos diegimas
 
 Kai atsiranda naujas build'as (po kodo pakeitimo):
