@@ -1,0 +1,48 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="0.55" stop-color="#111c33"/>
+      <stop offset="1" stop-color="#1b2a4a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6ea8fe"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <circle cx="1050" cy="150" r="220" fill="#3b82f6" opacity="0.18" filter="url(#soft)"/>
+  <circle cx="230" cy="560" r="200" fill="#6ea8fe" opacity="0.12" filter="url(#soft)"/>
+
+  <!-- Mic badge -->
+  <g transform="translate(96,120)">
+    <rect width="120" height="120" rx="30" fill="url(#accent)"/>
+    <g transform="translate(60,60)" fill="#0b1220">
+      <rect x="-13" y="-32" width="26" height="42" rx="13"/>
+      <path d="M -24 2 a 24 24 0 0 0 48 0" fill="none" stroke="#0b1220" stroke-width="7" stroke-linecap="round"/>
+      <rect x="-3" y="24" width="6" height="14" rx="3"/>
+      <rect x="-16" y="36" width="32" height="6" rx="3"/>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="248" y="192" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="84" font-weight="700" fill="#ffffff" letter-spacing="-1">OmniScribe</text>
+
+  <!-- Tagline -->
+  <text x="96" y="320" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#e6edf7">Kalbi — ir tvarkingas tekstas atsiranda</text>
+  <text x="96" y="382" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#e6edf7">bet kurioje <tspan fill="#6ea8fe">macOS</tspan> programoje.</text>
+
+  <!-- Hotkey chip -->
+  <g transform="translate(96,452)">
+    <rect width="196" height="60" rx="14" fill="#1f2b45" stroke="#3b4a6b" stroke-width="1.5"/>
+    <text x="98" y="40" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="30" font-weight="600" fill="#9fc0ff">⌥ Space</text>
+  </g>
+
+  <!-- Feature line -->
+  <text x="96" y="560" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="27" fill="#8ea0bd">Balso diktavimas lietuviškai  ·  OpenAI Whisper + Claude  ·  atviro kodo</text>
+</svg>
