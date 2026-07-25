@@ -167,8 +167,8 @@ problemų sprendimui.
 OmniScribe yra **nemokamas ir atviro kodo**. Jei sutaupė tau laiko ir nori padėkoti —
 gali įmesti kelias EUR kavai. Kiekvienas puodelis motyvuoja tobulinti toliau 🙏
 
-<!-- Įrašyk savo nuorodą, kai turėsi (Ko-fi / Buy Me a Coffee / Revolut.me): -->
-<!-- 👉 https://ko-fi.com/jusu_vardas -->
+- ☕ **Ko-fi:** https://ko-fi.com/rimantasd
+- 💳 **Revolut:** https://revolut.me/rimant6ap
 
 *(Ačiū, kad naudoji!)*
 
