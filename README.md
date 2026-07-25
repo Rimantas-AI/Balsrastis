@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/social-preview.png" alt="OmniScribe" width="640">
+</p>
+
 # OmniScribe — naudojimo instrukcija
 
 [![Build OmniScribe](https://github.com/g4me2011-lang/omniScribe/actions/workflows/build.yml/badge.svg)](https://github.com/g4me2011-lang/omniScribe/actions/workflows/build.yml)
