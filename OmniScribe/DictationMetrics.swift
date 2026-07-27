@@ -10,6 +10,11 @@ struct DictationMetrics: Identifiable {
 
     /// How long the user spoke. Context for reading the other numbers, not latency.
     var spokenSeconds: TimeInterval = 0
+    /// Cumulative above-threshold time across the recording — the evidence for
+    /// telling a real dictation (sustained above-threshold time) apart from a
+    /// brief noise burst that happened to trip the mic (e.g. `spoke 1.29s` /
+    /// `above-threshold 0.06s` is a near-certain false trigger, not real speech).
+    var aboveThresholdSeconds: TimeInterval = 0
     /// Last word → recording stopped (VAD silence wait, or a manual ⌥Space).
     var silenceWait: TimeInterval = 0
     /// Speech-to-text round trip.
@@ -65,6 +70,7 @@ struct DictationMetrics: Identifiable {
         Run \(index) — \(outcome) — \(wasAutoStopped ? "Auto stop" : "Manual stop")
         Total: \(f(perceivedLatency))
         Spoke: \(f(spokenSeconds))
+        Above threshold: \(f(aboveThresholdSeconds))
         Silence: \(f(silenceWait))
         STT: \(f(transcription))
         AI: \(f(aiProcessing))

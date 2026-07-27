@@ -186,7 +186,7 @@ private struct MetricsRow: View {
 
                 Spacer()
 
-                Text(String(format: "spoke %.1f s", entry.spokenSeconds))
+                Text(String(format: "spoke %.1fs \u{00B7} above-thr %.2fs", entry.spokenSeconds, entry.aboveThresholdSeconds))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .monospacedDigit()

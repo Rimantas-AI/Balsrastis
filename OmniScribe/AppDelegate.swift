@@ -105,6 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         var metrics = DictationMetrics()
         metrics.spokenSeconds = Double(samples.count) / 16_000
+        metrics.aboveThresholdSeconds = audioManager.aboveThresholdSeconds
         // Latency is measured from the last spoken word, not the hotkey press.
         metrics.silenceWait = max(0, stoppedAt - (audioManager.lastSpeechAt ?? stoppedAt))
         metrics.wasAutoStopped = audioManager.didAutoStop
@@ -114,16 +115,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         WindowManager.shared.updateHUD(phase: .transcribing)
         print("[AppDelegate] ⏹️ Recording stopped – \(samples.count) samples, signal: \(quality).")
 
-        // Guard 1 (input side): no audio reached the app at all. Sending silence
-        // would cost a round trip and come back as hallucinated filler, so stop
-        // here and say what to fix. Only fires on effectively-zero signal —
-        // a quiet-but-live microphone still goes through, because the cloud
-        // recogniser is more sensitive than our fixed RMS threshold.
-        if quality == .silent {
+        // Guard 1 (input side): speech was never confirmed, whether the recording
+        // was auto- or manually stopped. Sending it anyway would cost a round trip
+        // and — as measured — Whisper does not fail obviously on a brief noise
+        // burst (keyboard click, desk knock): primed by the vocabulary prompt, it
+        // can confidently hallucinate a fluent, grammatical sentence instead of
+        // returning something obviously empty. That risk is judged to outweigh the
+        // earlier design's goal of still giving the cloud recogniser a chance on
+        // genuinely quiet speech (an update to that assumption, not an oversight).
+        switch quality {
+        case .silent:
             complete(metrics,
                      outcome: "No microphone signal",
                      failure: "No microphone signal — check Microphone permission and input device.")
             return
+        case .noSpeech:
+            complete(metrics,
+                     outcome: "No speech confirmed",
+                     failure: "No speech confirmed — check your microphone level, or speak a little longer.")
+            return
+        case .speech:
+            break
         }
 
         Task { [weak self] in
@@ -143,10 +155,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 print("[AppDelegate] 📝 Transcription (\(result.source.rawValue)): \"\(result.text)\"")
 
-                // Guard 2 (output side): the recogniser returns filler such as
-                // "🎵🎵🎵" for silence. Never pay for an LLM call on that, and
-                // never paste it. Catches the case Guard 1 cannot see — a live
-                // but wrong input device produces real noise and no speech.
+                // Guard 2 (output side, defense-in-depth): the recogniser can still
+                // return filler such as "🎵🎵🎵" for the rare confirmed-speech
+                // recording that Whisper nonetheless can't transcribe. Guard 1 now
+                // catches the large majority of no-speech cases before this point.
                 guard !result.text.looksLikeNoSpeech else {
                     self.complete(metrics,
                                   outcome: "No speech recognised",

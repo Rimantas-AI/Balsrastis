@@ -60,6 +60,10 @@ final class AudioSessionManager {
     /// stopped it manually with a second ⌥Space.
     var didAutoStop: Bool { vad.didAutoStop }
 
+    /// Cumulative above-threshold time across the whole recording — evidence for
+    /// telling a real dictation apart from a brief noise burst (see `SignalQuality`).
+    var aboveThresholdSeconds: TimeInterval { vad.aboveThresholdSeconds }
+
     // MARK: – Private
 
     private let engine = AVAudioEngine()
