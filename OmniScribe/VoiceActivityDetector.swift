@@ -1,6 +1,23 @@
 import Foundation
 
-/// Detects when the user has stopped talking so recording can auto-stop.
+/// How much real signal a finished recording contained.
+///
+/// The distinction matters: "no audio is reaching the app at all" (missing
+/// Microphone permission, wrong input device) and "the microphone is quiet but
+/// working" look identical if you only ask whether speech crossed a threshold —
+/// and rejecting the second case would lock out anyone with a quiet mic.
+enum SignalQuality {
+    /// Effectively digital silence — no audio is arriving. Worth stopping for.
+    case silent
+    /// Real signal, but nothing crossed the speech threshold. Still worth sending:
+    /// the cloud recogniser is more sensitive than a fixed RMS threshold.
+    case noSpeech
+    /// Speech was detected.
+    case speech
+}
+
+/// Detects when the user has stopped talking so recording can auto-stop, and
+/// reports what kind of signal the microphone actually delivered.
 ///
 /// Design notes:
 /// - Operates on the **already-converted** 16 kHz mono stream, so silence is
@@ -28,15 +45,41 @@ final class VoiceActivityDetector {
     /// Precomputed silence budget in samples (`silenceDuration * sampleRate`).
     private let silenceSampleBudget: Int
 
+    /// Peak below which the whole recording counts as digital silence rather than
+    /// quiet speech. Deliberately far under `silenceThreshold`: a live microphone
+    /// always carries some noise floor, so audio that never reaches even this
+    /// level means nothing is arriving. Checked against the peak of the entire
+    /// recording, never a single buffer, so a brief gap cannot trip it.
+    private let nearZeroPeak: Float = 0.0005
+
+    /// The HUD meter needs a readable level, not every audio buffer.
+    private let levelInterval: CFAbsoluteTime = 1.0 / 12.0
+
     // MARK: – State
 
-    private var hasDetectedSpeech = false
+    private(set) var hasDetectedSpeech = false
+    /// Loudest sample seen this session — the basis for `signalQuality`.
+    private(set) var peakAmplitude: Float = 0
+    /// When speech was last heard, for measuring latency from the last word.
+    private(set) var lastSpeechAt: CFAbsoluteTime?
+
     private var consecutiveSilentSamples = 0
     private var hasFired = false
+    private var lastLevelEmit: CFAbsoluteTime = 0
 
     /// Called on the audio thread the first time `silenceDuration` of continuous
     /// silence is observed after speech. Hop to the main queue inside the closure.
     var onSilenceTimeout: (() -> Void)?
+
+    /// Normalised 0…1 input level for the HUD meter, emitted ~12×/second.
+    /// Called on the audio thread.
+    var onLevel: ((Float) -> Void)?
+
+    /// Verdict on the recording that just finished.
+    var signalQuality: SignalQuality {
+        if hasDetectedSpeech { return .speech }
+        return peakAmplitude < nearZeroPeak ? .silent : .noSpeech
+    }
 
     // MARK: – Init
 
@@ -56,17 +99,33 @@ final class VoiceActivityDetector {
         hasDetectedSpeech = false
         consecutiveSilentSamples = 0
         hasFired = false
+        peakAmplitude = 0
+        lastSpeechAt = nil
+        lastLevelEmit = 0
     }
 
-    /// Feed each converted buffer here. Cheap: one RMS pass over the samples.
+    /// Feed each converted buffer here. Cheap: one pass over the samples.
     func process(samples: [Float]) {
-        guard !hasFired, !samples.isEmpty else { return }
+        guard !samples.isEmpty else { return }
 
-        let rms = Self.rootMeanSquare(samples)
+        var sumOfSquares: Float = 0
+        var peak: Float = 0
+        for sample in samples {
+            sumOfSquares += sample * sample
+            let magnitude = abs(sample)
+            if magnitude > peak { peak = magnitude }
+        }
+        let rms = (sumOfSquares / Float(samples.count)).squareRoot()
+
+        if peak > peakAmplitude { peakAmplitude = peak }
+        emitLevel(rms)
+
+        guard !hasFired else { return }
 
         if rms >= silenceThreshold {
             // Voice present – note it and clear any accumulated silence.
             hasDetectedSpeech = true
+            lastSpeechAt = CFAbsoluteTimeGetCurrent()
             consecutiveSilentSamples = 0
             return
         }
@@ -83,9 +142,12 @@ final class VoiceActivityDetector {
 
     // MARK: – Helpers
 
-    private static func rootMeanSquare(_ samples: [Float]) -> Float {
-        var sumOfSquares: Float = 0
-        for sample in samples { sumOfSquares += sample * sample }
-        return (sumOfSquares / Float(samples.count)).squareRoot()
+    private func emitLevel(_ rms: Float) {
+        guard let onLevel else { return }
+        let now = CFAbsoluteTimeGetCurrent()
+        guard now - lastLevelEmit >= levelInterval else { return }
+        lastLevelEmit = now
+        // Speech RMS sits well below 0.2, so scale against that for a lively meter.
+        onLevel(min(1, rms / 0.2))
     }
 }

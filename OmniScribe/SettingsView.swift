@@ -27,8 +27,126 @@ struct SettingsView: View {
 
             APIKeysSettingsView()
                 .tabItem { Label("API Keys", systemImage: "key") }
+
+            DiagnosticsSettingsView()
+                .tabItem { Label("Diagnostics", systemImage: "stopwatch") }
         }
-        .frame(width: 460, height: 340)
+        .frame(width: 520, height: 380)
+    }
+}
+
+// MARK: – Diagnostics (per-stage timings)
+
+/// Shows where the time actually goes, in the app itself.
+///
+/// Console output is only readable when the app is launched from a terminal —
+/// and doing that attributes Microphone/Accessibility to the terminal, which
+/// manufactures failures that do not exist in normal use. So the timings have to
+/// be visible here.
+private struct DiagnosticsSettingsView: View {
+    @ObservedObject private var store = MetricsStore.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            summary
+            Divider()
+            if store.recent.isEmpty {
+                emptyState
+            } else {
+                list
+            }
+        }
+    }
+
+    private var summary: some View {
+        HStack(spacing: 24) {
+            stat("Average", store.averageLatency)
+            stat("Slowest", store.slowestLatency)
+            Spacer()
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
+    }
+
+    private func stat(_ title: String, _ value: TimeInterval?) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value.map { String(format: "%.2f s", $0) } ?? "—")
+                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 6) {
+            Spacer()
+            Text("No dictations yet")
+                .font(.headline)
+                .foregroundStyle(.secondary)
+            Text("Press \u{2325}Space and speak — timings appear here.")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var list: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                ForEach(store.recent) { entry in
+                    MetricsRow(entry: entry)
+                    Divider()
+                }
+            }
+        }
+    }
+}
+
+/// One dictation: the headline latency plus the stage breakdown that explains it.
+private struct MetricsRow: View {
+    let entry: DictationMetrics
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text(String(format: "%.2f s", entry.perceivedLatency))
+                    .font(.system(size: 14, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(entry.succeeded ? .primary : .secondary)
+
+                Text(entry.outcome)
+                    .font(.caption)
+                    .foregroundStyle(entry.succeeded ? Color.green : Color.orange)
+
+                Spacer()
+
+                Text(String(format: "spoke %.1f s", entry.spokenSeconds))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .monospacedDigit()
+            }
+
+            HStack(spacing: 10) {
+                stage("silence", entry.silenceWait)
+                stage("speech\u{2192}text", entry.transcription)
+                stage("AI", entry.aiProcessing)
+                stage("paste", entry.injection)
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 9)
+    }
+
+    private func stage(_ name: String, _ value: TimeInterval) -> some View {
+        Text("\(name) \(String(format: "%.2f", value))")
+            .font(.system(size: 10, design: .monospaced))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
     }
 }
 

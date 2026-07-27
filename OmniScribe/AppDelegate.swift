@@ -41,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let audio = AudioSessionManager()
         audio.onSilenceDetected = { [weak self] in self?.finishDictation() }
         audio.onError = { [weak self] error in self?.handleAudioError(error) }
+        audio.onLevel = { level in WindowManager.shared.updateLevel(level) }
         audioManager = audio
 
         // 3. Preload the Whisper model now – NOT on the hotkey press – so the
@@ -90,6 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } catch {
             print("[AppDelegate] ❌ Could not start recording: \(error.localizedDescription)")
             menuBarManager?.updateState(.idle)
+            WindowManager.shared.showFailure(error.localizedDescription)
         }
     }
 
@@ -97,31 +99,86 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard isDictating, let audioManager else { return }
         isDictating = false
 
+        let stoppedAt = CFAbsoluteTimeGetCurrent()
         let samples = audioManager.stop()
+        let quality = audioManager.signalQuality
+
+        var metrics = DictationMetrics()
+        metrics.spokenSeconds = Double(samples.count) / 16_000
+        // Latency is measured from the last spoken word, not the hotkey press.
+        metrics.silenceWait = max(0, stoppedAt - (audioManager.lastSpeechAt ?? stoppedAt))
+
         menuBarManager?.updateState(.processing)
-        WindowManager.shared.updateHUD(phase: .processing)
-        print("[AppDelegate] ⏹️ Recording stopped – \(samples.count) samples captured.")
+        WindowManager.shared.updateHUD(phase: .transcribing)
+        print("[AppDelegate] ⏹️ Recording stopped – \(samples.count) samples, signal: \(quality).")
+
+        // Guard 1 (input side): no audio reached the app at all. Sending silence
+        // would cost a round trip and come back as hallucinated filler, so stop
+        // here and say what to fix. Only fires on effectively-zero signal —
+        // a quiet-but-live microphone still goes through, because the cloud
+        // recogniser is more sensitive than our fixed RMS threshold.
+        if quality == .silent {
+            complete(metrics,
+                     outcome: "No microphone signal",
+                     failure: "No microphone signal — check Microphone permission and input device.")
+            return
+        }
 
         Task { [weak self] in
             guard let self else { return }
             do {
+                let sttStart = CFAbsoluteTimeGetCurrent()
                 let result = try await self.transcriptionService.transcribe(samples: samples)
+                metrics.transcription = CFAbsoluteTimeGetCurrent() - sttStart
                 print("[AppDelegate] 📝 Transcription (\(result.source.rawValue)): \"\(result.text)\"")
 
-                // Phase 3: reshape the transcription with the selected AI provider.
-                // Phase 4: inject the result into the focused app, preserving the
-                // user's clipboard. A missing API key surfaces as a handled error.
-                if !result.text.isEmpty {
-                    let mode = AppPreferences.shared.selectedMode
-                    let processed = try await self.aiCoordinator.process(text: result.text, mode: mode)
-                    print("[AppDelegate] ✨ Processed (\(mode.displayName)): \"\(processed)\"")
-                    try await TextInjector.shared.inject(processed)
-                    print("[AppDelegate] ⌨️ Inserted into the focused app.")
+                // Guard 2 (output side): the recogniser returns filler such as
+                // "🎵🎵🎵" for silence. Never pay for an LLM call on that, and
+                // never paste it. Catches the case Guard 1 cannot see — a live
+                // but wrong input device produces real noise and no speech.
+                guard !result.text.looksLikeNoSpeech else {
+                    self.complete(metrics,
+                                  outcome: "No speech recognised",
+                                  failure: "No speech recognised — check your microphone input level.")
+                    return
                 }
+
+                let mode = AppPreferences.shared.selectedMode
+                WindowManager.shared.updateHUD(phase: .polishing)
+
+                let aiStart = CFAbsoluteTimeGetCurrent()
+                let processed = try await self.aiCoordinator.process(text: result.text, mode: mode)
+                metrics.aiProcessing = CFAbsoluteTimeGetCurrent() - aiStart
+                print("[AppDelegate] ✨ Processed (\(mode.displayName)): \"\(processed)\"")
+
+                let injectStart = CFAbsoluteTimeGetCurrent()
+                try await TextInjector.shared.inject(processed)
+                metrics.injection = CFAbsoluteTimeGetCurrent() - injectStart
+
+                self.complete(metrics, outcome: DictationMetrics.insertedOutcome, failure: nil)
             } catch {
-                print("[AppDelegate] ❌ Pipeline failed: \(error.localizedDescription)")
+                self.complete(metrics,
+                              outcome: "Failed",
+                              failure: error.localizedDescription)
             }
-            self.menuBarManager?.updateState(.idle)
+        }
+    }
+
+    /// Records timings, returns to idle, and either dismisses the HUD or shows
+    /// the failure in it.
+    private func complete(_ metrics: DictationMetrics, outcome: String, failure: String?) {
+        var finished = metrics
+        finished.outcome = outcome
+        MetricsStore.shared.record(finished)
+        print("[AppDelegate] ⏱️ \(finished.consoleSummary)")
+
+        menuBarManager?.updateState(.idle)
+
+        if let failure {
+            print("[AppDelegate] ❌ \(failure)")
+            WindowManager.shared.showFailure(failure)
+        } else {
+            print("[AppDelegate] ⌨️ Inserted into the focused app.")
             WindowManager.shared.hideRecordingHUD()
         }
     }
@@ -130,6 +187,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         print("[AppDelegate] ⚠️ Audio error: \(error.localizedDescription)")
         isDictating = false
         menuBarManager?.updateState(.idle)
-        WindowManager.shared.hideRecordingHUD()
+        WindowManager.shared.showFailure(error.localizedDescription)
     }
 }

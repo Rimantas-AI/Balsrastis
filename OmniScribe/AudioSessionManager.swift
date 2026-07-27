@@ -44,6 +44,18 @@ final class AudioSessionManager {
     /// Fired when recording has to abort (e.g. the active device vanished).
     var onError: ((AudioEngineError) -> Void)?
 
+    /// Normalised 0…1 input level for the HUD meter (~12×/second).
+    var onLevel: ((Float) -> Void)?
+
+    // MARK: – Post-recording diagnostics
+
+    /// What the microphone actually delivered during the recording that just ended.
+    var signalQuality: SignalQuality { vad.signalQuality }
+
+    /// When the user last spoke — the reference point for measuring latency from
+    /// the last word rather than from the hotkey press.
+    var lastSpeechAt: CFAbsoluteTime? { vad.lastSpeechAt }
+
     // MARK: – Private
 
     private let engine = AVAudioEngine()
@@ -78,6 +90,10 @@ final class AudioSessionManager {
         vad.onSilenceTimeout = { [weak self] in
             // Called on the audio thread – hop to main for UI-driving work.
             DispatchQueue.main.async { self?.onSilenceDetected?() }
+        }
+
+        vad.onLevel = { [weak self] level in
+            DispatchQueue.main.async { self?.onLevel?(level) }
         }
     }
 

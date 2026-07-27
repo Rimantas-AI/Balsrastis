@@ -30,6 +30,7 @@
 		00000000000000000000EB /* HUDPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DB /* HUDPanel.swift */; };
 		00000000000000000000EC /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DC /* WindowManager.swift */; };
 		00000000000000000000ED /* CloudWhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DD /* CloudWhisperService.swift */; };
+		00000000000000000000EE /* DictationMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DE /* DictationMetrics.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,7 @@
 		00000000000000000000DB /* HUDPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDPanel.swift; sourceTree = "<group>"; };
 		00000000000000000000DC /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		00000000000000000000DD /* CloudWhisperService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudWhisperService.swift; sourceTree = "<group>"; };
+		00000000000000000000DE /* DictationMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationMetrics.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +115,7 @@
 				00000000000000000000DB /* HUDPanel.swift */,
 				00000000000000000000DC /* WindowManager.swift */,
 				00000000000000000000DD /* CloudWhisperService.swift */,
+				00000000000000000000DE /* DictationMetrics.swift */,
 				0000000000000000000000B8 /* Assets.xcassets */,
 				0000000000000000000000B6 /* Info.plist */,
 				0000000000000000000000B7 /* OmniScribe.entitlements */,
@@ -211,6 +214,7 @@
 				00000000000000000000EB /* HUDPanel.swift in Sources */,
 				00000000000000000000EC /* WindowManager.swift in Sources */,
 				00000000000000000000ED /* CloudWhisperService.swift in Sources */,
+				00000000000000000000EE /* DictationMetrics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

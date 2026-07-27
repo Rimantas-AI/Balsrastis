@@ -40,32 +40,64 @@ final class WindowManager {
 
     let hudState = RecordingHUDState()
     private var hudPanel: HUDPanel?
+    private var errorDismissal: DispatchWorkItem?
 
     /// Shows the HUD without activating the app or taking focus.
     func showRecordingHUD(phase: HUDPhase = .listening) {
+        errorDismissal?.cancel()
         hudState.phase = phase
+        hudState.level = 0
 
         if hudPanel == nil {
             let hosting = NSHostingView(rootView: RecordingHUDView(state: hudState))
-            hosting.frame = NSRect(x: 0, y: 0, width: 190, height: 54)
+            hosting.frame = NSRect(x: 0, y: 0, width: phase.preferredWidth, height: 54)
             hudPanel = HUDPanel(contentView: hosting)
         }
 
+        resizeHUD(for: phase)
         positionHUD()
         // orderFrontRegardless shows the panel without making the app active.
         hudPanel?.orderFrontRegardless()
     }
 
-    /// Updates the HUD's visual phase (e.g. listening → processing) while visible.
+    /// Updates the HUD's visual phase (e.g. listening → transcribing) while visible.
     func updateHUD(phase: HUDPhase) {
         hudState.phase = phase
+        resizeHUD(for: phase)
+        positionHUD()
+    }
+
+    /// Feeds the live input-level meter.
+    func updateLevel(_ level: Float) {
+        hudState.level = level
+    }
+
+    /// Surfaces a failure to the user, then dismisses itself.
+    ///
+    /// Without this the pipeline's only failure channel was a console log, which
+    /// is invisible in the way the app is normally launched.
+    func showFailure(_ message: String, dismissAfter seconds: TimeInterval = 4) {
+        showRecordingHUD(phase: .error(message))
+
+        let work = DispatchWorkItem { [weak self] in self?.hideRecordingHUD() }
+        errorDismissal = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: work)
     }
 
     func hideRecordingHUD() {
+        errorDismissal?.cancel()
         hudPanel?.orderOut(nil)
     }
 
     // MARK: – Positioning
+
+    /// Error text needs more room than "Listening…", so the panel follows the phase.
+    private func resizeHUD(for phase: HUDPhase) {
+        guard let panel = hudPanel else { return }
+        let height: CGFloat = 54
+        panel.setContentSize(NSSize(width: phase.preferredWidth, height: height))
+        panel.contentView?.frame = NSRect(x: 0, y: 0, width: phase.preferredWidth, height: height)
+    }
 
     /// Bottom-center of the active screen — visible but away from menu bar and
     /// most editing surfaces.
