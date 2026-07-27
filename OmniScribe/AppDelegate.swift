@@ -138,20 +138,59 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             break
         }
 
+        let sttModelChoice = AppPreferences.shared.sttModel
+        let vocabulary = AppPreferences.shared.vocabulary
+        let isComparing = AppPreferences.shared.compareSTTModels
+        let runID = metrics.id
+        if isComparing {
+            metrics.comparedModels = AppPreferences.availableSTTModels
+            compareSTTModels(
+                samples: samples,
+                vocabulary: vocabulary,
+                excluding: sttModelChoice,
+                runID: runID
+            )
+        }
+
         Task { [weak self] in
             guard let self else { return }
             do {
-                let sttModelChoice = AppPreferences.shared.sttModel
                 let sttStart = CFAbsoluteTimeGetCurrent()
-                let result = try await self.transcriptionService.transcribe(
-                    samples: samples,
-                    vocabulary: AppPreferences.shared.vocabulary,
-                    model: sttModelChoice
-                )
+                let result: STTResult
+                do {
+                    result = try await self.transcriptionService.transcribe(
+                        samples: samples,
+                        vocabulary: vocabulary,
+                        model: sttModelChoice
+                    )
+                } catch {
+                    // Record the primary's failure as a comparison row too, so a
+                    // model that rate-limits or times out is visible next to the
+                    // others rather than only as a generic run failure.
+                    if isComparing {
+                        MetricsStore.shared.recordComparison(
+                            STTComparisonResult(model: sttModelChoice,
+                                                isPrimary: true,
+                                                duration: CFAbsoluteTimeGetCurrent() - sttStart,
+                                                text: "",
+                                                failure: error.localizedDescription),
+                            forRun: runID)
+                    }
+                    throw error
+                }
                 metrics.transcription = CFAbsoluteTimeGetCurrent() - sttStart
                 metrics.sttModel = sttModelChoice
                 if AppPreferences.shared.captureTestText {
                     metrics.transcribedText = result.text
+                }
+                if isComparing {
+                    MetricsStore.shared.recordComparison(
+                        STTComparisonResult(model: sttModelChoice,
+                                            isPrimary: true,
+                                            duration: metrics.transcription,
+                                            text: result.text,
+                                            failure: nil),
+                        forRun: runID)
                 }
                 print("[AppDelegate] 📝 Transcription (\(result.source.rawValue)): \"\(result.text)\"")
 
@@ -187,6 +226,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.complete(metrics,
                               outcome: "Failed",
                               failure: error.localizedDescription)
+            }
+        }
+    }
+
+    /// Sends the same captured audio to every *other* STT model, purely to fill in
+    /// the Diagnostics comparison (`AppPreferences.compareSTTModels`).
+    ///
+    /// Deliberately fire-and-forget: these tasks are started alongside the primary
+    /// transcription and nothing ever awaits them, so the text the user is waiting
+    /// for is never delayed by the slowest model. Each result is filed against
+    /// `runID` whenever it arrives, and a failure here is recorded and otherwise
+    /// ignored — a secondary model rate-limiting must not break a dictation.
+    ///
+    /// The raw samples are reused as-is, which is the entire point: re-recording a
+    /// phrase per model varies pronunciation, pace and mic distance, and would
+    /// measure the speaker rather than the recogniser.
+    private func compareSTTModels(samples: [Float],
+                                  vocabulary: String,
+                                  excluding primaryModel: String,
+                                  runID: UUID) {
+        for model in AppPreferences.availableSTTModels where model != primaryModel {
+            Task { [weak self] in
+                guard let self else { return }
+                let start = CFAbsoluteTimeGetCurrent()
+                do {
+                    let result = try await self.transcriptionService.transcribe(
+                        samples: samples,
+                        vocabulary: vocabulary,
+                        model: model
+                    )
+                    MetricsStore.shared.recordComparison(
+                        STTComparisonResult(model: model,
+                                            isPrimary: false,
+                                            duration: CFAbsoluteTimeGetCurrent() - start,
+                                            text: result.text,
+                                            failure: nil),
+                        forRun: runID)
+                } catch {
+                    MetricsStore.shared.recordComparison(
+                        STTComparisonResult(model: model,
+                                            isPrimary: false,
+                                            duration: CFAbsoluteTimeGetCurrent() - start,
+                                            text: "",
+                                            failure: error.localizedDescription),
+                        forRun: runID)
+                }
             }
         }
     }

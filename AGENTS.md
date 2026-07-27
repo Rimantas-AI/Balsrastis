@@ -267,8 +267,7 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   the whole Diagnostics history, for pasting into a chat/issue).
 - v1.4.0 — STT model picker (Settings → General): `whisper-1` /
   `gpt-4o-mini-transcribe` / `gpt-4o-transcribe`, switchable at runtime, recorded
-  per-run in Diagnostics. **Built but not yet comparison-tested** — this is the
-  open next step (see Roadmap below).
+  per-run in Diagnostics.
 - v1.5.0 — **the hallucination fix**, the most important bug found this session.
   A single ~64ms audio buffer above the RMS threshold (a keyboard click, a desk
   knock) was enough to set `hasDetectedSpeech = true` under the old single-buffer
@@ -303,6 +302,36 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   "ne", "gerai", "stop" — ~14 real trials) and none were falsely blocked
   (shortest real above-threshold reading: 0.49s, comfortably clear of 250ms) —
   do not lower it without new evidence of real words being blocked.
+- v1.6.0 — **same-audio STT comparison mode** (Settings → General → "Compare STT
+  models", off by default), the tooling for Roadmap step 1. One recording's
+  `[Float]` samples are sent to all three models concurrently with identical
+  `language=lt` and identical vocabulary `prompt`; each model's **raw** transcript,
+  duration and error land in Diagnostics side by side. **Built and compiling, but
+  the 30-clip comparison round itself is still the open next step** — no model
+  choice has been made from evidence yet.
+  Architecture rules that must not be "simplified" away:
+  - The secondary calls are **fire-and-forget and nothing ever awaits them**
+    (`AppDelegate.compareSTTModels`). Awaiting all three before reshaping would
+    make every dictation as slow as the slowest model. Only the selected primary
+    model's text is sent to Claude and pasted.
+  - A secondary model failing (429/timeout/server error) is recorded as a
+    comparison row and otherwise ignored — it must never break the dictation the
+    user is waiting on. A *primary* failure is the normal user-visible error.
+  - Results are filed against the run's `DictationMetrics.id`, never "the newest
+    entry": models finish at different times, so a slow answer from the previous
+    dictation would otherwise be attributed to the current one. Results that
+    arrive before their run is recorded wait in `MetricsStore.pendingComparisons`.
+  - Only raw STT text is compared, never Claude's output — otherwise the
+    comparison measures the reshaper, not the recogniser.
+  Also in this release: `MetricsStore.maxEntries` 15 → **60** (a 30-clip round
+  must export as one Copy Report; tallying two half-reports by hand is where
+  arithmetic slips would silently pick the wrong default model), per-model
+  aggregate summary (runs / median / P95 / slowest / failures / no-speech counts)
+  in both the Diagnostics header and Copy Report, and `Package.swift` fixed — it
+  still declared the long-removed WhisperKit dependency, which made the local
+  `swift build` type-check hang on dependency resolution instead of working.
+  Accuracy is deliberately **not** auto-scored: judging a Lithuanian transcript
+  needs a human reading it against what was actually said.
 
 **Methodology established this session (apply it going forward):**
 - Never trust a narrated summary of what a model transcribed — get the literal
@@ -324,32 +353,30 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   release shipped independently testable so a regression is easy to isolate.
 
 **Known open gaps (not yet built, deliberately deferred):**
-- `MetricsStore.maxEntries = 15` — nowhere near enough for a week-long/200-run
-  real-usage validation (see Roadmap step 3 below). Needs either a much higher
-  cap or a lightweight opt-in on-disk log before that step is attempted. Not
-  built preemptively — build it when that step is actually started.
-- No P95 latency stat, only average/median/max — cheap to add, low value until
-  sample sizes are large enough to be meaningful (ties to the point above).
-- "Compare STT models" same-audio concurrent test mode — proposed design (not
-  yet built): a Settings toggle that, when on, sends the *same* captured
-  `[Float]` samples to all three models in `AppPreferences.availableSTTModels`
-  concurrently for one recording, pastes using the normal selected default
-  model (so daily use is undisturbed), and shows all three raw results
-  side-by-side in Diagnostics. This avoids needing to build any audio
-  save/replay/file-management infrastructure — the existing
-  `CloudWhisperService.transcribe(samples:vocabulary:model:)` already takes
-  `model` per-call, so it's just N concurrent calls on the same in-memory
-  samples array.
+- **Diagnostics history is still memory-only and lost on relaunch.** The 60-entry
+  cap covers a single comparison round, not the week-long/~200-run validation in
+  Roadmap step 2 — that needs a lightweight opt-in on-disk log. Deliberately not
+  built preemptively; build it when step 2 actually starts, and store anonymous
+  session statistics (counts, median, P95, error types, model name) rather than
+  dictated text or audio.
+- P95 exists only per STT model (`MetricsStore.sttModelSummaries`), not for
+  end-to-end perceived latency — add it alongside average/median/max when sample
+  sizes are large enough to mean anything.
 - Raw Dictation mode (skip AI reshaping) and any Pro/monetization features —
   explicitly deferred until after real-user validation; do not build speculatively.
 
 **Recommended roadmap (agreed after multi-perspective review, see chat history
 for the full reasoning — condensed here):**
-1. STT model comparison (whisper-1 vs gpt-4o-mini-transcribe vs
-   gpt-4o-transcribe) using the same-audio approach above, ~30 clips covering
-   short words (5x each of taip/ne/gerai/stop), technical terms, numbers,
-   dates/addresses, a fast complex sentence, quiet voice, background noise,
-   silence, and keyboard noise. Pick the default model from evidence.
+1. **← CURRENT STEP.** STT model comparison (whisper-1 vs gpt-4o-mini-transcribe
+   vs gpt-4o-transcribe). The tooling shipped in v1.6.0; the test round has not
+   been run. Method: turn on Settings → General → "Compare STT models", Clear
+   Diagnostics, then dictate ~30 clips covering short words (5x each of
+   taip/ne/gerai/stop), technical terms, numbers, dates/addresses, a fast complex
+   sentence, quiet voice, background noise, silence, and keyboard noise — each
+   clip spoken **once**, since all three models hear that same recording. Then
+   Copy Report and judge: Lithuanian accuracy first, predictable speed second,
+   cost third. A model 0.4s faster that confuses "stop" with "taip", or `5` with
+   `500`, does not win. Turn the toggle back off afterwards (~3x STT cost).
 2. One week / ~200 real dictations of actual daily use (not lab sentences) with
    the chosen model. Target bar before considering the app distribution-ready:
    zero hallucinated inserts, ≤1-2% false-blocked real speech, median ≤~5s,

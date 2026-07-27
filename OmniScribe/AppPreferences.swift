@@ -14,6 +14,7 @@ final class AppPreferences: ObservableObject {
     private let vocabularyKey = "OmniScribe.vocabulary"
     private let captureTestTextKey = "OmniScribe.captureTestText"
     private let sttModelKey = "OmniScribe.sttModel"
+    private let compareSTTModelsKey = "OmniScribe.compareSTTModels"
 
     /// Context the speech recogniser should expect.
     ///
@@ -55,6 +56,18 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(sttModel, forKey: sttModelKey) }
     }
 
+    /// Sends every recording to **all** of `availableSTTModels` concurrently, so
+    /// the models can be compared on identical audio. Re-recording the same
+    /// phrase per model is not a valid comparison — pronunciation, pace and mic
+    /// distance differ between takes and confound the result.
+    ///
+    /// Diagnostic only, off by default: it roughly triples STT API usage, and the
+    /// extra calls are pure cost outside a deliberate test round. The insert path
+    /// is unaffected — only `sttModel`'s result is reshaped and pasted.
+    @Published var compareSTTModels: Bool {
+        didSet { defaults.set(compareSTTModels, forKey: compareSTTModelsKey) }
+    }
+
     /// `gpt-4o-transcribe`/`-mini` are OpenAI's newer transcription models,
     /// reported to improve word-error-rate and language recognition over the
     /// original Whisper models — worth comparing directly on Lithuanian speech
@@ -87,6 +100,7 @@ final class AppPreferences: ObservableObject {
         vocabulary = defaults.string(forKey: vocabularyKey) ?? Self.defaultVocabulary
         captureTestText = defaults.bool(forKey: captureTestTextKey)
         sttModel = defaults.string(forKey: sttModelKey) ?? Self.defaultSTTModel
+        compareSTTModels = defaults.bool(forKey: compareSTTModelsKey)
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }

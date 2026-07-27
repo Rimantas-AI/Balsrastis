@@ -103,9 +103,34 @@ private struct DiagnosticsSettingsView: View {
             Text("Timings above are successful runs only.")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
+
+            modelComparisonSummary
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
+    }
+
+    /// Per-model aggregates over the whole history. A single call's latency is
+    /// mostly cloud noise, so models are only worth ranking across a full test
+    /// round — and accuracy stays a human judgement made by reading the
+    /// transcripts in the rows below, not something scored here.
+    @ViewBuilder
+    private var modelComparisonSummary: some View {
+        let summaries = store.sttModelSummaries
+        if !summaries.isEmpty {
+            Divider()
+            ForEach(summaries, id: \.model) { summary in
+                Text("\(summary.model) \u{2014} \(summary.runs) runs \u{00B7} median "
+                     + format(summary.median) + " \u{00B7} P95 " + format(summary.p95)
+                     + " \u{00B7} failed \(summary.failures) \u{00B7} no-speech \(summary.noSpeechResults)")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func format(_ value: TimeInterval?) -> String {
+        value.map { String(format: "%.2f s", $0) } ?? "\u{2014}"
     }
 
     private func clear() {
@@ -205,9 +230,73 @@ private struct MetricsRow: View {
                  + (entry.wasAutoStopped ? "auto stop" : "manual stop"))
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(.tertiary)
+
+            if !entry.comparedModels.isEmpty {
+                comparison
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 9)
+    }
+
+    /// The same audio as heard by each STT model. Models answer at different
+    /// times, so one still in flight is shown as "comparing…" rather than being
+    /// left out, which would read as an empty result.
+    private var comparison: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(entry.comparedModels, id: \.self) { model in
+                let result = entry.sttComparison.first { $0.model == model }
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 6) {
+                        Text(model)
+                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                        if result?.isPrimary == true {
+                            Text("primary")
+                                .font(.system(size: 9))
+                                .padding(.horizontal, 4)
+                                .background(Color.accentColor.opacity(0.18), in: RoundedRectangle(cornerRadius: 3))
+                        }
+                        Spacer()
+                        if let result, result.failure == nil {
+                            Text(String(format: "%.2f s", result.duration))
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                    }
+                    comparisonText(for: result)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 4))
+            }
+        }
+        .padding(.top, 2)
+    }
+
+    @ViewBuilder
+    private func comparisonText(for result: STTComparisonResult?) -> some View {
+        if let result {
+            if let failure = result.failure {
+                Text("Failed: \(failure)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.orange)
+            } else {
+                Text(result.text)
+                    .font(.system(size: 11))
+                    .textSelection(.enabled)
+                if result.looksLikeNoSpeech {
+                    Text("blocked as no speech")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.orange)
+                }
+            }
+        } else {
+            Text("comparing\u{2026}")
+                .font(.system(size: 10))
+                .foregroundStyle(.tertiary)
+        }
     }
 
     private func stage(_ name: String, _ value: TimeInterval) -> some View {
@@ -245,10 +334,24 @@ private struct GeneralSettingsView: View {
                         Text(model).tag(model)
                     }
                 }
+
+                Toggle("Compare STT models", isOn: $prefs.compareSTTModels)
+                    .help("Sends each recording to all three models at once and shows their raw transcripts side by side in Diagnostics. Only the model selected above is reshaped and pasted, so dictation is not slowed down or changed.")
             } footer: {
-                Text("The processing mode is applied to every dictation until you change it. Activate dictation with \u{2325}Space. Switch the STT model to compare accuracy/speed on the same script via Diagnostics \u{2014} no relaunch needed.")
+                Text("The processing mode is applied to every dictation until you change it. Activate dictation with \u{2325}Space. The STT model above is the one whose text is actually inserted.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+
+            if prefs.compareSTTModels {
+                Section {
+                    Label(
+                        "Every recording is sent to all \(AppPreferences.availableSTTModels.count) STT models, so OpenAI transcription usage is about \(AppPreferences.availableSTTModels.count)\u{00D7} higher, and each model's raw transcript is kept in Diagnostics. Turn this off after a test round.",
+                        systemImage: "exclamationmark.triangle"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
             }
 
             Section {
