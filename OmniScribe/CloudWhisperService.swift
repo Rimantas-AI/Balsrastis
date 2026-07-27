@@ -47,7 +47,9 @@ enum CloudTranscriptionError: LocalizedError {
 actor CloudWhisperService {
 
     /// Transcription model. `whisper-1` is broadly available and multilingual.
-    private let model: String
+    /// `nonisolated` because it is immutable and Diagnostics reads it synchronously
+    /// to label a run — no actor hop needed for a constant.
+    nonisolated let model: String
     /// ISO-639-1 language hint (e.g. "lt"). Improves accuracy and speed.
     private let language: String
 

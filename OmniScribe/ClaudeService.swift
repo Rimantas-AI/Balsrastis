@@ -13,6 +13,7 @@ import Foundation
 final class ClaudeService: AIProviderProtocol {
 
     let providerID: AIProviderID = .claude
+    var modelIdentifier: String { model }
 
     private let model: String
     private let maxTokens: Int

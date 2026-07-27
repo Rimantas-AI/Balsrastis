@@ -28,6 +28,10 @@ struct DictationMetrics: Identifiable {
 
     /// Which processing mode ran, for comparing settings across runs.
     var mode: String = "—"
+    /// Speech-to-text model used (e.g. `whisper-1`), for comparing STT models.
+    var sttModel: String = "—"
+    /// AI reshaping model used (empty when the AI stage was skipped).
+    var aiModel: String = "—"
 
     /// The number that matters: last spoken word → text on screen.
     var perceivedLatency: TimeInterval {
@@ -43,6 +47,23 @@ struct DictationMetrics: Identifiable {
         func f(_ v: TimeInterval) -> String { String(format: "%.2fs", v) }
         return "silence \(f(silenceWait)) · stt \(f(transcription)) · ai \(f(aiProcessing)) "
              + "· paste \(f(injection)) → total \(f(perceivedLatency)) [\(outcome)]"
+    }
+
+    /// Plain-text block for one run inside a Copy Report export.
+    func reportBlock(index: Int) -> String {
+        func f(_ v: TimeInterval) -> String { String(format: "%.2f s", v) }
+        return """
+        Run \(index) — \(outcome) — \(wasAutoStopped ? "Auto stop" : "Manual stop")
+        Total: \(f(perceivedLatency))
+        Spoke: \(f(spokenSeconds))
+        Silence: \(f(silenceWait))
+        STT: \(f(transcription))
+        AI: \(f(aiProcessing))
+        Paste: \(f(injection))
+        STT model: \(sttModel)
+        AI model: \(aiModel)
+        Mode: \(mode)
+        """
     }
 }
 
@@ -100,6 +121,30 @@ final class MetricsStore: ObservableObject {
     }
 
     var successfulRuns: Int { recent.filter(\.succeeded).count }
+
+    /// Plain-text report for pasting into a chat or issue — the alternative to
+    /// retyping numbers from a screenshot by hand.
+    func fullReport() -> String {
+        func f(_ v: TimeInterval?) -> String { v.map { String(format: "%.2f s", $0) } ?? "—" }
+        let bundleVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
+
+        var lines = [
+            "OmniScribe Diagnostics",
+            "App version: \(bundleVersion)",
+            "macOS: \(osVersion)",
+            "Runs: \(successfulRuns)",
+            "Average: \(f(averageLatency))",
+            "Median: \(f(medianLatency))",
+            "Slowest: \(f(slowestLatency))",
+            "",
+        ]
+        for (index, entry) in recent.enumerated() {
+            lines.append(entry.reportBlock(index: index + 1))
+            lines.append("")
+        }
+        return lines.joined(separator: "\n")
+    }
 }
 
 // MARK: – Transcription sanity check

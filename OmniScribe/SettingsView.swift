@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// Applies the grouped form style on macOS 13+, and leaves the default Form
@@ -33,8 +34,8 @@ struct SettingsView: View {
         }
         // Resizable (not a fixed frame) so the Diagnostics tab can be enlarged to
         // read more rows or fit a wider screenshot — the window itself is made
-        // resizable in WindowManager.
-        .frame(minWidth: 520, idealWidth: 640, minHeight: 380, idealHeight: 460)
+        // resizable in WindowManager, which also enforces the matching minimum.
+        .frame(minWidth: 650, idealWidth: 850, minHeight: 450, idealHeight: 650)
     }
 }
 
@@ -48,10 +49,19 @@ struct SettingsView: View {
 /// be visible here.
 private struct DiagnosticsSettingsView: View {
     @ObservedObject private var store = MetricsStore.shared
+    @State private var toast: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             summary
+            if let toast {
+                Text(toast)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 8)
+                    .transition(.opacity)
+            }
             Divider()
             if store.recent.isEmpty {
                 emptyState
@@ -73,13 +83,41 @@ private struct DiagnosticsSettingsView: View {
                 Text("\(store.successfulRuns) run\(store.successfulRuns == 1 ? "" : "s")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Button("Clear", role: .destructive) { store.clear() }
-                    .controlSize(.small)
-                    .disabled(store.recent.isEmpty)
+                HStack(spacing: 8) {
+                    Button("Copy Report") { copyReport() }
+                        .controlSize(.small)
+                        .disabled(store.recent.isEmpty)
+                    Button("Clear Diagnostics", role: .destructive) { clear() }
+                        .controlSize(.small)
+                        .disabled(store.recent.isEmpty)
+                }
             }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
+    }
+
+    private func clear() {
+        store.clear()
+        showToast("Diagnostics cleared")
+    }
+
+    private func copyReport() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(store.fullReport(), forType: .string)
+        showToast("Report copied to clipboard")
+    }
+
+    /// Fades a brief confirmation so "cleared" / "copied" is visible without a
+    /// modal dialog — these actions are non-destructive to app data (only the
+    /// in-memory history), so a full confirmation prompt would be noise.
+    private func showToast(_ message: String) {
+        withAnimation { toast = message }
+        Task {
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            withAnimation { toast = nil }
+        }
     }
 
     private func stat(_ title: String, _ value: TimeInterval?) -> some View {
@@ -135,14 +173,6 @@ private struct MetricsRow: View {
                     .font(.caption)
                     .foregroundStyle(entry.succeeded ? Color.green : Color.orange)
 
-                Text(entry.mode)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-
-                Text(entry.wasAutoStopped ? "auto" : "manual")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-
                 Spacer()
 
                 Text(String(format: "spoke %.1f s", entry.spokenSeconds))
@@ -157,6 +187,13 @@ private struct MetricsRow: View {
                 stage("AI", entry.aiProcessing)
                 stage("paste", entry.injection)
             }
+
+            // Which settings produced this row — auto/manual stop explains why
+            // `silence` is ~2s in one run and ~0.1s in the next.
+            Text("\(entry.sttModel) \u{00B7} \(entry.aiModel) \u{00B7} \(entry.mode) \u{00B7} "
+                 + (entry.wasAutoStopped ? "auto stop" : "manual stop"))
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 9)
@@ -204,7 +241,7 @@ private struct GeneralSettingsView: View {
             } header: {
                 Text("Vocabulary")
             } footer: {
-                Text("Names and jargon to help Whisper recognise correctly — comma-separated. English terms spoken inside Lithuanian sentences (\u{201C}HUD\u{201D}, \u{201C}Keychain\u{201D}) are the main beneficiary.")
+                Text("Write this as a short sentence in the dictation language, mentioning the terms you expect — not a bare word list. This is a hint, not a strict dictionary, so keep it brief (15\u{2013}25 terms). Mainly helps English jargon spoken inside Lithuanian sentences (\u{201C}HUD\u{201D}, \u{201C}Keychain\u{201D}).")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

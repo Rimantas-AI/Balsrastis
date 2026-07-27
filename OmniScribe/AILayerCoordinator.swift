@@ -37,6 +37,12 @@ final class AILayerCoordinator {
         set { defaults.set(newValue.rawValue, forKey: selectedProviderKey) }
     }
 
+    /// The model identifier behind the currently selected provider, for
+    /// Diagnostics. Falls back to the provider's raw name if none is registered.
+    var activeModelIdentifier: String {
+        providers[selectedProvider]?.modelIdentifier ?? selectedProvider.rawValue
+    }
+
     // MARK: – Processing
 
     /// Sends `text` through the selected provider using `mode`'s system prompt.

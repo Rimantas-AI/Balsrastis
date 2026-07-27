@@ -62,6 +62,10 @@ enum AIError: LocalizedError, Equatable {
 protocol AIProviderProtocol {
     var providerID: AIProviderID { get }
 
+    /// The underlying model identifier (e.g. `"claude-opus-4-8"`), surfaced so
+    /// Diagnostics can show which model produced a given result.
+    var modelIdentifier: String { get }
+
     /// Applies `mode`'s system prompt to `text` and returns the processed result.
     func process(text: String, mode: ProcessingMode) async throws -> String
 }

@@ -26,6 +26,9 @@ final class WindowManager {
             // .resizable lets the Diagnostics tab be enlarged — useful both for
             // reading more history rows and for taking a clean, full screenshot.
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+            // Enforced on the NSWindow itself, not just SwiftUI's .frame(minWidth:) —
+            // belt-and-suspenders so the UI can never be squeezed unreadable.
+            window.minSize = NSSize(width: 650, height: 450)
             // Keep the instance alive after the user clicks the close button so it
             // can be re-shown; without this AppKit would deallocate it on close.
             window.isReleasedWhenClosed = false

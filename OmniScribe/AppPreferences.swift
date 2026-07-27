@@ -13,19 +13,25 @@ final class AppPreferences: ObservableObject {
     private let modeKey = "OmniScribe.selectedMode"
     private let vocabularyKey = "OmniScribe.vocabulary"
 
-    /// Names and jargon the speech recogniser should expect.
+    /// Context the speech recogniser should expect.
     ///
     /// Sent to Whisper as its `prompt`, which biases recognition toward this
-    /// vocabulary. Without it, English technical terms spoken inside Lithuanian
+    /// context. Without it, English technical terms spoken inside Lithuanian
     /// sentences come back phonetically mangled ("HUD" → "gūdą"), and no amount of
     /// LLM cleanup can recover them — the word is already gone by then.
+    ///
+    /// Phrased as a short Lithuanian sentence rather than a bare comma list:
+    /// OpenAI's own guidance describes `prompt` as context that steers spelling
+    /// and style, not a strict dictionary, and it should match the spoken
+    /// language — a plain English word list nudges the recogniser off-language.
     @Published var vocabulary: String {
         didSet { defaults.set(vocabulary, forKey: vocabularyKey) }
     }
 
     static let defaultVocabulary = """
-    OmniScribe, macOS, Xcode, GitHub, Terminal, Accessibility, Keychain, TextEdit, \
-    Diagnostics, Settings, Claude, Whisper, OpenAI, API, build, release, commit, push
+    Tai lietuviška techninė diktacija apie macOS programą „OmniScribe". Galimi \
+    terminai: HUD, Accessibility, Keychain, TextEdit, Diagnostics, build, GitHub, \
+    Claude, Whisper, API, Settings, Always Allow.
     """
 
     /// The processing mode applied after transcription. Persisted so it survives
