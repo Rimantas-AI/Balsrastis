@@ -50,6 +50,10 @@ struct SettingsView: View {
 private struct DiagnosticsSettingsView: View {
     @ObservedObject private var store = MetricsStore.shared
     @State private var toast: String?
+    /// Off by default and never persisted — a Copy Report taken for a quick
+    /// latency check should not carry dictated content along with it unless
+    /// this is deliberately switched on for that one export.
+    @State private var includeText = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -83,6 +87,10 @@ private struct DiagnosticsSettingsView: View {
                 Text("\(store.successfulRuns) run\(store.successfulRuns == 1 ? "" : "s")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                Toggle("Include transcribed text", isOn: $includeText)
+                    .toggleStyle(.checkbox)
+                    .controlSize(.small)
+                    .font(.caption)
                 HStack(spacing: 8) {
                     Button("Copy Report") { copyReport() }
                         .controlSize(.small)
@@ -105,8 +113,8 @@ private struct DiagnosticsSettingsView: View {
     private func copyReport() {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(store.fullReport(), forType: .string)
-        showToast("Report copied to clipboard")
+        pasteboard.setString(store.fullReport(includeText: includeText), forType: .string)
+        showToast(includeText ? "Report copied (with text)" : "Report copied to clipboard")
     }
 
     /// Fades a brief confirmation so "cleared" / "copied" is visible without a

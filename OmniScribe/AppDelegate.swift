@@ -136,6 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 )
                 metrics.transcription = CFAbsoluteTimeGetCurrent() - sttStart
                 metrics.sttModel = self.transcriptionService.model
+                metrics.transcribedText = result.text
                 print("[AppDelegate] 📝 Transcription (\(result.source.rawValue)): \"\(result.text)\"")
 
                 // Guard 2 (output side): the recogniser returns filler such as
@@ -156,6 +157,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let processed = try await self.aiCoordinator.process(text: result.text, mode: mode)
                 metrics.aiProcessing = CFAbsoluteTimeGetCurrent() - aiStart
                 metrics.aiModel = self.aiCoordinator.activeModelIdentifier
+                metrics.processedText = processed
                 print("[AppDelegate] ✨ Processed (\(mode.displayName)): \"\(processed)\"")
 
                 let injectStart = CFAbsoluteTimeGetCurrent()

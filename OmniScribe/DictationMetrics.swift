@@ -33,6 +33,13 @@ struct DictationMetrics: Identifiable {
     /// AI reshaping model used (empty when the AI stage was skipped).
     var aiModel: String = "—"
 
+    /// Raw Whisper output and the AI-reshaped result. Kept so a report can prove
+    /// whether the vocabulary prompt actually fixed a term — timings alone can't
+    /// answer that. Never included in `reportBlock` unless explicitly requested,
+    /// since a copied report may otherwise leave the app carrying dictated content.
+    var transcribedText: String = ""
+    var processedText: String = ""
+
     /// The number that matters: last spoken word → text on screen.
     var perceivedLatency: TimeInterval {
         silenceWait + transcription + aiProcessing + injection
@@ -50,9 +57,12 @@ struct DictationMetrics: Identifiable {
     }
 
     /// Plain-text block for one run inside a Copy Report export.
-    func reportBlock(index: Int) -> String {
+    /// - Parameter includeText: opt-in — appends the transcribed/processed text.
+    ///   Off by default at the call site so a report copied for a quick bug
+    ///   report doesn't silently carry dictated content along with it.
+    func reportBlock(index: Int, includeText: Bool = false) -> String {
         func f(_ v: TimeInterval) -> String { String(format: "%.2f s", v) }
-        return """
+        var block = """
         Run \(index) — \(outcome) — \(wasAutoStopped ? "Auto stop" : "Manual stop")
         Total: \(f(perceivedLatency))
         Spoke: \(f(spokenSeconds))
@@ -64,6 +74,11 @@ struct DictationMetrics: Identifiable {
         AI model: \(aiModel)
         Mode: \(mode)
         """
+        if includeText {
+            if !transcribedText.isEmpty { block += "\nTranscribed: \(transcribedText)" }
+            if !processedText.isEmpty { block += "\nProcessed: \(processedText)" }
+        }
+        return block
     }
 }
 
@@ -124,7 +139,9 @@ final class MetricsStore: ObservableObject {
 
     /// Plain-text report for pasting into a chat or issue — the alternative to
     /// retyping numbers from a screenshot by hand.
-    func fullReport() -> String {
+    /// - Parameter includeText: pass `true` only when the user has explicitly
+    ///   opted in (Diagnostics toggle) — see `DictationMetrics.reportBlock`.
+    func fullReport(includeText: Bool = false) -> String {
         func f(_ v: TimeInterval?) -> String { v.map { String(format: "%.2f s", $0) } ?? "—" }
         let bundleVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
         let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
@@ -140,7 +157,7 @@ final class MetricsStore: ObservableObject {
             "",
         ]
         for (index, entry) in recent.enumerated() {
-            lines.append(entry.reportBlock(index: index + 1))
+            lines.append(entry.reportBlock(index: index + 1, includeText: includeText))
             lines.append("")
         }
         return lines.joined(separator: "\n")
