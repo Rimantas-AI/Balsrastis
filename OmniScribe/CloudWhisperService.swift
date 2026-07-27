@@ -46,10 +46,11 @@ enum CloudTranscriptionError: LocalizedError {
 /// `preloadModel()` + `transcribe(samples:)`) so the pipeline is unchanged.
 actor CloudWhisperService {
 
-    /// Transcription model. `whisper-1` is broadly available and multilingual.
-    /// `nonisolated` because it is immutable and Diagnostics reads it synchronously
-    /// to label a run — no actor hop needed for a constant.
-    nonisolated let model: String
+    /// Fallback transcription model, used only if a caller doesn't specify one
+    /// per-request. The actual model is normally chosen in Settings and passed
+    /// into `transcribe(model:)`, the same way `vocabulary` already is — so
+    /// switching models for an A/B comparison needs no relaunch.
+    private let defaultModel: String
     /// ISO-639-1 language hint (e.g. "lt"). Improves accuracy and speed.
     private let language: String
 
@@ -57,7 +58,7 @@ actor CloudWhisperService {
     private let session: URLSession
 
     init(model: String = "whisper-1", language: String = "lt") {
-        self.model = model
+        self.defaultModel = model
         self.language = language
 
         let config = URLSessionConfiguration.default
@@ -80,9 +81,13 @@ actor CloudWhisperService {
 
     // MARK: – Transcription
 
-    /// - Parameter vocabulary: names and jargon to bias recognition toward. Passed
-    ///   through as Whisper's `prompt`; empty strings are omitted.
-    func transcribe(samples: [Float], vocabulary: String = "") async throws -> STTResult {
+    /// - Parameters:
+    ///   - vocabulary: names and jargon to bias recognition toward. Passed
+    ///     through as Whisper's `prompt`; empty strings are omitted.
+    ///   - model: overrides `defaultModel` for this call — lets Settings switch
+    ///     between `whisper-1` / `gpt-4o-mini-transcribe` / `gpt-4o-transcribe`
+    ///     without recreating the service.
+    func transcribe(samples: [Float], vocabulary: String = "", model: String? = nil) async throws -> STTResult {
         guard !samples.isEmpty else { throw CloudTranscriptionError.emptyAudio }
 
         guard let apiKey = try KeychainManager.shared.apiKey(for: .openai), !apiKey.isEmpty else {
@@ -90,7 +95,7 @@ actor CloudWhisperService {
         }
 
         let wav = Self.makeWavData(samples: samples, sampleRate: 16_000)
-        let request = makeRequest(apiKey: apiKey, wav: wav, vocabulary: vocabulary)
+        let request = makeRequest(apiKey: apiKey, wav: wav, vocabulary: vocabulary, model: model ?? defaultModel)
 
         let data: Data
         let response: URLResponse
@@ -114,7 +119,7 @@ actor CloudWhisperService {
 
     // MARK: – Request building
 
-    private func makeRequest(apiKey: String, wav: Data, vocabulary: String) -> URLRequest {
+    private func makeRequest(apiKey: String, wav: Data, vocabulary: String, model: String) -> URLRequest {
         let boundary = "OmniScribeBoundary-\(UUID().uuidString)"
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"

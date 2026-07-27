@@ -239,8 +239,14 @@ private struct GeneralSettingsView: View {
                         Text(provider.displayName).tag(provider)
                     }
                 }
+
+                Picker("STT Model", selection: $prefs.sttModel) {
+                    ForEach(AppPreferences.availableSTTModels, id: \.self) { model in
+                        Text(model).tag(model)
+                    }
+                }
             } footer: {
-                Text("The processing mode is applied to every dictation until you change it. Activate dictation with \u{2325}Space.")
+                Text("The processing mode is applied to every dictation until you change it. Activate dictation with \u{2325}Space. Switch the STT model to compare accuracy/speed on the same script via Diagnostics \u{2014} no relaunch needed.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

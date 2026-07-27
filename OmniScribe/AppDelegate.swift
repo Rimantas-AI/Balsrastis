@@ -129,13 +129,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { [weak self] in
             guard let self else { return }
             do {
+                let sttModelChoice = AppPreferences.shared.sttModel
                 let sttStart = CFAbsoluteTimeGetCurrent()
                 let result = try await self.transcriptionService.transcribe(
                     samples: samples,
-                    vocabulary: AppPreferences.shared.vocabulary
+                    vocabulary: AppPreferences.shared.vocabulary,
+                    model: sttModelChoice
                 )
                 metrics.transcription = CFAbsoluteTimeGetCurrent() - sttStart
-                metrics.sttModel = self.transcriptionService.model
+                metrics.sttModel = sttModelChoice
                 if AppPreferences.shared.captureTestText {
                     metrics.transcribedText = result.text
                 }

@@ -13,6 +13,7 @@ final class AppPreferences: ObservableObject {
     private let modeKey = "OmniScribe.selectedMode"
     private let vocabularyKey = "OmniScribe.vocabulary"
     private let captureTestTextKey = "OmniScribe.captureTestText"
+    private let sttModelKey = "OmniScribe.sttModel"
 
     /// Context the speech recogniser should expect.
     ///
@@ -47,6 +48,20 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(captureTestText, forKey: captureTestTextKey) }
     }
 
+    /// Which OpenAI transcription model to send audio to. Switchable at runtime
+    /// (no relaunch) so the same test script can be re-run per model and compared
+    /// via Diagnostics' `Raw STT` field and per-run `sttModel` label.
+    @Published var sttModel: String {
+        didSet { defaults.set(sttModel, forKey: sttModelKey) }
+    }
+
+    /// `gpt-4o-transcribe`/`-mini` are OpenAI's newer transcription models,
+    /// reported to improve word-error-rate and language recognition over the
+    /// original Whisper models — worth comparing directly on Lithuanian speech
+    /// rather than assuming the newer model wins for this specific language.
+    static let availableSTTModels = ["whisper-1", "gpt-4o-mini-transcribe", "gpt-4o-transcribe"]
+    static let defaultSTTModel = "whisper-1"
+
     /// The processing mode applied after transcription. Persisted so it survives
     /// relaunch. `didSet` writes through to `UserDefaults`.
     @Published var selectedMode: ProcessingMode {
@@ -71,6 +86,7 @@ final class AppPreferences: ObservableObject {
 
         vocabulary = defaults.string(forKey: vocabularyKey) ?? Self.defaultVocabulary
         captureTestText = defaults.bool(forKey: captureTestTextKey)
+        sttModel = defaults.string(forKey: sttModelKey) ?? Self.defaultSTTModel
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }
