@@ -36,11 +36,14 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 
+	<!-- Bump these with every release tag: Diagnostics → Copy Report prints
+	     CFBundleShortVersionString, so a stale value silently mislabels which
+	     build produced a set of measurements. -->
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>6</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.6.0</string>
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
