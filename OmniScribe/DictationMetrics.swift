@@ -33,10 +33,10 @@ struct DictationMetrics: Identifiable {
     /// AI reshaping model used (empty when the AI stage was skipped).
     var aiModel: String = "—"
 
-    /// Raw Whisper output and the AI-reshaped result. Kept so a report can prove
-    /// whether the vocabulary prompt actually fixed a term — timings alone can't
-    /// answer that. Never included in `reportBlock` unless explicitly requested,
-    /// since a copied report may otherwise leave the app carrying dictated content.
+    /// Raw Whisper output and the AI-reshaped result. Populated only when
+    /// `AppPreferences.captureTestText` is on — normal daily use never holds
+    /// dictated content here at all, so there is nothing for a report to leak
+    /// by default. See `reportBlock`.
     var transcribedText: String = ""
     var processedText: String = ""
 
@@ -56,11 +56,10 @@ struct DictationMetrics: Identifiable {
              + "· paste \(f(injection)) → total \(f(perceivedLatency)) [\(outcome)]"
     }
 
-    /// Plain-text block for one run inside a Copy Report export.
-    /// - Parameter includeText: opt-in — appends the transcribed/processed text.
-    ///   Off by default at the call site so a report copied for a quick bug
-    ///   report doesn't silently carry dictated content along with it.
-    func reportBlock(index: Int, includeText: Bool = false) -> String {
+    /// Plain-text block for one run inside a Copy Report export. The text lines
+    /// appear only when they were actually captured (see `transcribedText`) —
+    /// no separate export-time flag needed, since capture is the real gate.
+    func reportBlock(index: Int) -> String {
         func f(_ v: TimeInterval) -> String { String(format: "%.2f s", v) }
         var block = """
         Run \(index) — \(outcome) — \(wasAutoStopped ? "Auto stop" : "Manual stop")
@@ -74,10 +73,8 @@ struct DictationMetrics: Identifiable {
         AI model: \(aiModel)
         Mode: \(mode)
         """
-        if includeText {
-            if !transcribedText.isEmpty { block += "\nTranscribed: \(transcribedText)" }
-            if !processedText.isEmpty { block += "\nProcessed: \(processedText)" }
-        }
+        if !transcribedText.isEmpty { block += "\nRaw STT: \(transcribedText)" }
+        if !processedText.isEmpty { block += "\nFinal: \(processedText)" }
         return block
     }
 }
@@ -136,12 +133,15 @@ final class MetricsStore: ObservableObject {
     }
 
     var successfulRuns: Int { recent.filter(\.succeeded).count }
+    /// Attempts the guards caught (no signal / no speech / a real failure) before
+    /// they could cost an LLM call or paste something wrong.
+    var blockedRuns: Int { recent.count - successfulRuns }
 
     /// Plain-text report for pasting into a chat or issue — the alternative to
-    /// retyping numbers from a screenshot by hand.
-    /// - Parameter includeText: pass `true` only when the user has explicitly
-    ///   opted in (Diagnostics toggle) — see `DictationMetrics.reportBlock`.
-    func fullReport(includeText: Bool = false) -> String {
+    /// retyping numbers from a screenshot by hand. Includes transcribed/processed
+    /// text automatically wherever it was captured (see `AppPreferences.captureTestText`);
+    /// there is nothing to gate here since capture is the actual privacy boundary.
+    func fullReport() -> String {
         func f(_ v: TimeInterval?) -> String { v.map { String(format: "%.2f s", $0) } ?? "—" }
         let bundleVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
         let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
@@ -150,14 +150,12 @@ final class MetricsStore: ObservableObject {
             "OmniScribe Diagnostics",
             "App version: \(bundleVersion)",
             "macOS: \(osVersion)",
-            "Runs: \(successfulRuns)",
-            "Average: \(f(averageLatency))",
-            "Median: \(f(medianLatency))",
-            "Slowest: \(f(slowestLatency))",
+            "Attempts: \(recent.count) \u{00B7} Inserted: \(successfulRuns) \u{00B7} Blocked: \(blockedRuns)",
+            "Successful runs only \u{2014} Average: \(f(averageLatency)) \u{00B7} Median: \(f(medianLatency)) \u{00B7} Slowest: \(f(slowestLatency))",
             "",
         ]
         for (index, entry) in recent.enumerated() {
-            lines.append(entry.reportBlock(index: index + 1, includeText: includeText))
+            lines.append(entry.reportBlock(index: index + 1))
             lines.append("")
         }
         return lines.joined(separator: "\n")

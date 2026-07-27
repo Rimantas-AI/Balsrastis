@@ -12,6 +12,7 @@ final class AppPreferences: ObservableObject {
     private let defaults: UserDefaults
     private let modeKey = "OmniScribe.selectedMode"
     private let vocabularyKey = "OmniScribe.vocabulary"
+    private let captureTestTextKey = "OmniScribe.captureTestText"
 
     /// Context the speech recogniser should expect.
     ///
@@ -29,10 +30,22 @@ final class AppPreferences: ObservableObject {
     }
 
     static let defaultVocabulary = """
-    Tai lietuviška techninė diktacija apie macOS programą „OmniScribe". Galimi \
-    terminai: HUD, Accessibility, Keychain, TextEdit, Diagnostics, build, GitHub, \
-    Claude, Whisper, API, Settings, Always Allow.
+    Tai lietuviška techninė diktacija apie macOS programą „OmniScribe". Programos \
+    HUD, tariama raidėmis H-U-D, rodo būsenas „Listening", „Transcribing" ir \
+    „Polishing". Nustatymuose yra skiltys „API Keys" ir „Diagnostics", o ten \
+    mygtukai „Copy Report" ir „Clear Diagnostics". Galimi terminai: Mac \
+    slaptažodis, API raktas, Keychain, Always Allow, TextEdit, Accessibility, \
+    GitHub, Claude, Whisper. Klaidos pranešimas gali būti „No microphone signal".
     """
+
+    /// Whether the raw Whisper transcript and AI-reshaped result are captured
+    /// into Diagnostics history at all (see `DictationMetrics.transcribedText` /
+    /// `.processedText`). Off by default: normal daily use has no reason to hold
+    /// dictated content in memory, even transiently — this should only be
+    /// switched on for a deliberate STT/vocabulary test round, then off again.
+    @Published var captureTestText: Bool {
+        didSet { defaults.set(captureTestText, forKey: captureTestTextKey) }
+    }
 
     /// The processing mode applied after transcription. Persisted so it survives
     /// relaunch. `didSet` writes through to `UserDefaults`.
@@ -57,6 +70,7 @@ final class AppPreferences: ObservableObject {
         }
 
         vocabulary = defaults.string(forKey: vocabularyKey) ?? Self.defaultVocabulary
+        captureTestText = defaults.bool(forKey: captureTestTextKey)
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }
