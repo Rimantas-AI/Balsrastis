@@ -238,6 +238,139 @@ This only disappears with a real Developer ID signature.
 
 ---
 
+## 12. Session history since Prompt 4 (v1.1.0 → v1.5.0) — READ THIS FIRST if picking up mid-project
+
+The sections above describe the app as originally built. A long follow-up session
+then did **real user testing with production diagnostics**, which changed several
+defaults and fixed a real bug. If you're a fresh agent/session picking this up,
+read this section before touching VAD, the vocabulary prompt, or the STT pipeline
+— re-deriving these decisions from scratch will waste time and likely regress them.
+
+**What shipped, in order:**
+- v1.1.0 — longer timeouts (Whisper 120s, Claude 60s) for multi-sentence dictations.
+- v1.2.0 — first Diagnostics tab: per-stage timing (`silence`/`stt`/`ai`/`paste`),
+  input-side silence guard, HUD error surface, live level meter. Before this,
+  failures only ever showed up in Terminal stdout, which is why v1.2.0 exists.
+- v1.3.0 → v1.3.3 — the **vocabulary prompt saga**. Original hypothesis: English
+  jargon in Lithuanian speech ("HUD", "Keychain") was being phonetically mangled
+  by Whisper. Fixed by sending Whisper's `prompt` param — but the *first* version
+  (a comma list) barely helped; a **short Lithuanian sentence naming the specific
+  failing terms in context** (`AppPreferences.defaultVocabulary`) is what actually
+  worked — **verified**, not assumed, by adding a `Raw STT:`/`Final:` split to
+  Diagnostics (opt-in via `AppPreferences.captureTestText`, off by default —
+  daily use never holds dictated text in memory) and re-running the same test
+  script before/after. VAD silence timeout also dropped 2.0s → 1.2s here
+  (measured as pure dead time on every auto-stopped run). Also added: median
+  latency (average is skewed by rare ~15-20s cloud API latency spikes, ~1 in
+  every 12-15 requests — accept this as normal cloud-API variance, not a bug to
+  chase), Attempts/Inserted/Blocked counts, Copy Report (plain-text export of
+  the whole Diagnostics history, for pasting into a chat/issue).
+- v1.4.0 — STT model picker (Settings → General): `whisper-1` /
+  `gpt-4o-mini-transcribe` / `gpt-4o-transcribe`, switchable at runtime, recorded
+  per-run in Diagnostics. **Built but not yet comparison-tested** — this is the
+  open next step (see Roadmap below).
+- v1.5.0 — **the hallucination fix**, the most important bug found this session.
+  A single ~64ms audio buffer above the RMS threshold (a keyboard click, a desk
+  knock) was enough to set `hasDetectedSpeech = true` under the old single-buffer
+  rule, starting the 1.2s silence countdown on a clip that never contained real
+  speech. Whisper — primed by the vocabulary prompt — did not fail obviously on
+  that clip; it **confidently hallucinated a fluent, grammatical Lithuanian
+  sentence** built from prompt-adjacent phrases. Caught by cross-checking
+  `Spoke:` duration against word count (a sentence needing 8+ real seconds to
+  speak had `Spoke: 1.29s` — physically impossible). Fixed in
+  `VoiceActivityDetector`: speech onset now requires ~250ms of *accumulated*
+  above-threshold energy via a **leaky bucket** (`candidateSpeechSamples`) —
+  grows on loud buffers, *decays* (not resets) on quiet ones, so a brief dip
+  inside a real word doesn't wipe out progress, but an isolated brief noise
+  burst can't confirm on its own. `AppDelegate` now blocks **both**
+  `SignalQuality.silent` and `.noSpeech` before ever calling Whisper (previously
+  only `.silent` blocked — `.noSpeech` used to still reach Whisper "to give the
+  cloud recogniser a chance on quiet speech"; that assumption was deliberately
+  reversed once hallucination-on-real-signal was proven, not silently changed).
+  New `aboveThresholdSeconds` diagnostic (cumulative above-RMS-threshold time
+  across the whole recording, named for exactly what it measures — not "voiced",
+  since a cough or click also crosses the gate) is the evidence for telling a
+  real dictation apart from noise.
+  **Known residual edge case, accepted not fixed:** *sustained/repeated* noise
+  (e.g. actual rapid keyboard tapping across many taps, not one click) can still
+  net-accumulate past the 250ms leaky-bucket budget and reach Whisper — verified
+  in testing. Whisper returned honest `🎵🎵🎵` filler for it, and the existing
+  **output-side guard** (`String.looksLikeNoSpeech`, blocks empty/symbol-only
+  transcripts) caught it before pasting. This is why both guards still exist —
+  they are not redundant, they catch different failure modes (isolated blip vs.
+  sustained noise).
+  **250ms was regression-tested against short single-word utterances** ("taip",
+  "ne", "gerai", "stop" — ~14 real trials) and none were falsely blocked
+  (shortest real above-threshold reading: 0.49s, comfortably clear of 250ms) —
+  do not lower it without new evidence of real words being blocked.
+
+**Methodology established this session (apply it going forward):**
+- Never trust a narrated summary of what a model transcribed — get the literal
+  `Raw STT:`/`Final:` text via `captureTestText`. A user's own paraphrase of
+  "what it got wrong" is a different, less reliable signal than the actual bytes.
+- Cross-check `Spoke:` (wall-clock recording duration) against word count when a
+  result looks suspicious — real Lithuanian dictation speech runs roughly
+  1.5-1.8 words/second at a deliberate dictation pace; a big mismatch is a strong
+  hallucination/false-trigger signal, not something to hand-wave.
+  Do NOT re-record the same test phrase per STT model to compare them — different
+  takes have different pronunciation/pace/mic distance, which confounds the
+  comparison. Same-audio-multiple-models is the only valid comparison design (see
+  Roadmap).
+- Median latency, not average, is the number to optimize against — rare cloud
+  API latency spikes (~15-20s, both STT- and AI-side observed) skew the average
+  without reflecting typical experience.
+- Ship small, reversible, evidence-driven changes — every VAD/prompt change in
+  this history was made *after* measured evidence, not intuition, and every
+  release shipped independently testable so a regression is easy to isolate.
+
+**Known open gaps (not yet built, deliberately deferred):**
+- `MetricsStore.maxEntries = 15` — nowhere near enough for a week-long/200-run
+  real-usage validation (see Roadmap step 3 below). Needs either a much higher
+  cap or a lightweight opt-in on-disk log before that step is attempted. Not
+  built preemptively — build it when that step is actually started.
+- No P95 latency stat, only average/median/max — cheap to add, low value until
+  sample sizes are large enough to be meaningful (ties to the point above).
+- "Compare STT models" same-audio concurrent test mode — proposed design (not
+  yet built): a Settings toggle that, when on, sends the *same* captured
+  `[Float]` samples to all three models in `AppPreferences.availableSTTModels`
+  concurrently for one recording, pastes using the normal selected default
+  model (so daily use is undisturbed), and shows all three raw results
+  side-by-side in Diagnostics. This avoids needing to build any audio
+  save/replay/file-management infrastructure — the existing
+  `CloudWhisperService.transcribe(samples:vocabulary:model:)` already takes
+  `model` per-call, so it's just N concurrent calls on the same in-memory
+  samples array.
+- Raw Dictation mode (skip AI reshaping) and any Pro/monetization features —
+  explicitly deferred until after real-user validation; do not build speculatively.
+
+**Recommended roadmap (agreed after multi-perspective review, see chat history
+for the full reasoning — condensed here):**
+1. STT model comparison (whisper-1 vs gpt-4o-mini-transcribe vs
+   gpt-4o-transcribe) using the same-audio approach above, ~30 clips covering
+   short words (5x each of taip/ne/gerai/stop), technical terms, numbers,
+   dates/addresses, a fast complex sentence, quiet voice, background noise,
+   silence, and keyboard noise. Pick the default model from evidence.
+2. One week / ~200 real dictations of actual daily use (not lab sentences) with
+   the chosen model. Target bar before considering the app distribution-ready:
+   zero hallucinated inserts, ≤1-2% false-blocked real speech, median ≤~5s,
+   P95 not routinely spiking to 15-20s, numbers/dates/addresses correct in the
+   large majority of runs.
+3. Freeze that build as a release candidate; no new features until this passes.
+4. Notarization (Apple Developer $99/yr) + a first-run permissions/setup wizard
+   — removes the `xattr`/Terminal friction for anyone who isn't the developer.
+5. Closed pilot with 5-10 Lithuanian-dictating Mac users (mixed technical
+   skill, mixed hardware). The real signal is not feature requests — it's
+   whether they keep opening the app unprompted after the novelty wears off.
+6. Only after pilot feedback: Raw Dictation mode, faster/cheaper models for
+   simple modes, and any Pro/paid tier — let real usage patterns decide what's
+   actually worth building, not speculation.
+
+**If you're a fresh session:** read this section, then check `git log --oneline
+-20` and the latest `git tag` to see exactly what's shipped vs. still open
+before writing any code.
+
+---
+
 ## 11. Limits & tunables (dictation length)
 
 There is **no hard recording time cap** — `AudioSessionManager` accumulates samples
