@@ -83,9 +83,17 @@ final class VoiceActivityDetector {
 
     // MARK: – Init
 
+    /// `true` when this detector ended the recording (as opposed to the user
+    /// pressing ⌥Space a second time).
+    var didAutoStop: Bool { hasFired }
+
+    /// Silence budget default is 1.2 s, down from 2.0 s. Measurements showed the
+    /// original wait was pure dead time on every auto-stopped dictation, while
+    /// 1.2 s still tolerates the natural pause inside a sentence ("Parašyk
+    /// klientui… kad rytoj neatvyksiu"). A second ⌥Space remains the instant stop.
     init(sampleRate: Double = 16_000,
          silenceThreshold: Float = 0.012,
-         silenceDuration: TimeInterval = 2.0) {
+         silenceDuration: TimeInterval = 1.2) {
         self.sampleRate         = sampleRate
         self.silenceThreshold   = silenceThreshold
         self.silenceDuration    = silenceDuration

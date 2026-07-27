@@ -11,6 +11,22 @@ final class AppPreferences: ObservableObject {
 
     private let defaults: UserDefaults
     private let modeKey = "OmniScribe.selectedMode"
+    private let vocabularyKey = "OmniScribe.vocabulary"
+
+    /// Names and jargon the speech recogniser should expect.
+    ///
+    /// Sent to Whisper as its `prompt`, which biases recognition toward this
+    /// vocabulary. Without it, English technical terms spoken inside Lithuanian
+    /// sentences come back phonetically mangled ("HUD" → "gūdą"), and no amount of
+    /// LLM cleanup can recover them — the word is already gone by then.
+    @Published var vocabulary: String {
+        didSet { defaults.set(vocabulary, forKey: vocabularyKey) }
+    }
+
+    static let defaultVocabulary = """
+    OmniScribe, macOS, Xcode, GitHub, Terminal, Accessibility, Keychain, TextEdit, \
+    Diagnostics, Settings, Claude, Whisper, OpenAI, API, build, release, commit, push
+    """
 
     /// The processing mode applied after transcription. Persisted so it survives
     /// relaunch. `didSet` writes through to `UserDefaults`.
@@ -33,6 +49,8 @@ final class AppPreferences: ObservableObject {
         } else {
             selectedMode = .ltTyping
         }
+
+        vocabulary = defaults.string(forKey: vocabularyKey) ?? Self.defaultVocabulary
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }

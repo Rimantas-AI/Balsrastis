@@ -78,7 +78,9 @@ actor CloudWhisperService {
 
     // MARK: – Transcription
 
-    func transcribe(samples: [Float]) async throws -> STTResult {
+    /// - Parameter vocabulary: names and jargon to bias recognition toward. Passed
+    ///   through as Whisper's `prompt`; empty strings are omitted.
+    func transcribe(samples: [Float], vocabulary: String = "") async throws -> STTResult {
         guard !samples.isEmpty else { throw CloudTranscriptionError.emptyAudio }
 
         guard let apiKey = try KeychainManager.shared.apiKey(for: .openai), !apiKey.isEmpty else {
@@ -86,7 +88,7 @@ actor CloudWhisperService {
         }
 
         let wav = Self.makeWavData(samples: samples, sampleRate: 16_000)
-        let request = makeRequest(apiKey: apiKey, wav: wav)
+        let request = makeRequest(apiKey: apiKey, wav: wav, vocabulary: vocabulary)
 
         let data: Data
         let response: URLResponse
@@ -110,7 +112,7 @@ actor CloudWhisperService {
 
     // MARK: – Request building
 
-    private func makeRequest(apiKey: String, wav: Data) -> URLRequest {
+    private func makeRequest(apiKey: String, wav: Data, vocabulary: String) -> URLRequest {
         let boundary = "OmniScribeBoundary-\(UUID().uuidString)"
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
@@ -134,6 +136,13 @@ actor CloudWhisperService {
         field("model", model)
         field("language", language)
         field("response_format", "json")
+        let trimmedVocabulary = vocabulary.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedVocabulary.isEmpty {
+            // Whisper's `prompt` biases recognition toward this vocabulary, so
+            // jargon spoken inside Lithuanian sentences ("HUD", "Keychain") comes
+            // back as the actual word instead of a phonetic guess.
+            field("prompt", trimmedVocabulary)
+        }
 
         body.appendString("--\(boundary)--\r\n")
         request.httpBody = body

@@ -107,6 +107,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         metrics.spokenSeconds = Double(samples.count) / 16_000
         // Latency is measured from the last spoken word, not the hotkey press.
         metrics.silenceWait = max(0, stoppedAt - (audioManager.lastSpeechAt ?? stoppedAt))
+        metrics.wasAutoStopped = audioManager.didAutoStop
+        metrics.mode = AppPreferences.shared.selectedMode.displayName
 
         menuBarManager?.updateState(.processing)
         WindowManager.shared.updateHUD(phase: .transcribing)
@@ -128,7 +130,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { return }
             do {
                 let sttStart = CFAbsoluteTimeGetCurrent()
-                let result = try await self.transcriptionService.transcribe(samples: samples)
+                let result = try await self.transcriptionService.transcribe(
+                    samples: samples,
+                    vocabulary: AppPreferences.shared.vocabulary
+                )
                 metrics.transcription = CFAbsoluteTimeGetCurrent() - sttStart
                 print("[AppDelegate] 📝 Transcription (\(result.source.rawValue)): \"\(result.text)\"")
 

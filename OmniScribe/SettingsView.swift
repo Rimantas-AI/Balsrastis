@@ -31,7 +31,10 @@ struct SettingsView: View {
             DiagnosticsSettingsView()
                 .tabItem { Label("Diagnostics", systemImage: "stopwatch") }
         }
-        .frame(width: 520, height: 380)
+        // Resizable (not a fixed frame) so the Diagnostics tab can be enlarged to
+        // read more rows or fit a wider screenshot — the window itself is made
+        // resizable in WindowManager.
+        .frame(minWidth: 520, idealWidth: 640, minHeight: 380, idealHeight: 460)
     }
 }
 
@@ -59,10 +62,21 @@ private struct DiagnosticsSettingsView: View {
     }
 
     private var summary: some View {
-        HStack(spacing: 24) {
+        HStack(alignment: .top, spacing: 24) {
+            stat("Median", store.medianLatency)
             stat("Average", store.averageLatency)
             stat("Slowest", store.slowestLatency)
+
             Spacer()
+
+            VStack(alignment: .trailing, spacing: 6) {
+                Text("\(store.successfulRuns) run\(store.successfulRuns == 1 ? "" : "s")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("Clear", role: .destructive) { store.clear() }
+                    .controlSize(.small)
+                    .disabled(store.recent.isEmpty)
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
@@ -121,6 +135,14 @@ private struct MetricsRow: View {
                     .font(.caption)
                     .foregroundStyle(entry.succeeded ? Color.green : Color.orange)
 
+                Text(entry.mode)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+
+                Text(entry.wasAutoStopped ? "auto" : "manual")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+
                 Spacer()
 
                 Text(String(format: "spoke %.1f s", entry.spokenSeconds))
@@ -171,6 +193,18 @@ private struct GeneralSettingsView: View {
                 }
             } footer: {
                 Text("The processing mode is applied to every dictation until you change it. Activate dictation with \u{2325}Space.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                TextEditor(text: $prefs.vocabulary)
+                    .font(.system(.body, design: .monospaced))
+                    .frame(minHeight: 70)
+            } header: {
+                Text("Vocabulary")
+            } footer: {
+                Text("Names and jargon to help Whisper recognise correctly — comma-separated. English terms spoken inside Lithuanian sentences (\u{201C}HUD\u{201D}, \u{201C}Keychain\u{201D}) are the main beneficiary.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

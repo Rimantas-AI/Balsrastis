@@ -23,7 +23,9 @@ final class WindowManager {
             let controller = NSHostingController(rootView: SettingsView())
             let window = NSWindow(contentViewController: controller)
             window.title = "OmniScribe Settings"
-            window.styleMask = [.titled, .closable, .miniaturizable]
+            // .resizable lets the Diagnostics tab be enlarged — useful both for
+            // reading more history rows and for taking a clean, full screenshot.
+            window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
             // Keep the instance alive after the user clicks the close button so it
             // can be re-shown; without this AppKit would deallocate it on close.
             window.isReleasedWhenClosed = false

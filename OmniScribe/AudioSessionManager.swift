@@ -56,6 +56,10 @@ final class AudioSessionManager {
     /// the last word rather than from the hotkey press.
     var lastSpeechAt: CFAbsoluteTime? { vad.lastSpeechAt }
 
+    /// `true` when silence detection ended the recording, `false` when the user
+    /// stopped it manually with a second ⌥Space.
+    var didAutoStop: Bool { vad.didAutoStop }
+
     // MARK: – Private
 
     private let engine = AVAudioEngine()

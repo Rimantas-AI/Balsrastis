@@ -21,6 +21,14 @@ struct DictationMetrics: Identifiable {
     /// What happened: "Inserted", "No speech", an error label…
     var outcome: String = "—"
 
+    /// `true` when the VAD ended the recording, `false` when the user pressed
+    /// ⌥Space again. Recorded so the silence figure can be read correctly — and
+    /// so the measurement can be checked against what the user actually did.
+    var wasAutoStopped = true
+
+    /// Which processing mode ran, for comparing settings across runs.
+    var mode: String = "—"
+
     /// The number that matters: last spoken word → text on screen.
     var perceivedLatency: TimeInterval {
         silenceWait + transcription + aiProcessing + injection
@@ -62,6 +70,11 @@ final class MetricsStore: ObservableObject {
         }
     }
 
+    /// Wipes the history so a fresh test round starts from a clean slate.
+    func clear() {
+        recent.removeAll()
+    }
+
     /// Average perceived latency over successful dictations.
     var averageLatency: TimeInterval? {
         let values = recent.filter(\.succeeded).map(\.perceivedLatency)
@@ -69,10 +82,24 @@ final class MetricsStore: ObservableObject {
         return values.reduce(0, +) / Double(values.count)
     }
 
+    /// Median latency — the honest "typical" figure. A single slow AI response can
+    /// drag the average far above anything the user actually experiences, so this
+    /// is the number to optimise against.
+    var medianLatency: TimeInterval? {
+        let values = recent.filter(\.succeeded).map(\.perceivedLatency).sorted()
+        guard !values.isEmpty else { return nil }
+        let mid = values.count / 2
+        return values.count.isMultiple(of: 2)
+            ? (values[mid - 1] + values[mid]) / 2
+            : values[mid]
+    }
+
     /// Worst case — more actionable than the average when tuning.
     var slowestLatency: TimeInterval? {
         recent.filter(\.succeeded).map(\.perceivedLatency).max()
     }
+
+    var successfulRuns: Int { recent.filter(\.succeeded).count }
 }
 
 // MARK: – Transcription sanity check
