@@ -147,12 +147,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let vocabulary = AppPreferences.shared.vocabulary
         let isComparing = AppPreferences.shared.compareSTTModels
         let runID = metrics.id
+        // The primary always runs with the vocabulary prompt, since that is what
+        // daily use does; the comparison covers the no-prompt arms.
+        let primaryVariant = STTVariant(model: sttModelChoice, useVocabulary: true)
         if isComparing {
-            metrics.comparedModels = AppPreferences.availableSTTModels
+            metrics.comparedModels = AppPreferences.comparisonVariants.map(\.label)
             compareSTTModels(
                 samples: samples,
                 vocabulary: vocabulary,
-                excluding: sttModelChoice,
+                excluding: primaryVariant,
                 runID: runID
             )
         }
@@ -174,7 +177,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     // others rather than only as a generic run failure.
                     if isComparing {
                         MetricsStore.shared.recordComparison(
-                            STTComparisonResult(model: sttModelChoice,
+                            STTComparisonResult(model: primaryVariant.label,
                                                 isPrimary: true,
                                                 duration: CFAbsoluteTimeGetCurrent() - sttStart,
                                                 text: "",
@@ -190,7 +193,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 if isComparing {
                     MetricsStore.shared.recordComparison(
-                        STTComparisonResult(model: sttModelChoice,
+                        STTComparisonResult(model: primaryVariant.label,
                                             isPrimary: true,
                                             duration: metrics.transcription,
                                             text: result.text,
@@ -262,20 +265,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// measure the speaker rather than the recogniser.
     private func compareSTTModels(samples: [Float],
                                   vocabulary: String,
-                                  excluding primaryModel: String,
+                                  excluding primaryVariant: STTVariant,
                                   runID: UUID) {
-        for model in AppPreferences.availableSTTModels where model != primaryModel {
+        for variant in AppPreferences.comparisonVariants where variant != primaryVariant {
             Task { [weak self] in
                 guard let self else { return }
                 let start = CFAbsoluteTimeGetCurrent()
                 do {
                     let result = try await self.transcriptionService.transcribe(
                         samples: samples,
-                        vocabulary: vocabulary,
-                        model: model
+                        vocabulary: variant.useVocabulary ? vocabulary : "",
+                        model: variant.model
                     )
                     MetricsStore.shared.recordComparison(
-                        STTComparisonResult(model: model,
+                        STTComparisonResult(model: variant.label,
                                             isPrimary: false,
                                             duration: CFAbsoluteTimeGetCurrent() - start,
                                             text: result.text,
@@ -283,7 +286,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         forRun: runID)
                 } catch {
                     MetricsStore.shared.recordComparison(
-                        STTComparisonResult(model: model,
+                        STTComparisonResult(model: variant.label,
                                             isPrimary: false,
                                             duration: CFAbsoluteTimeGetCurrent() - start,
                                             text: "",

@@ -363,7 +363,30 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
      breaks or grows the text disproportionately, inserting the raw transcript
      instead and recording `AI cleanup rejected` in Diagnostics. Cleanup mode
      only — every other mode is *meant* to rewrite.
-  Also: a **6s pre-speech timeout** in `VoiceActivityDetector`
+- v1.6.2 — **the vocabulary prompt breaks the gpt-4o transcription models.**
+  Found on the very first comparison runs, before the 30-clip round: given the
+  standard Lithuanian vocabulary prompt, `gpt-4o-mini-transcribe` returned that
+  **prompt back verbatim** as its "transcript" on two separate recordings, and
+  `gpt-4o-transcribe` answered with sentences assembled from the prompt's subject
+  matter that were never spoken (one of them — "OmniScribe transkribuoja jūsų
+  balsą ir įrašo tekstą į dokumentą" — appears nowhere in the prompt at all).
+  `whisper-1` transcribed the same audio correctly every time. The models do not
+  interpret `prompt` the same way: whisper treats it as a spelling/style bias,
+  the gpt-4o models treat it much more like context handed to a language model,
+  so a long prompt invites echoing or paraphrase — most likely on short
+  utterances, where there is little real speech to anchor the output.
+  Consequence: **the original comparison design was not answerable.** Sending an
+  identical prompt to all three is "fair" in the strict sense but only measures
+  them under a setting that suits one of them, so the comparison was widened to
+  six arms — each model **with and without** the vocabulary prompt
+  (`AppPreferences.comparisonVariants`, `STTVariant`). Cost is ~6× STT per
+  recording in this mode; it stays off by default.
+  This also matters beyond model choice: the vocabulary prompt is what supplies
+  the *content* of the keyboard-noise hallucination (see v1.6.1). A model that
+  handles Lithuanian jargon well without any prompt would remove that failure
+  mode at its source rather than guarding against it. Do not decide the default
+  model from the with-prompt arms alone.
+  Also in v1.6.1: a **6s pre-speech timeout** in `VoiceActivityDetector`
   (`onPreSpeechTimeout`). The silence timeout only arms after speech onset, so a
   recording with no speech ran until stopped by hand (measured: 13.99s). It will
   not fire while an above-threshold run is accumulating, so someone who starts

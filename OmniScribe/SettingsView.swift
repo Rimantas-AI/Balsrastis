@@ -350,7 +350,7 @@ private struct GeneralSettingsView: View {
                 }
 
                 Toggle("Compare STT models", isOn: $prefs.compareSTTModels)
-                    .help("Sends each recording to all three models at once and shows their raw transcripts side by side in Diagnostics. Only the model selected above is reshaped and pasted, so dictation is not slowed down or changed.")
+                    .help("Sends each recording to every model at once, both with and without the vocabulary prompt, and shows their raw transcripts side by side in Diagnostics. Only the model selected above is reshaped and pasted, so dictation is not slowed down or changed.")
             } footer: {
                 Text("The processing mode is applied to every dictation until you change it. Activate dictation with \u{2325}Space. The STT model above is the one whose text is actually inserted.")
                     .font(.caption)
@@ -360,7 +360,7 @@ private struct GeneralSettingsView: View {
             if prefs.compareSTTModels {
                 Section {
                     Label(
-                        "Every recording is sent to all \(AppPreferences.availableSTTModels.count) STT models, so OpenAI transcription usage is about \(AppPreferences.availableSTTModels.count)\u{00D7} higher, and each model's raw transcript is kept in Diagnostics. Turn this off after a test round.",
+                        "Every recording is sent \(AppPreferences.comparisonVariants.count) times \u{2014} each model with and without the vocabulary prompt \u{2014} so OpenAI transcription usage is about \(AppPreferences.comparisonVariants.count)\u{00D7} higher, and every raw transcript is kept in Diagnostics. Turn this off after a test round.",
                         systemImage: "exclamationmark.triangle"
                     )
                     .font(.caption)

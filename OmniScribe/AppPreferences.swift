@@ -1,6 +1,31 @@
 import Foundation
 import Combine
 
+/// One arm of the same-audio comparison: a transcription model plus whether the
+/// vocabulary prompt is sent with it.
+///
+/// The prompt is part of the comparison rather than a fixed setting because the
+/// models interpret it in fundamentally different ways. Measured: given the
+/// standard Lithuanian vocabulary prompt, `gpt-4o-mini-transcribe` returned that
+/// prompt back *verbatim* instead of a transcript, and `gpt-4o-transcribe`
+/// answered with sentences built from the prompt's subject matter that were never
+/// spoken. `whisper-1` transcribed the same audio correctly. Whisper treats
+/// `prompt` as a spelling/style bias; the gpt-4o models treat it much more like
+/// context given to a language model.
+///
+/// Testing prompt on/off also answers a question that matters beyond model
+/// choice: the vocabulary prompt is what supplies the content of the
+/// keyboard-noise hallucination, so a model that handles jargon well *without*
+/// it would let that prompt be dropped entirely.
+struct STTVariant: Hashable {
+    let model: String
+    let useVocabulary: Bool
+
+    /// Display/grouping key. Also the value stored in
+    /// `STTComparisonResult.model`, so results group per variant, not per model.
+    var label: String { useVocabulary ? model : "\(model) \u{00B7} no prompt" }
+}
+
 /// Shared, observable app preferences bound by the Settings UI and read by the
 /// dictation pipeline. Holds only non-secret choices — the active mode and the
 /// selected provider. **API keys are never stored here**; they live exclusively
@@ -74,6 +99,17 @@ final class AppPreferences: ObservableObject {
     /// rather than assuming the newer model wins for this specific language.
     static let availableSTTModels = ["whisper-1", "gpt-4o-mini-transcribe", "gpt-4o-transcribe"]
     static let defaultSTTModel = "whisper-1"
+
+    /// Every arm of the comparison: each model with and without the vocabulary
+    /// prompt. The no-prompt half exists because the gpt-4o models proved unusable
+    /// *with* our prompt (see `STTVariant`) — without testing them without it,
+    /// the comparison would reject them for a reason that may be entirely fixable.
+    /// whisper-1 is included in the no-prompt half too, to re-check the earlier
+    /// finding that the prompt helps it rather than assuming it still holds.
+    static let comparisonVariants: [STTVariant] = availableSTTModels.flatMap { model in
+        [STTVariant(model: model, useVocabulary: true),
+         STTVariant(model: model, useVocabulary: false)]
+    }
 
     /// The processing mode applied after transcription. Persisted so it survives
     /// relaunch. `didSet` writes through to `UserDefaults`.

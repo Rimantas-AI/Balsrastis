@@ -27,6 +27,21 @@ Po kiekvienos frazės palaukti, kol tekstas bus įklijuotas, ir tik tada spausti
 
 ---
 
+## Kas jau žinoma (nekartoti)
+
+Pirmieji keturi bandymai (2026-07-28, v1.6.1) jau davė svarbų rezultatą:
+
+- ✅ Palyginimas veikia, `Comparison status` pilnas
+- ✅ „Typing / Cleanup" nebeįvykdo padiktuoto nurodymo (B1 praėjo)
+- ❌ **Su žodyno prompt'u `gpt-4o-mini-transcribe` grąžino patį prompt'ą
+  pažodžiui**, o `gpt-4o-transcribe` — išgalvotus sakinius prompt'o tema.
+  `whisper-1` tą patį garsą transkribavo teisingai.
+
+Todėl nuo v1.6.2 palyginimas turi **6 šakas**: kiekvienas modelis **su prompt'u
+ir be jo**. Sprendimo negalima priimti vien iš „su prompt'u" šakų.
+
+---
+
 ## A dalis. Ar palyginimas apskritai veikia (1 frazė)
 
 Prieš visą raundą — vienas patikrinimas.
@@ -50,7 +65,7 @@ palyginimas — tai regresijos testai.
 
 | # | Ką daryti | Ko tikimės |
 |---|---|---|
-| B1 | Sakyti: **„Parašyk kolegai, kad susitikimas nukeliamas į rytojaus rytą"** | Įklijuojamas **tas pats sakinys**, sutvarkyta gramatika. **NE laiškas** su „Sveiki" ir „Pagarbiai". Jei vis tiek gautųsi laiškas — Diagnostics turi rodyti `AI cleanup rejected` |
+| B1 | ✅ **jau atlikta** — praėjo, kartoti nereikia | |
 | B2 | Paspausti ⌥Space ir **tylėti** | Įrašas **pats sustoja po ~6 s**. Anksčiau reikėjo stabdyti ranka |
 | B3 | Paspausti ⌥Space ir **spausdinti klavišais**, nekalbėti | Užrašyti `Above threshold` ir **`longest`** reikšmes. Tikėtina, kad haliucinacija dar praeis — tai žinoma, nepataisyta. Renkame duomenis |
 
@@ -125,10 +140,18 @@ palyginimas — tai regresijos testai.
 
 Ko ieškosiu ataskaitoje:
 
-- **Tikslumas lietuviškai** — svarbiausia. Ypač 15–21 (skaičiai, datos, adresai)
+- **Ar be prompt'o `gpt-4o` modeliai nustoja haliucinuoti** — tai pirmas
+  klausimas, nes nuo jo priklauso, ar juos apskritai galima svarstyti
+- **Ar be prompt'o nukenčia žargonas** (22–24: Settings, Keychain, HUD,
+  Copy Report) — būtent dėl to prompt'as ir buvo įvestas
+- **Tikslumas lietuviškai** — ypač 15–21 (skaičiai, datos, adresai)
   ir 1–14 (ar nepainioja „taip"/„stop", „ne"/„nė")
 - **Mediana ir P95** — nuspėjamas greitis svarbiau už vidurkį
-- **Klaidų ir `no-speech` skaičius** kiekvienam modeliui
+- **Klaidų ir `no-speech` skaičius** kiekvienai šakai
+
+Geriausias įmanomas rezultatas: modelis, kuris **be prompt'o** teisingai
+atpažįsta ir žargoną, ir lietuvišką kalbą. Tada prompt'o galima atsisakyti visai,
+o kartu dingtų ir klaviatūros haliucinacijos turinio šaltinis.
 
 Modelis, kuris 0,4 s greitesnis, bet supainioja `5` su `500` arba „stop" su
 „taip", nelaimi.

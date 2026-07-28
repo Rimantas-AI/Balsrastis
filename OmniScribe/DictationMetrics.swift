@@ -282,7 +282,7 @@ final class MetricsStore: ObservableObject {
         let compared = recent.filter { !$0.comparedModels.isEmpty }
         guard !compared.isEmpty else { return [] }
 
-        return AppPreferences.availableSTTModels.compactMap { model in
+        return AppPreferences.comparisonVariants.map(\.label).compactMap { model in
             let results = compared.flatMap(\.sttComparison).filter { $0.model == model }
             guard !results.isEmpty else { return nil }
             let durations = results.filter { $0.failure == nil }.map(\.duration).sorted()
