@@ -58,6 +58,17 @@ final class VoiceActivityDetector {
     /// Precomputed confirmation budget in samples.
     private let speechConfirmationBudget: Int
 
+    /// How long to keep listening when speech is never confirmed at all.
+    ///
+    /// The silence timeout only arms *after* speech onset, so a recording that
+    /// never contains speech (⌥Space pressed by accident, or nothing said) would
+    /// otherwise run forever with the microphone live — measured at 13.99 s in
+    /// testing, ended only because the user pressed ⌥Space again.
+    private let preSpeechTimeout: TimeInterval
+
+    /// Precomputed pre-speech budget in samples.
+    private let preSpeechSampleBudget: Int
+
     /// Peak below which the whole recording counts as digital silence rather than
     /// quiet speech. Deliberately far under `silenceThreshold`: a live microphone
     /// always carries some noise floor, so audio that never reaches even this
@@ -91,6 +102,23 @@ final class VoiceActivityDetector {
     /// which a cough or a keyboard click would also cross.
     private(set) var aboveThresholdSampleCount = 0
 
+    /// Longest *continuous* above-threshold run in the recording, as opposed to
+    /// `aboveThresholdSampleCount`'s total.
+    ///
+    /// This is the measurement that should tell mechanical noise from a voice
+    /// without guessing: keyboard tapping is many short impulses that can total a
+    /// large above-threshold time while never sustaining, whereas speech holds
+    /// energy through whole syllables. Collected as evidence first — no rule is
+    /// built on it yet, because the earlier hallucination fix showed how easily a
+    /// threshold picked by intuition either misses noise or blocks real words.
+    private(set) var longestAboveThresholdSampleCount = 0
+
+    /// Length of the above-threshold run currently in progress.
+    private var currentAboveThresholdSpan = 0
+
+    /// Every sample seen this session, for the pre-speech timeout.
+    private var totalSampleCount = 0
+
     private var consecutiveSilentSamples = 0
     private var hasFired = false
     private var lastLevelEmit: CFAbsoluteTime = 0
@@ -98,6 +126,11 @@ final class VoiceActivityDetector {
     /// Called on the audio thread the first time `silenceDuration` of continuous
     /// silence is observed after speech. Hop to the main queue inside the closure.
     var onSilenceTimeout: (() -> Void)?
+
+    /// Called on the audio thread when `preSpeechTimeout` elapses without speech
+    /// ever being confirmed. Like `onSilenceTimeout`, fires at most once per
+    /// session. Hop to the main queue inside the closure.
+    var onPreSpeechTimeout: (() -> Void)?
 
     /// Normalised 0…1 input level for the HUD meter, emitted ~12×/second.
     /// Called on the audio thread.
@@ -112,6 +145,12 @@ final class VoiceActivityDetector {
     /// Cumulative above-threshold time across the whole recording, in seconds —
     /// see `aboveThresholdSampleCount`.
     var aboveThresholdSeconds: TimeInterval { Double(aboveThresholdSampleCount) / sampleRate }
+
+    /// Longest continuous above-threshold run, in seconds — see
+    /// `longestAboveThresholdSampleCount`.
+    var longestAboveThresholdSeconds: TimeInterval {
+        Double(longestAboveThresholdSampleCount) / sampleRate
+    }
 
     // MARK: – Init
 
@@ -132,16 +171,22 @@ final class VoiceActivityDetector {
     /// a fluent sentence instead of failing obviously. 250 ms survives brief
     /// noise but any real spoken word — even a short "taip"/"ne" — comfortably
     /// clears it.
+    /// `preSpeechTimeout` defaults to 6 s — long enough to press ⌥Space and
+    /// collect your thoughts before speaking, short enough that an accidental
+    /// press does not leave the microphone live indefinitely.
     init(sampleRate: Double = 16_000,
          silenceThreshold: Float = 0.012,
          silenceDuration: TimeInterval = 1.2,
-         speechConfirmationDuration: TimeInterval = 0.25) {
+         speechConfirmationDuration: TimeInterval = 0.25,
+         preSpeechTimeout: TimeInterval = 6.0) {
         self.sampleRate         = sampleRate
         self.silenceThreshold   = silenceThreshold
         self.silenceDuration    = silenceDuration
         self.silenceSampleBudget = Int(silenceDuration * sampleRate)
         self.speechConfirmationDuration = speechConfirmationDuration
         self.speechConfirmationBudget = Int(speechConfirmationDuration * sampleRate)
+        self.preSpeechTimeout = preSpeechTimeout
+        self.preSpeechSampleBudget = Int(preSpeechTimeout * sampleRate)
     }
 
     // MARK: – Public API
@@ -152,6 +197,9 @@ final class VoiceActivityDetector {
         consecutiveSilentSamples = 0
         candidateSpeechSamples = 0
         aboveThresholdSampleCount = 0
+        longestAboveThresholdSampleCount = 0
+        currentAboveThresholdSpan = 0
+        totalSampleCount = 0
         hasFired = false
         peakAmplitude = 0
         lastSpeechAt = nil
@@ -176,8 +224,28 @@ final class VoiceActivityDetector {
 
         guard !hasFired else { return }
 
+        totalSampleCount += samples.count
+
+        // Nothing has been confirmed as speech for the whole budget, and no
+        // above-threshold run is currently building — stop listening. The
+        // `candidateSpeechSamples == 0` condition matters: without it, someone who
+        // starts talking just before the deadline would be cut off mid-word,
+        // since confirmation needs a further 250 ms. While a run is accumulating,
+        // it either confirms shortly (and this check stops applying) or decays
+        // back to zero (and the timeout fires on a later buffer).
+        if !hasDetectedSpeech,
+           candidateSpeechSamples == 0,
+           totalSampleCount >= preSpeechSampleBudget {
+            hasFired = true
+            onPreSpeechTimeout?()
+            return
+        }
+
         if rms >= silenceThreshold {
             aboveThresholdSampleCount += samples.count
+            currentAboveThresholdSpan += samples.count
+            longestAboveThresholdSampleCount = max(longestAboveThresholdSampleCount,
+                                                   currentAboveThresholdSpan)
             candidateSpeechSamples += samples.count
             if candidateSpeechSamples >= speechConfirmationBudget {
                 hasDetectedSpeech = true
@@ -186,6 +254,12 @@ final class VoiceActivityDetector {
             consecutiveSilentSamples = 0
             return
         }
+
+        // A continuous run ends the moment one buffer drops below the threshold —
+        // unlike `candidateSpeechSamples`, which decays. The two measure different
+        // things on purpose: one asks "was this sustained?", the other "has enough
+        // energy accumulated to call it speech?".
+        currentAboveThresholdSpan = 0
 
         // Decay, don't zero: a brief dip inside a real word (between syllables,
         // at a plosive) shouldn't erase progress already made toward confirmation.

@@ -40,6 +40,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 2. Audio pipeline. Wire its callbacks to the dictation coordinator.
         let audio = AudioSessionManager()
         audio.onSilenceDetected = { [weak self] in self?.finishDictation() }
+        audio.onPreSpeechTimeout = { [weak self] in
+            print("[AppDelegate] ⏱️ No speech within the pre-speech budget — stopping.")
+            self?.finishDictation()
+        }
         audio.onError = { [weak self] error in self?.handleAudioError(error) }
         audio.onLevel = { level in WindowManager.shared.updateLevel(level) }
         audioManager = audio
@@ -106,6 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         var metrics = DictationMetrics()
         metrics.spokenSeconds = Double(samples.count) / 16_000
         metrics.aboveThresholdSeconds = audioManager.aboveThresholdSeconds
+        metrics.longestAboveThresholdSeconds = audioManager.longestAboveThresholdSeconds
         // Latency is measured from the last spoken word, not the hotkey press.
         metrics.silenceWait = max(0, stoppedAt - (audioManager.lastSpeechAt ?? stoppedAt))
         metrics.wasAutoStopped = audioManager.didAutoStop
@@ -217,8 +222,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 print("[AppDelegate] ✨ Processed (\(mode.displayName)): \"\(processed)\"")
 
+                // Cleanup mode promises the same text with mistakes fixed. When
+                // the model rewrites instead — most importantly when it *acts on*
+                // a dictated instruction — insert what was actually said rather
+                // than the invention. Only this mode; the others exist to rewrite.
+                var textToInsert = processed
+                if mode == .ltTyping,
+                   let reason = ProcessingMode.cleanupRejectionReason(raw: result.text,
+                                                                      processed: processed) {
+                    textToInsert = result.text
+                    metrics.aiCleanupRejection = reason
+                    print("[AppDelegate] ⚠️ AI cleanup rejected (\(reason)) — inserting raw transcript.")
+                }
+
                 let injectStart = CFAbsoluteTimeGetCurrent()
-                try await TextInjector.shared.inject(processed)
+                try await TextInjector.shared.inject(textToInsert)
                 metrics.injection = CFAbsoluteTimeGetCurrent() - injectStart
 
                 self.complete(metrics, outcome: DictationMetrics.insertedOutcome, failure: nil)

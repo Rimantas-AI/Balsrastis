@@ -332,6 +332,43 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   `swift build` type-check hang on dependency resolution instead of working.
   Accuracy is deliberately **not** auto-scored: judging a Lithuanian transcript
   needs a human reading it against what was actually said.
+- v1.6.1 — **reliability fixes from the first real test round.** 26 clips were
+  dictated on 2026-07-28 with the comparison toggle **off**, so that round is a
+  whisper-1 baseline, not a model comparison (median 4.36s, 25/26 inserted). It
+  found two product-level bugs that matter more than the model choice:
+  1. **The keyboard-noise hallucination reached the user's app.** Typing on the
+     keyboard with no speech produced *"Džiaugiuosi apie mūsų techninę diktaciją
+     apie macOS programą"* — lifted almost verbatim from
+     `AppPreferences.defaultVocabulary`, i.e. **our own prompt supplies the
+     hallucination's content**. `Above threshold: 1.99s` over 7.29s cleared the
+     250ms budget, and the output-side guard passed it because a fluent sentence
+     contains letters. **This reverses the v1.5.0 note above**, which accepted
+     this edge case on the evidence that Whisper returned honest `🎵🎵🎵` filler
+     for sustained noise — it does not always, and both guards can fail together.
+     Not yet fixed. `longestAboveThresholdSeconds` (longest *continuous*
+     above-threshold run, vs. the existing cumulative total) was added as the
+     evidence to build a real rule on: mechanical tapping is many short impulses,
+     speech sustains through syllables. **No threshold is applied to it yet, on
+     purpose** — do not invent one before there is data from both a real
+     dictation and a keyboard-noise clip. ⚠️ A tempting-but-wrong fix is
+     rejecting transcripts that resemble the vocabulary prompt: legitimate
+     technical dictation ("HUD rodo būseną Listening, paskui Polishing")
+     is *also* nearly verbatim from that prompt, and tested correct.
+  2. **`.ltTyping` executed dictated instructions.** Dictating "Parašyk kolegai,
+     kad susitikimas nukeliamas į rytojaus rytą" made Claude *write the email* —
+     greeting, body, sign-off — and that was pasted. Fixed in two layers, since a
+     prompt is guidance and not a guarantee: the `.ltTyping` system prompt now
+     states the text is quoted content and never an instruction, and
+     `ProcessingMode.cleanupRejectionReason` discards AI output that adds line
+     breaks or grows the text disproportionately, inserting the raw transcript
+     instead and recording `AI cleanup rejected` in Diagnostics. Cleanup mode
+     only — every other mode is *meant* to rewrite.
+  Also: a **6s pre-speech timeout** in `VoiceActivityDetector`
+  (`onPreSpeechTimeout`). The silence timeout only arms after speech onset, so a
+  recording with no speech ran until stopped by hand (measured: 13.99s). It will
+  not fire while an above-threshold run is accumulating, so someone who starts
+  talking just before the deadline is not cut off mid-word. VAD's 1.2s silence
+  and 250ms confirmation are **unchanged** — do not retune them as part of this.
 
 **Methodology established this session (apply it going forward):**
 - Never trust a narrated summary of what a model transcribed — get the literal

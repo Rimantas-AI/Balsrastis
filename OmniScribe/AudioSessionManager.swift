@@ -41,6 +41,11 @@ final class AudioSessionManager {
     /// The coordinator should respond by calling `stop()` and transcribing.
     var onSilenceDetected: (() -> Void)?
 
+    /// Fired when the user never started speaking within the VAD's pre-speech
+    /// budget. The coordinator should stop the recording the same way it does on
+    /// silence — the input-side guards then report that no speech was confirmed.
+    var onPreSpeechTimeout: (() -> Void)?
+
     /// Fired when recording has to abort (e.g. the active device vanished).
     var onError: ((AudioEngineError) -> Void)?
 
@@ -63,6 +68,10 @@ final class AudioSessionManager {
     /// Cumulative above-threshold time across the whole recording — evidence for
     /// telling a real dictation apart from a brief noise burst (see `SignalQuality`).
     var aboveThresholdSeconds: TimeInterval { vad.aboveThresholdSeconds }
+
+    /// Longest *continuous* above-threshold run — the measurement that should
+    /// separate sustained speech from many short mechanical impulses.
+    var longestAboveThresholdSeconds: TimeInterval { vad.longestAboveThresholdSeconds }
 
     // MARK: – Private
 
@@ -98,6 +107,10 @@ final class AudioSessionManager {
         vad.onSilenceTimeout = { [weak self] in
             // Called on the audio thread – hop to main for UI-driving work.
             DispatchQueue.main.async { self?.onSilenceDetected?() }
+        }
+
+        vad.onPreSpeechTimeout = { [weak self] in
+            DispatchQueue.main.async { self?.onPreSpeechTimeout?() }
         }
 
         vad.onLevel = { [weak self] level in

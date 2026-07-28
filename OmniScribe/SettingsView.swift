@@ -211,10 +211,19 @@ private struct MetricsRow: View {
 
                 Spacer()
 
-                Text(String(format: "spoke %.1fs \u{00B7} above-thr %.2fs", entry.spokenSeconds, entry.aboveThresholdSeconds))
+                Text(String(format: "spoke %.1fs \u{00B7} above-thr %.2fs \u{00B7} longest %.2fs",
+                            entry.spokenSeconds,
+                            entry.aboveThresholdSeconds,
+                            entry.longestAboveThresholdSeconds))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .monospacedDigit()
+            }
+
+            if !entry.aiCleanupRejection.isEmpty {
+                Text("AI cleanup rejected (\(entry.aiCleanupRejection)) \u{2014} inserted the raw transcript")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
             }
 
             HStack(spacing: 10) {
@@ -244,6 +253,11 @@ private struct MetricsRow: View {
     /// left out, which would read as an empty result.
     private var comparison: some View {
         VStack(alignment: .leading, spacing: 4) {
+            Text("Comparison status: \(entry.comparisonProgress)"
+                 + (entry.sttComparison.count == entry.comparedModels.count ? " complete" : " \u{2014} still running"))
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.secondary)
+
             ForEach(entry.comparedModels, id: \.self) { model in
                 let result = entry.sttComparison.first { $0.model == model }
                 VStack(alignment: .leading, spacing: 1) {

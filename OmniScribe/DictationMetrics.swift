@@ -41,6 +41,11 @@ struct DictationMetrics: Identifiable {
     /// brief noise burst that happened to trip the mic (e.g. `spoke 1.29s` /
     /// `above-threshold 0.06s` is a near-certain false trigger, not real speech).
     var aboveThresholdSeconds: TimeInterval = 0
+    /// Longest *continuous* above-threshold run. Collected as evidence for
+    /// separating sustained speech from many short mechanical impulses (keyboard
+    /// tapping totals a lot of above-threshold time without ever sustaining) —
+    /// no guard uses it yet, deliberately.
+    var longestAboveThresholdSeconds: TimeInterval = 0
     /// Last word → recording stopped (VAD silence wait, or a manual ⌥Space).
     var silenceWait: TimeInterval = 0
     /// Speech-to-text round trip.
@@ -80,6 +85,21 @@ struct DictationMetrics: Identifiable {
     /// Per-model results, appended as each call returns (any order).
     var sttComparison: [STTComparisonResult] = []
 
+    /// Why the AI result was discarded and the raw transcript inserted instead
+    /// (see `ProcessingMode.cleanupRejectionReason`), or empty when the AI output
+    /// was used. Recorded so a rejection is never silent — text differing from
+    /// what the AI produced must be explainable from the report alone.
+    var aiCleanupRejection: String = ""
+
+    /// `"2/3"`-style progress over the compared models, or empty when this run
+    /// was not part of a comparison. Shown so "no results" is distinguishable
+    /// from "results still arriving" — and so a report copied too early is
+    /// obvious rather than looking like the feature did nothing.
+    var comparisonProgress: String {
+        guard !comparedModels.isEmpty else { return "" }
+        return "\(sttComparison.count)/\(comparedModels.count)"
+    }
+
     /// The number that matters: last spoken word → text on screen.
     var perceivedLatency: TimeInterval {
         silenceWait + transcription + aiProcessing + injection
@@ -106,6 +126,7 @@ struct DictationMetrics: Identifiable {
         Total: \(f(perceivedLatency))
         Spoke: \(f(spokenSeconds))
         Above threshold: \(f(aboveThresholdSeconds))
+        Longest continuous above-threshold span: \(f(longestAboveThresholdSeconds))
         Silence: \(f(silenceWait))
         STT: \(f(transcription))
         AI: \(f(aiProcessing))
@@ -114,8 +135,17 @@ struct DictationMetrics: Identifiable {
         AI model: \(aiModel)
         Mode: \(mode)
         """
+        if !aiCleanupRejection.isEmpty {
+            block += "\nAI cleanup rejected: \(aiCleanupRejection) — inserted Raw STT"
+        }
         if !transcribedText.isEmpty { block += "\nRaw STT: \(transcribedText)" }
         if !processedText.isEmpty { block += "\nFinal: \(processedText)" }
+
+        if !comparedModels.isEmpty {
+            let done = comparisonProgress
+            block += "\nComparison status: \(done)"
+                  + (sttComparison.count == comparedModels.count ? " complete" : " — still running")
+        }
 
         for model in comparedModels {
             block += "\n  \(model)"
