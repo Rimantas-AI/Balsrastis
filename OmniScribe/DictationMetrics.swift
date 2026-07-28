@@ -327,8 +327,13 @@ final class MetricsStore: ObservableObject {
         let summaries = sttModelSummaries
         if !summaries.isEmpty {
             lines.append("STT model comparison (same audio per run)")
-            lines.append("Vocabulary prompt sent to every model:")
+            // Each arm now gets a different prompt, so a single "sent to every
+            // model" line would misdescribe the run. Both prompt texts are
+            // printed because the whole open question is which one to keep.
+            lines.append("Full prompt (Settings \u{2192} Vocabulary):")
             lines.append(AppPreferences.shared.vocabulary)
+            lines.append("Short prompt:")
+            lines.append(AppPreferences.shortVocabulary)
             for summary in summaries {
                 lines.append(
                     "\(summary.model) \u{2014} runs: \(summary.runs) \u{00B7} median: \(f(summary.median)) "
@@ -358,11 +363,37 @@ extension String {
     /// those as text means paying for an LLM call and pasting nonsense, so the
     /// pipeline stops here instead. A single letter or digit anywhere is enough
     /// to consider the result real speech.
+    ///
+    /// See also `exceedsPlausibleSpeechRate(over:)`, which catches the opposite
+    /// failure: far *too much* text for the audio's length.
     var looksLikeNoSpeech: Bool {
         let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return true }
         return !trimmed.unicodeScalars.contains {
             CharacterSet.letters.contains($0) || CharacterSet.decimalDigits.contains($0)
         }
+    }
+
+    /// `true` when this transcript holds more words than could physically have
+    /// been spoken in `seconds` — the signature of a recogniser that returned
+    /// something other than a transcription.
+    ///
+    /// Automates a cross-check previously done by hand (see the methodology notes
+    /// in §12). Measured across a 30-clip Lithuanian round, real dictation ran
+    /// 0.35–2.05 words/second at its fastest, so 4.0 leaves roughly double the
+    /// headroom over the fastest real speech seen. Deliberately loose: falsely
+    /// blocking a real dictation is worse than passing a rare bad one.
+    ///
+    /// This catches what the text checks cannot — a model echoing the vocabulary
+    /// prompt back as its "transcript" (observed from `gpt-4o-mini-transcribe` on
+    /// keyboard noise). That output is fluent and full of letters, so
+    /// `looksLikeNoSpeech` passes it, but ~70 words attributed to a 10-second
+    /// recording is not speech at any rate. It does **not** catch a short
+    /// hallucinated sentence, which is plausibly paced — that stays open.
+    func exceedsPlausibleSpeechRate(over seconds: TimeInterval) -> Bool {
+        guard seconds > 0.5 else { return false }
+        let words = split(whereSeparator: \.isWhitespace).count
+        guard words > 8 else { return false }   // too few to judge a rate by
+        return Double(words) / seconds > 4.0
     }
 }

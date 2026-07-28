@@ -149,7 +149,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let runID = metrics.id
         // The primary always runs with the vocabulary prompt, since that is what
         // daily use does; the comparison covers the no-prompt arms.
-        let primaryVariant = STTVariant(model: sttModelChoice, useVocabulary: true)
+        let primaryVariant = STTVariant(model: sttModelChoice, prompt: .full)
         if isComparing {
             metrics.comparedModels = AppPreferences.comparisonVariants.map(\.label)
             compareSTTModels(
@@ -210,6 +210,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     self.complete(metrics,
                                   outcome: "No speech recognised",
                                   failure: "No speech recognised — check your microphone input level.")
+                    return
+                }
+
+                // Guard 3 (output side): far more words than the recording could
+                // hold. Catches a recogniser returning the vocabulary prompt back
+                // as its transcript — fluent text that guard 2 cannot tell from
+                // real speech, but that no one could have said this fast.
+                guard !result.text.exceedsPlausibleSpeechRate(over: metrics.spokenSeconds) else {
+                    self.complete(metrics,
+                                  outcome: "Implausible speech rate",
+                                  failure: "Discarded a transcript with far more words than the recording could contain.")
                     return
                 }
 
@@ -274,7 +285,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 do {
                     let result = try await self.transcriptionService.transcribe(
                         samples: samples,
-                        vocabulary: variant.useVocabulary ? vocabulary : "",
+                        vocabulary: variant.promptText(fullVocabulary: vocabulary),
                         model: variant.model
                     )
                     MetricsStore.shared.recordComparison(

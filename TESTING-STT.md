@@ -27,6 +27,37 @@ Po kiekvienos frazės palaukti, kol tekstas bus įklijuotas, ir tik tada spausti
 
 ---
 
+## D dalis. Paskutinis raundas — prompt'o forma (v1.6.3)
+
+Modelis jau pasirinktas: **`gpt-4o-mini-transcribe`**. Liko vienas klausimas —
+ar **trumpas** terminų sąrašas veikia taip pat gerai kaip dabartinis prozos
+prompt'as. Šakos dabar yra `mini` ir `whisper-1` × {full, short, none}.
+
+**Prieš pradedant:** Settings → General → STT Model pasirinkti
+**`gpt-4o-mini-transcribe — recommended`**. Sena nuostata išlieka atmintyje, tad
+numatytojo pakeitimas jos savaime nepakeis. Clear Diagnostics.
+
+| # | Ką daryti |
+|---|---|
+| D1–D5 | **Taip** (penkis kartus) |
+| D6–D10 | **Ne** (penkis kartus) |
+| D11 | **Atidaryk Settings ir įrašyk API raktą į Keychain, tada patikrink HUD** |
+| D12–D14 | ⌥Space ir **spausdinti klavišais**, nekalbėti (tris kartus) |
+| D15 | ⌥Space ir **tylėti** |
+
+Ko ieškome:
+
+1. **Ar `short prompt` šakoje trumpi žodžiai lieka teisingi.** Jei „Taip"
+   virsta „Tajpe" ar „ty" — trumpas prompt'as neišlaiko kalbos, ir liekame prie
+   prozos varianto.
+2. **Ar `short prompt` šakoje klaviatūros triukšmas nebeduoda prompt'o teksto.**
+   Tai visa šio pakeitimo prasmė.
+3. **Ar `whisper-1 · short prompt` nesuprastėja** — v1.3.x metu sąrašo formos
+   prompt'as jam beveik nepadėjo, tad tai patikrinimas, ar ta išvada vis dar
+   galioja.
+
+---
+
 ## Kas jau žinoma (nekartoti)
 
 Pirmieji keturi bandymai (2026-07-28, v1.6.1) jau davė svarbų rezultatą:

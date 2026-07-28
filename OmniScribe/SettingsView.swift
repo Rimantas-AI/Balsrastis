@@ -360,7 +360,7 @@ private struct GeneralSettingsView: View {
 
                 Picker("STT Model", selection: $prefs.sttModel) {
                     ForEach(AppPreferences.availableSTTModels, id: \.self) { model in
-                        Text(model).tag(model)
+                        Text(AppPreferences.roleDescription(for: model)).tag(model)
                     }
                 }
 

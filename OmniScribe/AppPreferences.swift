@@ -18,12 +18,56 @@ import Combine
 /// keyboard-noise hallucination, so a model that handles jargon well *without*
 /// it would let that prompt be dropped entirely.
 struct STTVariant: Hashable {
+    /// Which vocabulary hint accompanies the audio.
+    ///
+    /// Three kinds rather than on/off, because the 30-clip round closed the
+    /// on/off question and opened a sharper one. Dropping the prompt entirely is
+    /// not viable — without it short Lithuanian words collapsed into other
+    /// languages ("Taip" came back as `طيب`, `Тайпа`, `ty`; "Ne" as `네`) — so
+    /// the prompt is what holds the recogniser in Lithuanian on short audio.
+    /// But the *full* prompt is written as prose, and complete sentences are
+    /// exactly what a model can echo back when it has only noise to work with.
+    /// A short term list may keep the language anchor without supplying that
+    /// material.
+    ///
+    /// ⚠️ This is a hypothesis, not a conclusion. A bare comma list was already
+    /// tried for `whisper-1` back in v1.3.x and **barely helped** — the sentence
+    /// form is what worked. That was measured on whisper only, so it may not
+    /// carry over to the gpt-4o models, but it is the reason the short prompt is
+    /// being *tested* rather than simply adopted.
+    enum Prompt: String, Hashable {
+        /// The user's editable vocabulary from Settings (currently prose).
+        case full
+        /// A short, non-narrative term list — see `AppPreferences.shortVocabulary`.
+        case short
+        /// No `prompt` parameter at all.
+        case none
+
+        var suffix: String {
+            switch self {
+            case .full:  return " \u{00B7} full prompt"
+            case .short: return " \u{00B7} short prompt"
+            case .none:  return " \u{00B7} no prompt"
+            }
+        }
+    }
+
     let model: String
-    let useVocabulary: Bool
+    let prompt: Prompt
 
     /// Display/grouping key. Also the value stored in
     /// `STTComparisonResult.model`, so results group per variant, not per model.
-    var label: String { useVocabulary ? model : "\(model) \u{00B7} no prompt" }
+    var label: String { model + prompt.suffix }
+
+    /// The text to send as this arm's `prompt`, given the user's current
+    /// vocabulary setting.
+    func promptText(fullVocabulary: String) -> String {
+        switch prompt {
+        case .full:  return fullVocabulary
+        case .short: return AppPreferences.shortVocabulary
+        case .none:  return ""
+        }
+    }
 }
 
 /// Shared, observable app preferences bound by the Settings UI and read by the
@@ -97,8 +141,29 @@ final class AppPreferences: ObservableObject {
     /// reported to improve word-error-rate and language recognition over the
     /// original Whisper models — worth comparing directly on Lithuanian speech
     /// rather than assuming the newer model wins for this specific language.
-    static let availableSTTModels = ["whisper-1", "gpt-4o-mini-transcribe", "gpt-4o-transcribe"]
-    static let defaultSTTModel = "whisper-1"
+    static let availableSTTModels = ["gpt-4o-mini-transcribe", "whisper-1", "gpt-4o-transcribe"]
+
+    /// Chosen from the 30-clip round, not from reputation: `gpt-4o-mini-transcribe`
+    /// was the most accurate on long Lithuanian sentences (whisper-1 dropped a
+    /// negation and inverted a sentence's meaning), the only one besides
+    /// gpt-4o-transcribe to survive background music, and the fastest with the
+    /// tightest tail — median 0.72s, P95 1.19s, slowest 1.19s, against whisper-1's
+    /// 1.09 / 1.66 / **6.48s**.
+    ///
+    /// Existing installs keep whatever is in `UserDefaults`; this only affects a
+    /// fresh install. Switch in Settings → General.
+    static let defaultSTTModel = "gpt-4o-mini-transcribe"
+
+    /// How each model is meant to be used, shown in the picker so the choice is
+    /// not just three opaque identifiers.
+    static func roleDescription(for model: String) -> String {
+        switch model {
+        case "gpt-4o-mini-transcribe": return "\(model) — recommended"
+        case "whisper-1":              return "\(model) — reliable fallback"
+        case "gpt-4o-transcribe":      return "\(model) — experimental"
+        default:                       return model
+        }
+    }
 
     /// Every arm of the comparison: each model with and without the vocabulary
     /// prompt. The no-prompt half exists because the gpt-4o models proved unusable
@@ -106,10 +171,29 @@ final class AppPreferences: ObservableObject {
     /// the comparison would reject them for a reason that may be entirely fixable.
     /// whisper-1 is included in the no-prompt half too, to re-check the earlier
     /// finding that the prompt helps it rather than assuming it still holds.
-    static let comparisonVariants: [STTVariant] = availableSTTModels.flatMap { model in
-        [STTVariant(model: model, useVocabulary: true),
-         STTVariant(model: model, useVocabulary: false)]
-    }
+    /// A short, list-style alternative to the prose vocabulary. Names the
+    /// language explicitly so short clips still have something to anchor to,
+    /// then lists terms without wrapping them in sentences a model could recite.
+    static let shortVocabulary = """
+    Lietuvių kalba. Terminai: OmniScribe, HUD, Settings, API Keys, Diagnostics, \
+    Keychain, Copy Report, Clear Diagnostics, Accessibility, GitHub, Claude, Whisper.
+    """
+
+    /// The six comparison arms: the two viable models against all three prompt
+    /// forms.
+    ///
+    /// `gpt-4o-transcribe` was dropped from the comparison after the 30-clip
+    /// round — it hallucinated fluent text from keyboard noise *even with no
+    /// prompt at all* ("How are you doing?"), and turned short Lithuanian words
+    /// into Arabic, Korean and Cyrillic script. Its larger size bought nothing
+    /// over the mini model here. Re-add it if there is ever a reason to revisit;
+    /// the six slots are better spent on the open question, which is prompt form.
+    static let comparisonVariants: [STTVariant] = ["gpt-4o-mini-transcribe", "whisper-1"]
+        .flatMap { model in
+            [STTVariant(model: model, prompt: .full),
+             STTVariant(model: model, prompt: .short),
+             STTVariant(model: model, prompt: .none)]
+        }
 
     /// The processing mode applied after transcription. Persisted so it survives
     /// relaunch. `didSet` writes through to `UserDefaults`.

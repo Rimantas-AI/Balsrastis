@@ -386,7 +386,52 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   handles Lithuanian jargon well without any prompt would remove that failure
   mode at its source rather than guarding against it. Do not decide the default
   model from the with-prompt arms alone.
-  Also in v1.6.1: a **6s pre-speech timeout** in `VoiceActivityDetector`
+- v1.6.3 — **the 30-clip comparison round, and the decision it produced.**
+  30 phrases × 6 arms = 180 transcripts of identical audio. Two hypotheses died
+  and a default was chosen on evidence.
+  **Dropping the prompt is not viable — this is settled, do not retry it.**
+  Without a prompt, short Lithuanian words collapse into other languages:
+  "Taip" came back as `طيب`, `Тайпа`, `Tey`, `ty`, `Tajba`; "Ne" as `네`, `Nie`;
+  "Stop" as `Стоп`. `language=lt` alone does not hold the recogniser in
+  Lithuanian on short audio — the prompt does. Removing it also bought **no
+  speed** (mini: 0.72s with, 0.77s without). So the earlier hope of deleting the
+  prompt to remove the hallucination's source is dead.
+  **Default is now `gpt-4o-mini-transcribe`**, chosen because on the same audio:
+  it was the most accurate on long sentences — `whisper-1` dropped a negation and
+  turned "skaičiai **ne**sutampa" into "skaičiai sutampa", **inverting the
+  meaning**, the worst error class in a dictation tool; it transcribed cleanly
+  with real background music where `whisper-1` produced "Šitas **akinys** sakomas
+  su **muzikafone**"; it got the technical terms right; and it was fastest with
+  by far the tightest tail (median 0.72s / P95 1.19s / slowest **1.19s**, versus
+  whisper-1's 1.09 / 1.66 / **6.48s**). `whisper-1` keeps one genuine advantage:
+  it writes numbers as digits ("862-345-678", "Liepos 27-oji") where the gpt-4o
+  models spell them out as words — unresolved, and the reason whisper-1 stays
+  selectable rather than being removed.
+  **`gpt-4o-transcribe` is demoted to experimental** and dropped from the
+  comparison arms: it hallucinated fluent text from keyboard noise *even with no
+  prompt at all* ("How are you doing?"), and its larger size bought nothing over
+  the mini model on this material.
+  **New guard: `String.exceedsPlausibleSpeechRate(over:)`.** `gpt-4o-mini` with
+  the full prompt answers keyboard noise by echoing that prompt back verbatim —
+  fluent, letter-rich text that `looksLikeNoSpeech` cannot catch, and ~400
+  characters that would land in the user's document. Real dictation in this round
+  ran 0.35–2.05 words/second; the echo was ~6.5. The threshold is 4.0 — roughly
+  double the fastest real speech observed, deliberately loose because falsely
+  blocking real dictation is worse than passing a rare bad transcript. It does
+  **not** catch a short hallucinated sentence, which is plausibly paced.
+  **Still open — the prompt's *form*.** The full prompt is prose, and whole
+  sentences are exactly what gets echoed. A short term list
+  (`AppPreferences.shortVocabulary`) might keep the language anchor without
+  supplying that material. This is a hypothesis under test, **not** a conclusion:
+  a bare comma list was already tried for whisper-1 in v1.3.x and barely helped —
+  the sentence form is what worked there. So the comparison arms were re-pointed
+  at this question: `gpt-4o-mini-transcribe` and `whisper-1` × {full, short,
+  none}. Decide it from the next round, not from intuition.
+  Also: the app and macOS version now appear in the Diagnostics tab, since build
+  identity was previously only reachable by exporting a report — and every ad-hoc
+  build needs Accessibility re-granted, so a failed install looks exactly like a
+  successful one.
+- Also in v1.6.1: a **6s pre-speech timeout** in `VoiceActivityDetector`
   (`onPreSpeechTimeout`). The silence timeout only arms after speech onset, so a
   recording with no speech ran until stopped by hand (measured: 13.99s). It will
   not fire while an above-threshold run is accumulating, so someone who starts
@@ -427,16 +472,13 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
 
 **Recommended roadmap (agreed after multi-perspective review, see chat history
 for the full reasoning — condensed here):**
-1. **← CURRENT STEP.** STT model comparison (whisper-1 vs gpt-4o-mini-transcribe
-   vs gpt-4o-transcribe). The tooling shipped in v1.6.0; the test round has not
-   been run. Method: turn on Settings → General → "Compare STT models", Clear
-   Diagnostics, then dictate ~30 clips covering short words (5x each of
-   taip/ne/gerai/stop), technical terms, numbers, dates/addresses, a fast complex
-   sentence, quiet voice, background noise, silence, and keyboard noise — each
-   clip spoken **once**, since all three models hear that same recording. Then
-   Copy Report and judge: Lithuanian accuracy first, predictable speed second,
-   cost third. A model 0.4s faster that confuses "stop" with "taip", or `5` with
-   `500`, does not win. Turn the toggle back off afterwards (~3x STT cost).
+1. ✅ **Done (v1.6.3).** STT model comparison — 30 clips × 6 arms. Default is now
+   `gpt-4o-mini-transcribe`; dropping the prompt was ruled out. See the v1.6.3
+   notes above for the evidence. One question remains open: whether a **short**
+   term-list prompt works as well as the current prose one. Method for that final
+   round (see `TESTING-STT.md`): 5× "Taip", 5× "Ne", one technical sentence,
+   3 keyboard-noise clips, 1 silence clip. If keyboard noise no longer produces
+   prompt text, this step closes for good.
 2. One week / ~200 real dictations of actual daily use (not lab sentences) with
    the chosen model. Target bar before considering the app distribution-ready:
    zero hallucinated inserts, ≤1-2% false-blocked real speech, median ≤~5s,
