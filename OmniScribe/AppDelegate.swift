@@ -224,6 +224,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     return
                 }
 
+                // Guard 4 (output side): the transcript recites the vocabulary
+                // prompt back. Guard 3 catches this only while the echo stays
+                // long enough to be impossible speech — a partial echo is not,
+                // so the recitation itself is worth detecting directly.
+                guard !result.text.echoesPrompt(vocabulary) else {
+                    self.complete(metrics,
+                                  outcome: "Prompt echoed back",
+                                  failure: "Discarded a transcript that repeated the vocabulary hint instead of your speech.")
+                    return
+                }
+
                 let mode = AppPreferences.shared.selectedMode
                 WindowManager.shared.updateHUD(phase: .polishing)
 

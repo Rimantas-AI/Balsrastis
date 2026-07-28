@@ -20,34 +20,26 @@ import Combine
 struct STTVariant: Hashable {
     /// Which vocabulary hint accompanies the audio.
     ///
-    /// Three kinds rather than on/off, because the 30-clip round closed the
-    /// on/off question and opened a sharper one. Dropping the prompt entirely is
-    /// not viable — without it short Lithuanian words collapsed into other
-    /// languages ("Taip" came back as `طيب`, `Тайпа`, `ty`; "Ne" as `네`) — so
-    /// the prompt is what holds the recogniser in Lithuanian on short audio.
-    /// But the *full* prompt is written as prose, and complete sentences are
-    /// exactly what a model can echo back when it has only noise to work with.
-    /// A short term list may keep the language anchor without supplying that
-    /// material.
+    /// Dropping the prompt is settled as **not viable**: without it short
+    /// Lithuanian words collapse into other languages ("Taip" came back as
+    /// `طيب`, `Тайпа`, `ty`; "Ne" as `네`). The prompt is what holds the
+    /// recogniser in Lithuanian on short audio. The no-prompt arm survives only
+    /// as a diagnostic baseline — it is not a candidate configuration.
     ///
-    /// ⚠️ This is a hypothesis, not a conclusion. A bare comma list was already
-    /// tried for `whisper-1` back in v1.3.x and **barely helped** — the sentence
-    /// form is what worked. That was measured on whisper only, so it may not
-    /// carry over to the gpt-4o models, but it is the reason the short prompt is
-    /// being *tested* rather than simply adopted.
+    /// A third, shortened prompt form was tested in v1.6.4 and **rejected**; see
+    /// the v1.6.4 notes in AGENTS.md for the numbers. It is deliberately not
+    /// present in this file: keeping a rejected prompt next to the live one
+    /// invites a future reader to conclude the shorter one looks cleaner.
     enum Prompt: String, Hashable {
-        /// The user's editable vocabulary from Settings (currently prose).
+        /// The user's editable vocabulary from Settings (prose).
         case full
-        /// A short, non-narrative term list — see `AppPreferences.shortVocabulary`.
-        case short
         /// No `prompt` parameter at all.
         case none
 
         var suffix: String {
             switch self {
-            case .full:  return " \u{00B7} full prompt"
-            case .short: return " \u{00B7} short prompt"
-            case .none:  return " \u{00B7} no prompt"
+            case .full: return " \u{00B7} full prompt"
+            case .none: return " \u{00B7} no prompt"
             }
         }
     }
@@ -63,9 +55,8 @@ struct STTVariant: Hashable {
     /// vocabulary setting.
     func promptText(fullVocabulary: String) -> String {
         switch prompt {
-        case .full:  return fullVocabulary
-        case .short: return AppPreferences.shortVocabulary
-        case .none:  return ""
+        case .full: return fullVocabulary
+        case .none: return ""
         }
     }
 }
@@ -165,50 +156,13 @@ final class AppPreferences: ObservableObject {
         }
     }
 
-    /// Every arm of the comparison: each model with and without the vocabulary
-    /// prompt. The no-prompt half exists because the gpt-4o models proved unusable
-    /// *with* our prompt (see `STTVariant`) — without testing them without it,
-    /// the comparison would reject them for a reason that may be entirely fixable.
-    /// whisper-1 is included in the no-prompt half too, to re-check the earlier
-    /// finding that the prompt helps it rather than assuming it still holds.
-    /// ⚠️ **Tested and rejected. Do not adopt this as the default prompt.**
-    ///
-    /// The idea was sound — the full prompt is prose, and whole sentences are
-    /// what a model echoes back from noise, so a bare term list should keep the
-    /// language anchor without supplying recitable material. It half worked:
-    /// short words stayed accurate (`Taip` 4/4, `Ne` 5/5).
-    ///
-    /// It failed on the part that mattered, in a way worth remembering: **the
-    /// echo did not stop, it merely got shorter** — and short enough to slip
-    /// under `exceedsPlausibleSpeechRate`. On identical keyboard noise the full
-    /// prompt came back at ~10.2 words/second (blocked), the short one at ~2.77
-    /// (would have been pasted). `whisper-1` with this prompt answered the same
-    /// noise with `[www.omniScribe.com](...)`, three times, which would also have
-    /// been pasted.
-    ///
-    /// So shortening the prompt would have *removed the very signal the guard
-    /// relies on*. The full prompt is accidentally safer for being long. Kept
-    /// here only as the record of a measured negative result.
-    static let shortVocabulary = """
-    Lietuvių kalba. Terminai: OmniScribe, HUD, Settings, API Keys, Diagnostics, \
-    Keychain, Copy Report, Clear Diagnostics, Accessibility, GitHub, Claude, Whisper.
-    """
-
-    /// The six comparison arms: the two viable models against all three prompt
-    /// forms.
-    ///
-    /// `gpt-4o-transcribe` was dropped from the comparison after the 30-clip
-    /// round — it hallucinated fluent text from keyboard noise *even with no
-    /// prompt at all* ("How are you doing?"), and turned short Lithuanian words
-    /// into Arabic, Korean and Cyrillic script. Its larger size bought nothing
-    /// over the mini model here. Re-add it if there is ever a reason to revisit;
-    /// the six slots are better spent on the open question, which is prompt form.
-    static let comparisonVariants: [STTVariant] = ["gpt-4o-mini-transcribe", "whisper-1"]
-        .flatMap { model in
-            [STTVariant(model: model, prompt: .full),
-             STTVariant(model: model, prompt: .short),
-             STTVariant(model: model, prompt: .none)]
-        }
+    /// The six comparison arms: every model, with and without the vocabulary
+    /// prompt, on identical audio. Diagnostic only — the no-prompt arms are a
+    /// baseline for reading the others, never a configuration to ship.
+    static let comparisonVariants: [STTVariant] = availableSTTModels.flatMap { model in
+        [STTVariant(model: model, prompt: .full),
+         STTVariant(model: model, prompt: .none)]
+    }
 
     /// The processing mode applied after transcription. Persisted so it survives
     /// relaunch. `didSet` writes through to `UserDefaults`.

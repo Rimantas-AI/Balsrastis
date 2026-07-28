@@ -330,10 +330,8 @@ final class MetricsStore: ObservableObject {
             // Each arm now gets a different prompt, so a single "sent to every
             // model" line would misdescribe the run. Both prompt texts are
             // printed because the whole open question is which one to keep.
-            lines.append("Full prompt (Settings \u{2192} Vocabulary):")
+            lines.append("Full prompt (Settings \u{2192} Vocabulary), sent to the \u{201C}full prompt\u{201D} arms only:")
             lines.append(AppPreferences.shared.vocabulary)
-            lines.append("Short prompt:")
-            lines.append(AppPreferences.shortVocabulary)
             for summary in summaries {
                 lines.append(
                     "\(summary.model) \u{2014} runs: \(summary.runs) \u{00B7} median: \(f(summary.median)) "
@@ -395,5 +393,59 @@ extension String {
         let words = split(whereSeparator: \.isWhitespace).count
         guard words > 8 else { return false }   // too few to judge a rate by
         return Double(words) / seconds > 4.0
+    }
+
+    /// `true` when this transcript reproduces a long unbroken stretch of
+    /// `prompt` — a recogniser reciting the vocabulary hint back instead of
+    /// transcribing.
+    ///
+    /// Measured behaviour, not a precaution: `gpt-4o-mini-transcribe` answered
+    /// keyboard noise with the entire vocabulary prompt, verbatim, on three
+    /// separate recordings.
+    ///
+    /// **Why a contiguous run and not word overlap.** Overlap is the obvious
+    /// test and it is wrong here: real technical dictation reuses these very
+    /// words. "HUD rodo būseną Listening, paskui Polishing" — a correct,
+    /// deliberate dictation from the test set — shares nearly all of its words
+    /// with the prompt and an overlap rule would destroy it. What separates
+    /// recitation from speech is *sequence*.
+    ///
+    /// **Why 12.** Checked against every transcript from the test rounds: the
+    /// full-prompt echo reproduced a **57-word** unbroken run, while real
+    /// dictation reached at most **7** — and that worst case is a genuine one,
+    /// not a fluke. The user dictated "Klaidos pranešimas gali būti „No
+    /// microphone signal"", which appears verbatim in the prompt because the
+    /// prompt was written from the app's own vocabulary. Anyone testing this app
+    /// will say such sentences. 12 leaves five words of headroom above that and
+    /// still catches echoes far shorter than the observed one.
+    ///
+    /// Two honest limits. A user *can* legitimately dictate a whole prompt
+    /// sentence, so this trades a rare false block for the far more damaging
+    /// paste — but the tension is real, not eliminated. And this catches
+    /// recitation, not invention: a model answering noise with one short
+    /// plausible sentence of its own defeats both this and the speech-rate
+    /// check, and nothing here would notice.
+    func echoesPrompt(_ prompt: String, minimumRun: Int = 12) -> Bool {
+        func normalise(_ text: String) -> [Substring] {
+            text.lowercased()
+                .split(whereSeparator: { $0.isWhitespace || $0.isPunctuation || $0.isSymbol })
+        }
+        let spoken = normalise(self)
+        let hint = normalise(prompt)
+        guard spoken.count >= minimumRun, hint.count >= minimumRun else { return false }
+
+        // Longest common run of words, rolling one row at a time.
+        var previous = [Int](repeating: 0, count: hint.count + 1)
+        var longest = 0
+        for s in spoken.indices {
+            var current = [Int](repeating: 0, count: hint.count + 1)
+            for h in hint.indices where spoken[s] == hint[h] {
+                current[h + 1] = previous[h] + 1
+                longest = max(longest, current[h + 1])
+            }
+            if longest >= minimumRun { return true }
+            previous = current
+        }
+        return false
     }
 }

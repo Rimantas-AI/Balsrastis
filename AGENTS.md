@@ -446,8 +446,12 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   with the short prompt answered the same noise with
   `[www.omniScribe.com](...)`, three times, likewise short enough to pass.
   **Shortening the prompt would have deleted the very signal the guard depends
-  on.** The full prose prompt is accidentally safer *because* it is long enough
-  that echoing it is physically impossible speech. Keep it.
+  on.** Stated precisely — and the loose version of this claim was corrected in
+  review, so do not restate it loosely: the long prompt is **not inherently
+  safer**. It was safer *in these runs* only because its echo was long enough for
+  the speech-rate guard to catch. A model could equally return one short excerpt
+  from a long prompt, at a perfectly plausible pace, and slip through. That gap
+  is what `String.echoesPrompt(_:)` was added to close in v1.6.5.
   A smaller point in the same direction: asked to transcribe a spoken "Na", only
   the full-prompt arm wrote `Na` — the short-prompt and whisper arms "corrected"
   it to `Ne`. The full prompt was the more faithful one.
@@ -458,6 +462,30 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   real but rests on only four noise samples, and the current configuration
   already blocked 3/3 noise clips without it, so it stays unbuilt. Revisit only
   if a hallucination actually gets through.
+- v1.6.5 — **direct prompt-echo guard** (`String.echoesPrompt(_:)`), plus the
+  correction above. The speech-rate guard only catches recitation while it stays
+  long enough to be impossible speech; a partial echo is not, so the recitation
+  itself is now detected directly.
+  It matches the **longest contiguous run of words** shared with the prompt, not
+  word overlap. Overlap is the obvious design and it is wrong: real technical
+  dictation reuses these exact words — "HUD rodo būseną Listening, paskui
+  Polishing" shares nearly its whole vocabulary with the prompt and is a correct,
+  deliberate dictation. Sequence is what separates recitation from speech.
+  The threshold (12) was checked against every transcript from the test rounds
+  rather than picked: the full-prompt echo ran **57 words** unbroken, real
+  dictation reached at most **7**. That worst case is genuine, not a fluke — the
+  user dictated "Klaidos pranešimas gali būti „No microphone signal"", which is
+  verbatim in the prompt because the prompt was written from the app's own
+  vocabulary. An initial threshold of 8 was rejected for leaving only one word of
+  margin over it.
+  Known limits, both accepted: a user *can* legitimately dictate a whole prompt
+  sentence and would be blocked; and this catches recitation, not invention — a
+  model answering noise with one short plausible sentence of its own still
+  defeats every guard here.
+  Also: `shortVocabulary` was **deleted**, not merely commented as rejected.
+  A rejected prompt sitting beside the live one invites a future reader to
+  conclude the shorter one looks cleaner; the negative result belongs in this
+  document, not in the production config.
 - Also in v1.6.1: a **6s pre-speech timeout** in `VoiceActivityDetector`
   (`onPreSpeechTimeout`). The silence timeout only arms after speech onset, so a
   recording with no speech ran until stopped by hand (measured: 13.99s). It will
