@@ -1,5 +1,21 @@
 # STT modelių palyginimo testas
 
+> ## ✅ ŠIS ETAPAS UŽDARYTAS (v1.6.4)
+>
+> Sprendimas priimtas iš 45 bandymų per du raundus:
+>
+> - **Modelis:** `gpt-4o-mini-transcribe`
+> - **Prompt'as:** ilgas, prozinis (Settings → Vocabulary) — **nekeisti**
+> - **Apsauga:** kalbėjimo tempo tikrinimas (>4,0 ž/s → atmesti)
+>
+> Atmesta su įrodymais: **be prompt'o** (trumpi žodžiai virsta kitomis
+> kalbomis) ir **trumpas prompt'as** (atkartojimas išlieka, bet tampa per
+> trumpas, kad apsauga jį pagautų — t. y. pavojingesnis).
+>
+> Žemiau esantis scenarijus paliktas ateičiai — jei kada prireiktų pakartoti
+> palyginimą po modelių atnaujinimo.
+
+
 Skirta AGENTS.md kelrodžio 1 žingsniui: nuspręsti, kuris modelis
 (`whisper-1` / `gpt-4o-mini-transcribe` / `gpt-4o-transcribe`) geriausiai
 supranta lietuvių kalbą.

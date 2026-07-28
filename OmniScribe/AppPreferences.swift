@@ -171,9 +171,24 @@ final class AppPreferences: ObservableObject {
     /// the comparison would reject them for a reason that may be entirely fixable.
     /// whisper-1 is included in the no-prompt half too, to re-check the earlier
     /// finding that the prompt helps it rather than assuming it still holds.
-    /// A short, list-style alternative to the prose vocabulary. Names the
-    /// language explicitly so short clips still have something to anchor to,
-    /// then lists terms without wrapping them in sentences a model could recite.
+    /// ⚠️ **Tested and rejected. Do not adopt this as the default prompt.**
+    ///
+    /// The idea was sound — the full prompt is prose, and whole sentences are
+    /// what a model echoes back from noise, so a bare term list should keep the
+    /// language anchor without supplying recitable material. It half worked:
+    /// short words stayed accurate (`Taip` 4/4, `Ne` 5/5).
+    ///
+    /// It failed on the part that mattered, in a way worth remembering: **the
+    /// echo did not stop, it merely got shorter** — and short enough to slip
+    /// under `exceedsPlausibleSpeechRate`. On identical keyboard noise the full
+    /// prompt came back at ~10.2 words/second (blocked), the short one at ~2.77
+    /// (would have been pasted). `whisper-1` with this prompt answered the same
+    /// noise with `[www.omniScribe.com](...)`, three times, which would also have
+    /// been pasted.
+    ///
+    /// So shortening the prompt would have *removed the very signal the guard
+    /// relies on*. The full prompt is accidentally safer for being long. Kept
+    /// here only as the record of a measured negative result.
     static let shortVocabulary = """
     Lietuvių kalba. Terminai: OmniScribe, HUD, Settings, API Keys, Diagnostics, \
     Keychain, Copy Report, Clear Diagnostics, Accessibility, GitHub, Claude, Whisper.

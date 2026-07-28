@@ -431,6 +431,33 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   identity was previously only reachable by exporting a report — and every ad-hoc
   build needs Accessibility re-granted, so a failed install looks exactly like a
   successful one.
+- v1.6.4 — **the prompt-form round: short prompt tested and rejected, model
+  selection closed.** 15 clips, 6 arms. Everything held up, and one result
+  reversed the intuition behind the whole idea.
+  **The speech-rate guard did its job on first contact.** All three
+  keyboard-noise clips were blocked (`Implausible speech rate`); the primary
+  (`gpt-4o-mini-transcribe` + full prompt) echoed the vocabulary prompt back on
+  every one of them, and none of it reached the document. Zero bad pastes.
+  **The short prompt made things worse, not better.** It did keep short words
+  accurate (`Taip` 4/4, `Ne` 5/5) — but it did not stop the echo, it only made
+  the echo *shorter*: on identical noise, the full prompt came back at ~10.2
+  words/second (over the 4.0 threshold, blocked) while the short prompt came back
+  at ~2.77 (under it, would have been pasted — 18 words of junk). `whisper-1`
+  with the short prompt answered the same noise with
+  `[www.omniScribe.com](...)`, three times, likewise short enough to pass.
+  **Shortening the prompt would have deleted the very signal the guard depends
+  on.** The full prose prompt is accidentally safer *because* it is long enough
+  that echoing it is physically impossible speech. Keep it.
+  A smaller point in the same direction: asked to transcribe a spoken "Na", only
+  the full-prompt arm wrote `Na` — the short-prompt and whisper arms "corrected"
+  it to `Ne`. The full prompt was the more faithful one.
+  The 6s pre-speech timeout also fired correctly on both silence clips.
+  **Next candidate guard, not yet built:** the sustain ratio
+  `longestAboveThresholdSeconds / aboveThresholdSeconds` now separates the two
+  classes — noise clips sat at 0.17–0.22, real speech at 0.38–1.0. That gap is
+  real but rests on only four noise samples, and the current configuration
+  already blocked 3/3 noise clips without it, so it stays unbuilt. Revisit only
+  if a hallucination actually gets through.
 - Also in v1.6.1: a **6s pre-speech timeout** in `VoiceActivityDetector`
   (`onPreSpeechTimeout`). The silence timeout only arms after speech onset, so a
   recording with no speech ran until stopped by hand (measured: 13.99s). It will
@@ -472,13 +499,12 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
 
 **Recommended roadmap (agreed after multi-perspective review, see chat history
 for the full reasoning — condensed here):**
-1. ✅ **Done (v1.6.3).** STT model comparison — 30 clips × 6 arms. Default is now
-   `gpt-4o-mini-transcribe`; dropping the prompt was ruled out. See the v1.6.3
-   notes above for the evidence. One question remains open: whether a **short**
-   term-list prompt works as well as the current prose one. Method for that final
-   round (see `TESTING-STT.md`): 5× "Taip", 5× "Ne", one technical sentence,
-   3 keyboard-noise clips, 1 silence clip. If keyboard noise no longer produces
-   prompt text, this step closes for good.
+1. ✅ **CLOSED (v1.6.4).** STT model comparison, 45 clips across two rounds.
+   Settled: default `gpt-4o-mini-transcribe`, **full prose vocabulary prompt**,
+   speech-rate guard. Both alternatives were tested and rejected on evidence —
+   no prompt (short words collapse into other languages) and short prompt (echo
+   survives but slips under the guard). Do not reopen without new evidence; the
+   reasoning is in the v1.6.2–v1.6.4 notes above.
 2. One week / ~200 real dictations of actual daily use (not lab sentences) with
    the chosen model. Target bar before considering the app distribution-ready:
    zero hallucinated inserts, ≤1-2% false-blocked real speech, median ≤~5s,
