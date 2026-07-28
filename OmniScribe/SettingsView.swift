@@ -100,9 +100,15 @@ private struct DiagnosticsSettingsView: View {
                     }
                 }
             }
-            Text("Timings above are successful runs only.")
+            // The build identity was previously only reachable by exporting a
+            // report — leaving no way to confirm in the app itself that a new
+            // build actually replaced the old one, which matters because every
+            // ad-hoc build has to be re-granted Accessibility and a failed
+            // install looks identical to a successful one.
+            Text("Timings above are successful runs only. \u{00B7} OmniScribe \(Self.appVersion) \u{00B7} macOS \(Self.osVersion)")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
+                .textSelection(.enabled)
 
             modelComparisonSummary
         }
@@ -131,6 +137,15 @@ private struct DiagnosticsSettingsView: View {
 
     private func format(_ value: TimeInterval?) -> String {
         value.map { String(format: "%.2f s", $0) } ?? "\u{2014}"
+    }
+
+    static var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "\u{2014}"
+    }
+
+    static var osVersion: String {
+        let v = ProcessInfo.processInfo.operatingSystemVersion
+        return "\(v.majorVersion).\(v.minorVersion).\(v.patchVersion)"
     }
 
     private func clear() {
