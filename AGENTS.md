@@ -531,6 +531,27 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   release shipped independently testable so a regression is easy to isolate.
 
 **Known open gaps (not yet built, deliberately deferred):**
+- **Continuous background noise disables auto-stop.** Confirmed in real use on
+  2026-07-29, day one of the usage log: a laptop fan spinning up holds the input
+  above the 0.012 RMS threshold *continuously*, so speech is confirmed, silence
+  never occurs, and neither the 1.2s silence timeout nor the 6s pre-speech
+  timeout can fire. The recording runs until the user presses ⌥Space. Signature
+  in the log: `above_threshold_s ≈ spoke_s` **and** `auto_stop = manual` **and**
+  `silence_s ≈ 0` (observed: 9.49 / 9.49 / 0.02).
+  Note the measurement consequence — `silenceWait` is computed from the last
+  above-threshold moment, which under continuous noise is the instant the user
+  stopped, so `total_s` on these rows is *optimistically biased*: it omits the
+  time spent noticing the app had not stopped. **Segment these rows out before
+  computing median/P95 for the week.**
+  Not fixed, deliberately. The obvious fix — an adaptive threshold derived from
+  the ambient floor — has a nasty failure mode: estimated from a recording with
+  no quiet moments, the floor rises to speech level, everything then counts as
+  silence, and sentences get cut off mid-word. Designing that from a single
+  sample is exactly the mistake this project's VAD history warns against. The
+  week's `auto_stop` column will show how often it actually happens; decide from
+  that. If it turns out frequent, the direction to explore is silence measured
+  *relative to a running noise floor* rather than an absolute RMS value, with the
+  floor only trusted once a genuinely quiet period has been observed.
 - ~~Diagnostics history is memory-only~~ — solved in v1.6.6 by `UsageLog`. The
   in-app Diagnostics list is still a 60-entry memory window; the CSV is the
   durable record. No log rotation exists: ~200 runs is about 30 KB, so this only
