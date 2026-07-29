@@ -90,7 +90,16 @@ private struct DiagnosticsSettingsView: View {
                         .controlSize(.small)
                         .font(.caption)
                         .help("Records the raw Whisper transcript and the AI-reshaped result for each run, so Copy Report can show what STT vs. AI actually changed. Off by default \u{2014} turn on only for a deliberate test round, then off again.")
+                    Toggle("Log statistics to disk", isOn: $prefs.logUsageStatistics)
+                        .toggleStyle(.checkbox)
+                        .controlSize(.small)
+                        .font(.caption)
+                        .help("Appends one row per dictation to a CSV file that survives quitting, so a week of real use can be reviewed. Numbers only \u{2014} timings, outcome, word count and speech rate. Never the dictated text and never audio.")
                     HStack(spacing: 8) {
+                        if prefs.logUsageStatistics {
+                            Button("Show Log") { revealLog() }
+                                .controlSize(.small)
+                        }
                         Button("Copy Report") { copyReport() }
                             .controlSize(.small)
                             .disabled(store.recent.isEmpty)
@@ -151,6 +160,18 @@ private struct DiagnosticsSettingsView: View {
     private func clear() {
         store.clear()
         showToast("Diagnostics cleared")
+    }
+
+    /// Selects the log in Finder rather than opening it: a CSV double-clicked
+    /// opens in whatever app claims the type, and the useful action here is
+    /// finding the file to attach or inspect.
+    private func revealLog() {
+        let url = UsageLog.fileURL
+        if FileManager.default.fileExists(atPath: url.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([url])
+        } else {
+            showToast("No log yet \u{2014} it appears after the next dictation")
+        }
     }
 
     private func copyReport() {

@@ -76,6 +76,12 @@ struct DictationMetrics: Identifiable {
     var transcribedText: String = ""
     var processedText: String = ""
 
+    /// How many words the recogniser returned. Recorded **always**, unlike the
+    /// text itself: a count carries no content, and it is what makes the logged
+    /// speech-rate figure meaningful when reviewing a week of real use — a run
+    /// with an implausible rate is the trace a hallucination leaves behind.
+    var transcriptWordCount: Int = 0
+
     /// Models this run is being compared across, in Settings order. Empty unless
     /// `AppPreferences.compareSTTModels` was on. Kept separately from the results
     /// so Diagnostics can show a model as "Comparing…" while its call is still in

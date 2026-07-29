@@ -75,6 +75,7 @@ final class AppPreferences: ObservableObject {
     private let captureTestTextKey = "OmniScribe.captureTestText"
     private let sttModelKey = "OmniScribe.sttModel"
     private let compareSTTModelsKey = "OmniScribe.compareSTTModels"
+    private let logUsageStatisticsKey = "OmniScribe.logUsageStatistics"
 
     /// Context the speech recogniser should expect.
     ///
@@ -107,6 +108,17 @@ final class AppPreferences: ObservableObject {
     /// switched on for a deliberate STT/vocabulary test round, then off again.
     @Published var captureTestText: Bool {
         didSet { defaults.set(captureTestText, forKey: captureTestTextKey) }
+    }
+
+    /// Appends one row per dictation to `UsageLog.fileURL`, surviving relaunches.
+    ///
+    /// Separate from `captureTestText` and deliberately so: that switch controls
+    /// whether dictated *content* is held in memory, this one controls whether
+    /// *statistics* are written to disk. Conflating them would mean a week-long
+    /// measurement could not be run without also recording everything the user
+    /// dictated. The log stores no text — see `UsageLog`.
+    @Published var logUsageStatistics: Bool {
+        didSet { defaults.set(logUsageStatistics, forKey: logUsageStatisticsKey) }
     }
 
     /// Which OpenAI transcription model to send audio to. Switchable at runtime
@@ -190,6 +202,7 @@ final class AppPreferences: ObservableObject {
         captureTestText = defaults.bool(forKey: captureTestTextKey)
         sttModel = defaults.string(forKey: sttModelKey) ?? Self.defaultSTTModel
         compareSTTModels = defaults.bool(forKey: compareSTTModelsKey)
+        logUsageStatistics = defaults.bool(forKey: logUsageStatisticsKey)
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }

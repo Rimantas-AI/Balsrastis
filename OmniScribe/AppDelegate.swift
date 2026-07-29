@@ -188,6 +188,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 metrics.transcription = CFAbsoluteTimeGetCurrent() - sttStart
                 metrics.sttModel = sttModelChoice
+                metrics.transcriptWordCount = result.text
+                    .split(whereSeparator: \.isWhitespace).count
                 if AppPreferences.shared.captureTestText {
                     metrics.transcribedText = result.text
                 }
@@ -326,6 +328,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         finished.outcome = outcome
         MetricsStore.shared.record(finished)
         print("[AppDelegate] ⏱️ \(finished.consoleSummary)")
+
+        // Every run, blocked ones included — a week of "how often did a guard
+        // fire, and did anything get through?" is the whole point, and only
+        // logging successes would answer the easier half of that question.
+        if AppPreferences.shared.logUsageStatistics {
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+            let row = finished.usageLogRow(appVersion: version)
+            Task { await UsageLog.shared.append(row) }
+        }
 
         menuBarManager?.updateState(.idle)
 

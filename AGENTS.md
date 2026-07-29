@@ -462,6 +462,24 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   real but rests on only four noise samples, and the current configuration
   already blocked 3/3 noise clips without it, so it stays unbuilt. Revisit only
   if a hallucination actually gets through.
+- v1.6.6 — **on-disk usage log** (`UsageLog`, Settings → Diagnostics → "Log
+  statistics to disk", off by default), the last thing missing before roadmap
+  step 2. `MetricsStore` is memory-only and resets on relaunch, so "did a
+  hallucination reach the document this week?" was unanswerable; the log survives
+  quitting and app updates (it lives in Application Support, not the bundle,
+  which is replaced wholesale on every install).
+  **It stores no dictated content by construction.** Every field is a number, a
+  timestamp or a fixed label. A word *count* is recorded — it is what makes the
+  speech-rate column meaningful — but never the words. The reduction happens in
+  `DictationMetrics.usageLogRow(appVersion:)`, at the boundary, so the property
+  holds by design rather than by remembering to be careful at each call site.
+  Keep it that way if columns are added.
+  Kept separate from `captureTestText` deliberately: that switch governs whether
+  dictated *content* sits in memory, this one whether *statistics* reach disk.
+  Merging them would make a week-long measurement impossible without also
+  recording everything the user said.
+  Blocked runs are logged too — a log of successes only would answer the easy
+  half of the question and hide the half that matters.
 - v1.6.5 — **direct prompt-echo guard** (`String.echoesPrompt(_:)`), plus the
   correction above. The speech-rate guard only catches recitation while it stays
   long enough to be impossible speech; a partial echo is not, so the recitation
@@ -513,12 +531,10 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   release shipped independently testable so a regression is easy to isolate.
 
 **Known open gaps (not yet built, deliberately deferred):**
-- **Diagnostics history is still memory-only and lost on relaunch.** The 60-entry
-  cap covers a single comparison round, not the week-long/~200-run validation in
-  Roadmap step 2 — that needs a lightweight opt-in on-disk log. Deliberately not
-  built preemptively; build it when step 2 actually starts, and store anonymous
-  session statistics (counts, median, P95, error types, model name) rather than
-  dictated text or audio.
+- ~~Diagnostics history is memory-only~~ — solved in v1.6.6 by `UsageLog`. The
+  in-app Diagnostics list is still a 60-entry memory window; the CSV is the
+  durable record. No log rotation exists: ~200 runs is about 30 KB, so this only
+  matters if the log is left on for months.
 - P95 exists only per STT model (`MetricsStore.sttModelSummaries`), not for
   end-to-end perceived latency — add it alongside average/median/max when sample
   sizes are large enough to mean anything.
@@ -533,8 +549,13 @@ for the full reasoning — condensed here):**
    no prompt (short words collapse into other languages) and short prompt (echo
    survives but slips under the guard). Do not reopen without new evidence; the
    reasoning is in the v1.6.2–v1.6.4 notes above.
-2. One week / ~200 real dictations of actual daily use (not lab sentences) with
-   the chosen model. Target bar before considering the app distribution-ready:
+2. **← CURRENT STEP.** One week / ~200 real dictations of actual daily use (not
+   lab sentences) with the chosen model. Tooling is ready: turn on Settings →
+   Diagnostics → "Log statistics to disk" and leave the other two diagnostic
+   switches **off** (compare mode costs 6× STT; capture-test-text holds dictated
+   content). Then read the CSV, not impressions: run count, blocked count and
+   their reasons, median and P95, and — the question the whole guard stack exists
+   for — whether any row shows a hallucination that got inserted. Target bar before considering the app distribution-ready:
    zero hallucinated inserts, ≤1-2% false-blocked real speech, median ≤~5s,
    P95 not routinely spiking to 15-20s, numbers/dates/addresses correct in the
    large majority of runs.
