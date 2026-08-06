@@ -268,6 +268,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
                 self.complete(metrics, outcome: DictationMetrics.insertedOutcome, failure: nil)
             } catch {
+                // Only the error's *case* is recorded, never its message: server
+                // text can quote request content or a key fragment, and the log
+                // must stay shareable without review.
+                metrics.failureCategory = FailureCategory.from(error).rawValue
                 self.complete(metrics,
                               outcome: "Failed",
                               failure: error.localizedDescription)

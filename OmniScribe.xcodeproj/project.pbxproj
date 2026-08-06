@@ -31,6 +31,7 @@
 		00000000000000000000EC /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DC /* WindowManager.swift */; };
 		00000000000000000000ED /* CloudWhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DD /* CloudWhisperService.swift */; };
 		00000000000000000000EE /* DictationMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DE /* DictationMetrics.swift */; };
+		00000000000000000000F0 /* FailureCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000E0 /* FailureCategory.swift */; };
 		00000000000000000000EF /* UsageLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DF /* UsageLog.swift */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +63,7 @@
 		00000000000000000000DC /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		00000000000000000000DD /* CloudWhisperService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudWhisperService.swift; sourceTree = "<group>"; };
 		00000000000000000000DE /* DictationMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationMetrics.swift; sourceTree = "<group>"; };
+		00000000000000000000E0 /* FailureCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FailureCategory.swift; sourceTree = "<group>"; };
 		00000000000000000000DF /* UsageLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageLog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -118,6 +120,7 @@
 				00000000000000000000DC /* WindowManager.swift */,
 				00000000000000000000DD /* CloudWhisperService.swift */,
 				00000000000000000000DE /* DictationMetrics.swift */,
+				00000000000000000000E0 /* FailureCategory.swift */,
 				00000000000000000000DF /* UsageLog.swift */,
 				0000000000000000000000B8 /* Assets.xcassets */,
 				0000000000000000000000B6 /* Info.plist */,
@@ -218,6 +221,7 @@
 				00000000000000000000EC /* WindowManager.swift in Sources */,
 				00000000000000000000ED /* CloudWhisperService.swift in Sources */,
 				00000000000000000000EE /* DictationMetrics.swift in Sources */,
+				00000000000000000000F0 /* FailureCategory.swift in Sources */,
 				00000000000000000000EF /* UsageLog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -348,7 +352,7 @@
 				CODE_SIGN_ENTITLEMENTS = OmniScribe/OmniScribe.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -357,7 +361,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.6.6;
+				MARKETING_VERSION = 1.6.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omniscribe.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -373,7 +377,7 @@
 				CODE_SIGN_ENTITLEMENTS = OmniScribe/OmniScribe.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -382,7 +386,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.6.6;
+				MARKETING_VERSION = 1.6.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omniscribe.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

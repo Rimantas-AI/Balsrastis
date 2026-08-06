@@ -97,6 +97,11 @@ struct DictationMetrics: Identifiable {
     /// what the AI produced must be explainable from the report alone.
     var aiCleanupRejection: String = ""
 
+    /// Fixed label for why a run failed, empty when it did not — see
+    /// `FailureCategory`. Never holds an error message, only a compile-time
+    /// constant, so it is safe in a shareable log.
+    var failureCategory: String = ""
+
     /// `"2/3"`-style progress over the compared models, or empty when this run
     /// was not part of a comparison. Shown so "no results" is distinguishable
     /// from "results still arriving" — and so a report copied too early is

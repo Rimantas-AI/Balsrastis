@@ -205,6 +205,13 @@ This only disappears with a real Developer ID signature.
 - **Distribution friction:** ad-hoc signing → users need `xattr`/"Open Anyway" and
   re-grant Accessibility each build. Real fix = Apple Developer ID ($99/yr) +
   notarization + a `.dmg`/GitHub Release. Not done yet.
+- **`gpt-4o-mini-transcribe` is an alias, not a pinned snapshot.** The entire STT
+  decision rests on a name OpenAI can repoint without notice, and we would not
+  notice: the usage log holds no text, so a quality regression would be invisible
+  in the numbers. Before the pilot, check whether a dated snapshot id exists for
+  it and pin it if so. If none exists, record that as an accepted risk rather
+  than assuming stability. (The Anthropic side has the same issue and the fix is
+  known — pin `claude-haiku-4-5-20251001`-style dated ids, never bare aliases.)
 - **Two API keys required, per machine:** OpenAI (for STT) **and** Anthropic/Claude
   (for reshaping), entered in Settings → API Keys. Don't confuse the fields
   (`sk-...`/`sk-proj-...` = OpenAI; `sk-ant-...` = Claude). Swapping them → 401 on both.
@@ -462,6 +469,55 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   real but rests on only four noise samples, and the current configuration
   already blocked 3/3 noise clips without it, so it stays unbuilt. Revisit only
   if a hallucination actually gets through.
+- v1.6.7 — **week-long validation passed; `failure_category` added.**
+  **203 real attempts across two Macs, 2026-07-29 → 08-06.** Primary Mac (132
+  attempts over 7 days) against the roadmap's bar:
+
+  | Bar | Target | Result |
+  |---|---|---|
+  | Hallucinated inserts | 0 | 0 detectable |
+  | Falsely blocked speech | ≤1–2% | 0% (2 blocks, both correct) |
+  | Median latency | ≤~5s | **4.33s** |
+  | P95 not spiking to 15–20s | — | **7.15s**, max 11.67s |
+
+  98.5% success (130/132). **Across all 203 attempts no guard fired a single
+  false positive** — zero `Implausible speech rate`, zero `Prompt echoed back`,
+  zero `AI cleanup rejected`, highest inserted speech rate 2.09 w/s against the
+  4.0 limit. The guard stack is invisible in real use, which is what it was for.
+
+  Latency composition, and the finding that should drive the next work: **AI
+  cleanup is 44.3%** of total (median 1.79s, P95 3.45s, max 7.73s), STT 29.0%,
+  VAD silence 23.8%, paste 2.9%. Local STT cannot fix the dominant cost — this is
+  why a local-Whisper spike was proposed and declined.
+
+  Read the numbers with three limits in mind, all of them real:
+  1. **"Zero hallucinations" means zero *detectable*.** The log holds no text by
+     design. A short, plausibly-paced hallucination would not show up here.
+  2. **Usage was uneven**: 3/3/2/**105**/2/10/7 per day. Seven distinct days is a
+     genuine retention signal, but the volume sits in one session — closer to a
+     long test than to natural daily use. And one developer returning for seven
+     days is not the same evidence as several independent users doing so.
+  3. **The fan issue is now measured at 7.6%** (10/132) and it *biases the
+     numbers optimistically*: those rows' median is 3.50s versus 4.41s for
+     auto-stopped runs, because a manual stop skips the 1.2s silence wait and
+     excludes the time spent noticing the app had not stopped. **True median is
+     4.41s**, not 4.33s. Segment these rows out of any future analysis.
+
+  `failure_category` was added to the log because the week could not explain its
+  own failures: four runs on the secondary Mac (5.6% of that machine's attempts)
+  recorded confirmed speech that produced no transcript, with no way to tell a
+  network drop from a rejected key from a rate limit. The values are a **closed
+  set of compile-time constants** — `FailureCategory` never reads an error's
+  text, because server messages can quote request content or a key fragment and
+  the log's whole value is that it can be shared without review. `unknown` exists
+  so an unmapped failure is still visible as a failure rather than vanishing into
+  an empty column.
+  Adding that column also required log rotation: the header is written only at
+  file creation, so an existing log would have kept its old header while gaining
+  wider rows — every parser silently misaligning every column after the new one.
+  `UsageLog.rotateIfHeaderChanged` renames the old file instead. **Any future
+  column change must keep this working; a week of runs is not something to
+  discard because a field was added.**
 - v1.6.6 — **on-disk usage log** (`UsageLog`, Settings → Diagnostics → "Log
   statistics to disk", off by default), the last thing missing before roadmap
   step 2. `MetricsStore` is memory-only and resets on relaunch, so "did a
@@ -543,8 +599,15 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   stopped, so `total_s` on these rows is *optimistically biased*: it omits the
   time spent noticing the app had not stopped. **Segment these rows out before
   computing median/P95 for the week.**
-  Not fixed, deliberately. The obvious fix — an adaptive threshold derived from
-  the ambient floor — has a nasty failure mode: estimated from a recording with
+  Measured at **7.6% of runs** (10/132) over the validation week. Still not
+  fixed, and an independent review agreed: it is one machine in one acoustic
+  environment, manual ⌥Space works, and the guard chain is currently stable and
+  verified. Revisit if the pilot shows it across several users' machines or above
+  ~5% of their dictations. Until then it belongs in onboarding, not in the VAD:
+  *"If continuous background noise stops the recording from ending on its own,
+  press ⌥Space again."*
+  The obvious fix — an adaptive threshold derived from the ambient floor — has a
+  nasty failure mode: estimated from a recording with
   no quiet moments, the floor rises to speech level, everything then counts as
   silence, and sentences get cut off mid-word. Designing that from a single
   sample is exactly the mistake this project's VAD history warns against. The
@@ -576,13 +639,38 @@ for the full reasoning — condensed here):**
    switches **off** (compare mode costs 6× STT; capture-test-text holds dictated
    content). Then read the CSV, not impressions: run count, blocked count and
    their reasons, median and P95, and — the question the whole guard stack exists
-   for — whether any row shows a hallucination that got inserted. Target bar before considering the app distribution-ready:
-   zero hallucinated inserts, ≤1-2% false-blocked real speech, median ≤~5s,
-   P95 not routinely spiking to 15-20s, numbers/dates/addresses correct in the
-   large majority of runs.
-3. Freeze that build as a release candidate; no new features until this passes.
-4. Notarization (Apple Developer $99/yr) + a first-run permissions/setup wizard
-   — removes the `xattr`/Terminal friction for anyone who isn't the developer.
+   for — whether any row shows a hallucination that got inserted.
+3. ✅ **Done.** v1.6.6 stayed frozen through the validation week; no features
+   landed until it passed.
+4. **← CURRENT STEP.** Three parts, in this order, after an independent review
+   agreed the sequence:
+   a. **Start the Apple Developer registration now, in parallel.** It can take
+      days and must not become the blocking wait.
+   b. **Cleanup-model comparison (Opus vs Haiku) before notarizing.** AI cleanup
+      is 44.3% of latency and `claude-opus-4-8` is very likely overpowered for
+      fixing grammar. Test it the way the STT choice was tested: send the same
+      `Raw STT` text to both models, log both, and **insert only the primary
+      model's output** so daily use is untouched. Pin the dated id
+      (`claude-haiku-4-5-20251001`), not the alias, so a rerun compares the same
+      thing. Cheap to test, because here the input is *text*, not audio.
+      Switch only if: no meaning or fact changes, no invented content, Lithuanian
+      quality not materially worse, `AI cleanup rejected` stays at its current
+      zero, and **P95 improves** — weight the tail over the median, since a 30%
+      median gain on the AI stage is only ~12% end-to-end while the tail is what
+      makes the app feel stuck.
+      ⚠️ This round needs `captureTestText` on — judging cleanup quality requires
+      seeing the text. That is what the switch is for; turn it off afterwards.
+      Notarize the *chosen* configuration, so testers are not handed a build
+      whose main model changes days later.
+   c. Then Developer ID signing, hardened runtime, `notarytool` + `stapler`, and
+      a clean-install check on **both** macOS 12 and 15, plus an update check
+      that permissions and Keychain keys survive.
+   Also before the pilot: walk the whole first-run path as a non-developer would
+   — mic permission, Accessibility, both API keys present and valid, a
+   comprehensible message for credit/rate-limit errors, a test dictation that
+   proves the level meter moves and text lands, plain privacy wording (audio goes
+   to OpenAI, transcript goes to Anthropic, the usage log is opt-in and holds no
+   text or audio), and a Copy Diagnostics path a tester can use without Terminal.
 5. Closed pilot with 5-10 Lithuanian-dictating Mac users (mixed technical
    skill, mixed hardware). The real signal is not feature requests — it's
    whether they keep opening the app unprompted after the novelty wears off.

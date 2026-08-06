@@ -35,7 +35,7 @@ actor UsageLog {
 
     private static let header = "timestamp,app_version,stt_model,mode,outcome,auto_stop,"
         + "spoke_s,above_threshold_s,longest_span_s,silence_s,stt_s,ai_s,paste_s,total_s,"
-        + "words,words_per_second,ai_cleanup_rejected\n"
+        + "words,words_per_second,ai_cleanup_rejected,failure_category\n"
 
     /// Appends one already-formatted row, creating the file and header on first
     /// use. Failures are printed and swallowed: a logging problem must never
@@ -46,6 +46,8 @@ actor UsageLog {
             let directory = url.deletingLastPathComponent()
             try FileManager.default.createDirectory(at: directory,
                                                     withIntermediateDirectories: true)
+
+            try Self.rotateIfHeaderChanged(at: url)
 
             if !FileManager.default.fileExists(atPath: url.path) {
                 try Self.header.write(to: url, atomically: true, encoding: .utf8)
@@ -60,6 +62,34 @@ actor UsageLog {
         } catch {
             print("[UsageLog] ⚠️ Could not write the usage log: \(error.localizedDescription)")
         }
+    }
+
+    /// Moves an existing log aside when its header no longer matches the columns
+    /// being written.
+    ///
+    /// Without this, adding a column silently corrupts the file: the header is
+    /// only written when the file is created, so an existing log would keep its
+    /// old header while gaining wider rows, and every parser would misalign every
+    /// column after the new one. That is the worst kind of data loss — the file
+    /// still opens, and the numbers are simply wrong.
+    ///
+    /// The old file is renamed rather than deleted. A week of collected runs is
+    /// not something to discard because a column was added.
+    private static func rotateIfHeaderChanged(at url: URL) throws {
+        guard let existing = try? String(contentsOf: url, encoding: .utf8),
+              let firstLine = existing.split(separator: "\n", maxSplits: 1).first
+        else { return }
+
+        guard firstLine + "\n" != header else { return }
+
+        var archived = url.deletingPathExtension().path + "-previous"
+        var suffix = 1
+        while FileManager.default.fileExists(atPath: archived + ".csv") {
+            suffix += 1
+            archived = url.deletingPathExtension().path + "-previous\(suffix)"
+        }
+        try FileManager.default.moveItem(at: url, to: URL(fileURLWithPath: archived + ".csv"))
+        print("[UsageLog] ℹ️ Log columns changed; previous log kept as \(archived).csv")
     }
 }
 
@@ -97,6 +127,7 @@ extension DictationMetrics {
             String(transcriptWordCount),
             rate,
             aiCleanupRejection,
+            failureCategory,
         ]
 
         // Quote every field: `outcome` and `ai_cleanup_rejected` are
