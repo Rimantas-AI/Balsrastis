@@ -279,9 +279,73 @@ private struct MetricsRow: View {
             if !entry.comparedModels.isEmpty {
                 comparison
             }
+
+            if !entry.comparedAIModels.isEmpty {
+                cleanupComparison
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 9)
+    }
+
+    /// The same transcript as cleaned by each candidate model. A model that would
+    /// have had its output rejected is called out in orange — that is the quality
+    /// signal, and it matters more here than the timing beside it.
+    private var cleanupComparison: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Cleanup comparison: \(entry.aiComparison.count)/\(entry.comparedAIModels.count)"
+                 + (entry.aiComparison.count == entry.comparedAIModels.count ? " complete" : " \u{2014} still running"))
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.secondary)
+
+            ForEach(entry.comparedAIModels, id: \.self) { model in
+                let result = entry.aiComparison.first { $0.model == model }
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 6) {
+                        Text(model)
+                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                        if result?.isPrimary == true {
+                            Text("primary")
+                                .font(.system(size: 9))
+                                .padding(.horizontal, 4)
+                                .background(Color.accentColor.opacity(0.18), in: RoundedRectangle(cornerRadius: 3))
+                        }
+                        Spacer()
+                        if let result, result.failure == nil {
+                            Text(String(format: "%.2f s", result.duration))
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                    }
+                    if let result {
+                        if let failure = result.failure {
+                            Text(failure)
+                                .font(.system(size: 10))
+                                .foregroundStyle(.orange)
+                        } else {
+                            Text(result.text.isEmpty ? "(empty)" : result.text)
+                                .font(.system(size: 11))
+                                .textSelection(.enabled)
+                            if let reason = result.rejectionReason {
+                                Text("would be rejected: \(reason)")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(.orange)
+                            }
+                        }
+                    } else {
+                        Text("comparing\u{2026}")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 5))
+            }
+        }
+        .padding(.top, 2)
     }
 
     /// The same audio as heard by each STT model. Models answer at different
@@ -378,6 +442,9 @@ private struct GeneralSettingsView: View {
                         Text(provider.displayName).tag(provider)
                     }
                 }
+
+                Toggle("Compare cleanup models", isOn: $prefs.compareAICleanup)
+                    .help("Sends the same transcript to every cleanup model and shows all results in Diagnostics. Only the primary model's text is ever pasted. Doubles Anthropic usage \u{2014} for a deliberate test round, not daily use.")
 
                 Picker("STT Model", selection: $prefs.sttModel) {
                     ForEach(AppPreferences.availableSTTModels, id: \.self) { model in

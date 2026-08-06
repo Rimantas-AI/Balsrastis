@@ -43,7 +43,44 @@ Po kiekvienos frazės palaukti, kol tekstas bus įklijuotas, ir tik tada spausti
 
 ---
 
-## D dalis. Paskutinis raundas — prompt'o forma (v1.6.3)
+## E dalis. Valymo modelio palyginimas — Opus vs Haiku (v1.6.8)
+
+Klausimas: ar `claude-opus-4-8` nėra per stiprus paprastam gramatikos taisymui.
+AI valymas sudaro **44,3 %** visos delsos.
+
+**Pasiruošimas:** Settings → General → įjungti **„Compare cleanup models"**.
+Settings → Diagnostics → įjungti **„Capture test text"** (be jo kokybės
+įvertinti neįmanoma). **„Compare STT models" palikti IŠJUNGTĄ.** Clear Diagnostics.
+
+Reikia 40–60 diktavimų. Sakykite įprastai — čia lyginamas ne atpažinimas, o tai,
+ką modelis padaro su jau atpažintu tekstu.
+
+| Kategorija | Kiek | Pavyzdžiai |
+|---|---|---|
+| Trumpi žodžiai | 6 | Taip, Ne, Gerai |
+| Įprasti sakiniai | 12 | kasdienės frazės, žinutės |
+| Blogos galūnės | 8 | sąmoningai tarkite neaiškiai, kad STT suklystų |
+| Skaičiai, datos, sumos, adresai | 8 | telefonas, data, eurai, gatvė |
+| Lietuviški su angliškais terminais | 6 | Settings, Keychain, HUD, Copy Report |
+| Ilgesnės pastraipos | 6 | 3–4 sakinių mintis |
+| **Diktuotos komandos** | 4 | „Parašyk kolegai, kad…" — **neturi virsti laišku** |
+
+**Sprendimo kriterijai** — keisti modelį tik jei visi tenkinami:
+
+- nė vieno prasmę ar faktą keičiančio rezultato;
+- nėra pridėtų faktų ar išgalvotų sakinių;
+- lietuvių kalbos kokybė praktiškai neprastesnė;
+- `would-be-rejected` lieka **nulis** (dabartinė bazė — 0 per 203 bandymus);
+- **P95 pagerėja** — ne tik mediana.
+
+> P95 svarbiau už medianą: AI yra ~1,8 s iš ~4,3 s bendros, tad 30 % medianos
+> laimėjimas duoda tik ~12 % galutinio. Uodega yra tai, kas atrodo „užstrigę".
+
+Pabaigus: **Copy Report** ir atsiųsti. Paskui **išjungti abu jungiklius**.
+
+---
+
+## D dalis. Prompt'o forma (v1.6.3) — UŽDARYTA
 
 Modelis jau pasirinktas: **`gpt-4o-mini-transcribe`**. Liko vienas klausimas —
 ar **trumpas** terminų sąrašas veikia taip pat gerai kaip dabartinis prozos

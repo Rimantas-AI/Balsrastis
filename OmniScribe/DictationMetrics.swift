@@ -26,6 +26,32 @@ struct STTComparisonResult: Identifiable {
     var looksLikeNoSpeech: Bool { failure == nil && text.looksLikeNoSpeech }
 }
 
+/// One cleanup model's answer to a single transcript, for the same-text
+/// comparison mode (`AppPreferences.compareAICleanup`).
+///
+/// The mirror of `STTComparisonResult`, one stage later. Comparing cleanup models
+/// is far cheaper than comparing recognisers, because the input here is *text*:
+/// every model receives byte-identical input, so nothing about the speaker,
+/// microphone or pace can confound the result the way a second take would.
+struct AIComparisonResult: Identifiable {
+    let id = UUID()
+    let model: String
+    /// The model whose output was actually pasted (the registered provider).
+    let isPrimary: Bool
+    let duration: TimeInterval
+    /// Cleaned text, or empty when the call failed.
+    let text: String
+    /// Error description when the call failed, `nil` on success. A secondary
+    /// model failing is recorded and otherwise ignored.
+    let failure: String?
+    /// Why `ProcessingMode.cleanupRejectionReason` would have discarded this
+    /// output, or `nil`. Recorded because "is it faster" is the easy question and
+    /// "does it start rewriting instead of correcting" is the one that decides
+    /// whether a model is usable — the current rejection count is zero across 203
+    /// real runs, so any rejection at all from a candidate is a signal.
+    let rejectionReason: String?
+}
+
 /// Timing breakdown of one dictation, measured the way latency is actually felt:
 /// the clock starts at the **last spoken word**, not at ⌥Space. Time spent
 /// speaking belongs to the user, not to the app, so including it would hide the
@@ -91,6 +117,12 @@ struct DictationMetrics: Identifiable {
     /// Per-model results, appended as each call returns (any order).
     var sttComparison: [STTComparisonResult] = []
 
+    /// Cleanup models this run was sent to, and their answers. Same split as the
+    /// STT pair above: the intended list is fixed at dictation time so an
+    /// unfinished comparison reads as "still running" rather than "did not run".
+    var comparedAIModels: [String] = []
+    var aiComparison: [AIComparisonResult] = []
+
     /// Why the AI result was discarded and the raw transcript inserted instead
     /// (see `ProcessingMode.cleanupRejectionReason`), or empty when the AI output
     /// was used. Recorded so a rejection is never silent — text differing from
@@ -152,6 +184,27 @@ struct DictationMetrics: Identifiable {
         if !transcribedText.isEmpty { block += "\nRaw STT: \(transcribedText)" }
         if !processedText.isEmpty { block += "\nFinal: \(processedText)" }
 
+        if !comparedAIModels.isEmpty {
+            block += "\nCleanup comparison: \(aiComparison.count)/\(comparedAIModels.count)"
+                  + (aiComparison.count == comparedAIModels.count ? " complete" : " — still running")
+            for model in comparedAIModels {
+                guard let r = aiComparison.first(where: { $0.model == model }) else {
+                    block += "\n  \(model)\n    (waiting)"
+                    continue
+                }
+                block += "\n  \(model)\(r.isPrimary ? " (primary, pasted)" : "")"
+                block += String(format: "\n    Time: %.2f s", r.duration)
+                if let failure = r.failure {
+                    block += "\n    Failed: \(failure)"
+                } else {
+                    block += "\n    Out: \(r.text)"
+                    if let reason = r.rejectionReason {
+                        block += "\n    ⚠️ would be rejected: \(reason)"
+                    }
+                }
+            }
+        }
+
         if !comparedModels.isEmpty {
             let done = comparisonProgress
             block += "\nComparison status: \(done)"
@@ -204,11 +257,15 @@ final class MetricsStore: ObservableObject {
     /// model can answer before the dictation it belongs to has finished — without
     /// this buffer that result would be dropped.
     private var pendingComparisons: [UUID: [STTComparisonResult]] = [:]
+    private var pendingAIComparisons: [UUID: [AIComparisonResult]] = [:]
 
     func record(_ metrics: DictationMetrics) {
         var entry = metrics
         if let pending = pendingComparisons.removeValue(forKey: entry.id) {
             entry.sttComparison.append(contentsOf: pending)
+        }
+        if let pending = pendingAIComparisons.removeValue(forKey: entry.id) {
+            entry.aiComparison.append(contentsOf: pending)
         }
         recent.insert(entry, at: 0)
         if recent.count > maxEntries {
@@ -229,10 +286,21 @@ final class MetricsStore: ObservableObject {
         }
     }
 
+    /// Files one cleanup model's result against its own dictation. Same run-id
+    /// matching as `recordComparison(_:forRun:)`, for the same reason.
+    func recordAIComparison(_ result: AIComparisonResult, forRun runID: UUID) {
+        if let index = recent.firstIndex(where: { $0.id == runID }) {
+            recent[index].aiComparison.append(result)
+        } else {
+            pendingAIComparisons[runID, default: []].append(result)
+        }
+    }
+
     /// Wipes the history so a fresh test round starts from a clean slate.
     func clear() {
         recent.removeAll()
         pendingComparisons.removeAll()
+        pendingAIComparisons.removeAll()
     }
 
     /// Average perceived latency over successful dictations.
@@ -309,6 +377,47 @@ final class MetricsStore: ObservableObject {
         }
     }
 
+    /// Per-cleanup-model aggregate. **P95 is the number to decide on, not the
+    /// median**: the AI stage's median is 1.79s out of a 4.33s total, so even a
+    /// 30% median win is only ~12% end-to-end, while its tail (P95 3.45s, max
+    /// 7.73s) is what makes the app feel stuck. `rejections` is the quality
+    /// gate — it stands at zero across 203 real runs, so any value above zero
+    /// from a candidate model is a signal, not noise.
+    struct AIModelSummary: Identifiable {
+        var id: String { model }
+        let model: String
+        let runs: Int
+        let median: TimeInterval?
+        let p95: TimeInterval?
+        let slowest: TimeInterval?
+        let failures: Int
+        let rejections: Int
+    }
+
+    var aiModelSummaries: [AIModelSummary] {
+        let compared = recent.filter { !$0.comparedAIModels.isEmpty }
+        guard !compared.isEmpty else { return [] }
+
+        let models = compared.flatMap(\.comparedAIModels)
+        var seen = Set<String>()
+        let ordered = models.filter { seen.insert($0).inserted }
+
+        return ordered.compactMap { model in
+            let results = compared.flatMap(\.aiComparison).filter { $0.model == model }
+            guard !results.isEmpty else { return nil }
+            let durations = results.filter { $0.failure == nil }.map(\.duration).sorted()
+            return AIModelSummary(
+                model: model,
+                runs: results.count,
+                median: Self.percentile(durations, 0.5),
+                p95: Self.percentile(durations, 0.95),
+                slowest: durations.last,
+                failures: results.filter { $0.failure != nil }.count,
+                rejections: results.filter { $0.rejectionReason != nil }.count
+            )
+        }
+    }
+
     /// Nearest-rank percentile. Exact interpolation is false precision at the
     /// sample sizes involved (tens of runs, not thousands).
     private static func percentile(_ sorted: [TimeInterval], _ fraction: Double) -> TimeInterval? {
@@ -351,6 +460,22 @@ final class MetricsStore: ObservableObject {
                 )
             }
             lines.append("Accuracy is not scored here \u{2014} read the per-run Raw lines below.")
+            lines.append("")
+        }
+
+        let aiSummaries = aiModelSummaries
+        if !aiSummaries.isEmpty {
+            lines.append("Cleanup model comparison (same transcript per run)")
+            for summary in aiSummaries {
+                lines.append(
+                    "\(summary.model) \u{2014} runs: \(summary.runs) \u{00B7} median: \(f(summary.median)) "
+                    + "\u{00B7} P95: \(f(summary.p95)) \u{00B7} slowest: \(f(summary.slowest)) "
+                    + "\u{00B7} failed: \(summary.failures) \u{00B7} would-be-rejected: \(summary.rejections)"
+                )
+            }
+            lines.append("Decide on P95, not median: the AI stage is ~1.8 s of a ~4.3 s total, so a")
+            lines.append("30% median win is only ~12% end to end \u{2014} the tail is what feels stuck.")
+            lines.append("Quality is not scored here \u{2014} read the per-run Out: lines and compare them yourself.")
             lines.append("")
         }
 

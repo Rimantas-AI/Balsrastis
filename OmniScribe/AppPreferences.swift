@@ -76,6 +76,7 @@ final class AppPreferences: ObservableObject {
     private let sttModelKey = "OmniScribe.sttModel"
     private let compareSTTModelsKey = "OmniScribe.compareSTTModels"
     private let logUsageStatisticsKey = "OmniScribe.logUsageStatistics"
+    private let compareAICleanupKey = "OmniScribe.compareAICleanup"
 
     /// Context the speech recogniser should expect.
     ///
@@ -120,6 +121,29 @@ final class AppPreferences: ObservableObject {
     @Published var logUsageStatistics: Bool {
         didSet { defaults.set(logUsageStatistics, forKey: logUsageStatisticsKey) }
     }
+
+    /// Sends the same transcript to every model in `aiComparisonModels`, so
+    /// cleanup models can be compared on byte-identical input. Only the primary
+    /// model's output is ever pasted.
+    ///
+    /// Much cheaper than the STT comparison in every sense: the input is text, so
+    /// there is no re-recording problem to design around, the calls are small, and
+    /// a candidate model can be judged from the report without a second test round.
+    @Published var compareAICleanup: Bool {
+        didSet { defaults.set(compareAICleanup, forKey: compareAICleanupKey) }
+    }
+
+    /// Cleanup models to compare, as **pinned dated ids, never bare aliases**.
+    ///
+    /// An alias can be repointed by the provider at any time, which would silently
+    /// invalidate a comparison and make a rerun measure something different from
+    /// the first run. The same hazard applies to the STT side — see the alias note
+    /// in AGENTS.md's known issues.
+    ///
+    /// `claude-opus-4-8` is the incumbent; the reason to test a Haiku-tier model is
+    /// that the AI stage is 44.3% of measured latency and fixing grammar in a
+    /// dictated sentence is not obviously a task that needs the largest model.
+    static let aiComparisonModels = ["claude-opus-4-8", "claude-haiku-4-5-20251001"]
 
     /// Which OpenAI transcription model to send audio to. Switchable at runtime
     /// (no relaunch) so the same test script can be re-run per model and compared
@@ -203,6 +227,7 @@ final class AppPreferences: ObservableObject {
         sttModel = defaults.string(forKey: sttModelKey) ?? Self.defaultSTTModel
         compareSTTModels = defaults.bool(forKey: compareSTTModelsKey)
         logUsageStatistics = defaults.bool(forKey: logUsageStatisticsKey)
+        compareAICleanup = defaults.bool(forKey: compareAICleanupKey)
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }

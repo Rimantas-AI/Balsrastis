@@ -240,6 +240,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let mode = AppPreferences.shared.selectedMode
                 WindowManager.shared.updateHUD(phase: .polishing)
 
+                // Fire the candidate cleanup models *before* awaiting the primary
+                // one, on the same transcript. Started alongside rather than after,
+                // so the comparison costs the user nothing — same rule as the STT
+                // comparison, and the reason neither is allowed to be awaited.
+                if AppPreferences.shared.compareAICleanup {
+                    metrics.comparedAIModels = AppPreferences.aiComparisonModels
+                    self.compareAICleanup(text: result.text,
+                                          mode: mode,
+                                          primaryModel: self.aiCoordinator.activeModelIdentifier,
+                                          runID: metrics.id)
+                }
+
                 let aiStart = CFAbsoluteTimeGetCurrent()
                 let processed = try await self.aiCoordinator.process(text: result.text, mode: mode)
                 metrics.aiProcessing = CFAbsoluteTimeGetCurrent() - aiStart
@@ -319,6 +331,55 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                             duration: CFAbsoluteTimeGetCurrent() - start,
                                             text: "",
                                             failure: error.localizedDescription),
+                        forRun: runID)
+                }
+            }
+        }
+    }
+
+    /// Sends the same transcript to every cleanup model in
+    /// `AppPreferences.aiComparisonModels`, purely to fill in the Diagnostics
+    /// comparison (`AppPreferences.compareAICleanup`).
+    ///
+    /// The primary model is included, so the report shows every candidate against
+    /// the incumbent on identical input. That means one extra call for the primary
+    /// model — its own timing here is measured separately from the pipeline's, and
+    /// keeping the arms symmetrical is worth more than saving one request during a
+    /// deliberate test round.
+    ///
+    /// Fire-and-forget, like the STT comparison: nothing awaits these, so the text
+    /// the user is waiting for is never delayed, and a candidate model failing is
+    /// recorded and otherwise ignored.
+    private func compareAICleanup(text: String,
+                                  mode: ProcessingMode,
+                                  primaryModel: String,
+                                  runID: UUID) {
+        for model in AppPreferences.aiComparisonModels {
+            let service = ClaudeService(model: model)
+            let isPrimary = model == primaryModel
+            Task {
+                let start = CFAbsoluteTimeGetCurrent()
+                do {
+                    let output = try await service.process(text: text, mode: mode)
+                    let rejection = mode == .ltTyping
+                        ? ProcessingMode.cleanupRejectionReason(raw: text, processed: output)
+                        : nil
+                    MetricsStore.shared.recordAIComparison(
+                        AIComparisonResult(model: model,
+                                           isPrimary: isPrimary,
+                                           duration: CFAbsoluteTimeGetCurrent() - start,
+                                           text: output,
+                                           failure: nil,
+                                           rejectionReason: rejection),
+                        forRun: runID)
+                } catch {
+                    MetricsStore.shared.recordAIComparison(
+                        AIComparisonResult(model: model,
+                                           isPrimary: isPrimary,
+                                           duration: CFAbsoluteTimeGetCurrent() - start,
+                                           text: "",
+                                           failure: error.localizedDescription,
+                                           rejectionReason: nil),
                         forRun: runID)
                 }
             }
