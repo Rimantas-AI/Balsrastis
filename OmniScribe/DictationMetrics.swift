@@ -14,16 +14,40 @@ struct STTComparisonResult: Identifiable {
     /// Round trip for this model alone. Meaningful only in aggregate — a single
     /// cloud call's latency varies too much to rank models on.
     let duration: TimeInterval
-    /// Raw transcript, or empty when the call failed.
+    /// Raw transcript — empty when the call failed **and** when
+    /// `AppPreferences.captureTestText` is off. Use `init(model:isPrimary:duration:transcript:failure:)`
+    /// rather than setting this directly, so the capture gate cannot be skipped.
     let text: String
     /// Error description when the call failed, `nil` on success. A secondary
     /// model failing is recorded and otherwise ignored — it must never affect
     /// the dictation the user is waiting on.
     let failure: String?
-    /// Whether `text` would have been rejected by the output-side no-speech
-    /// guard. Recorded because "returned 🎵🎵🎵" and "returned a real sentence"
-    /// are very different comparison outcomes on the same noise clip.
-    var looksLikeNoSpeech: Bool { failure == nil && text.looksLikeNoSpeech }
+    /// Whether the transcript would have been rejected by the output-side
+    /// no-speech guard. Recorded because "returned 🎵🎵🎵" and "returned a real
+    /// sentence" are very different comparison outcomes on the same noise clip.
+    ///
+    /// Stored rather than computed from `text`, because `text` is dropped when
+    /// capture is off — deriving it then would report *every* arm as no-speech.
+    /// The verdict is taken from the real transcript at creation time; only the
+    /// words are discarded.
+    let looksLikeNoSpeech: Bool
+
+    /// Records one arm's answer, keeping the transcript only when the user has
+    /// explicitly turned on test-text capture.
+    ///
+    /// The gate lives here rather than at export because the promise made in
+    /// Settings is that daily use never holds dictated content — an export-time
+    /// filter would still have kept every model's transcript in memory, and
+    /// would have been easy to forget on the next surface that prints a result.
+    init(model: String, isPrimary: Bool, duration: TimeInterval,
+         transcript: String, failure: String?) {
+        self.model = model
+        self.isPrimary = isPrimary
+        self.duration = duration
+        self.failure = failure
+        self.looksLikeNoSpeech = failure == nil && transcript.looksLikeNoSpeech
+        self.text = AppPreferences.shared.captureTestText ? transcript : ""
+    }
 }
 
 /// One cleanup model's answer to a single transcript, for the same-text
@@ -39,7 +63,9 @@ struct AIComparisonResult: Identifiable {
     /// The model whose output was actually pasted (the registered provider).
     let isPrimary: Bool
     let duration: TimeInterval
-    /// Cleaned text, or empty when the call failed.
+    /// Cleaned text — empty when the call failed **and** when
+    /// `AppPreferences.captureTestText` is off. Set through the initialiser so
+    /// the capture gate cannot be bypassed.
     let text: String
     /// Error description when the call failed, `nil` on success. A secondary
     /// model failing is recorded and otherwise ignored.
@@ -49,7 +75,23 @@ struct AIComparisonResult: Identifiable {
     /// "does it start rewriting instead of correcting" is the one that decides
     /// whether a model is usable — the current rejection count is zero across 203
     /// real runs, so any rejection at all from a candidate is a signal.
+    ///
+    /// Computed from the real output before the capture gate drops it, so the
+    /// quality signal survives even when the words do not.
     let rejectionReason: String?
+
+    /// Records one candidate's answer, keeping the cleaned text only when the
+    /// user has explicitly turned on test-text capture. Same reasoning as
+    /// `STTComparisonResult.init` — the gate belongs at the source, not at export.
+    init(model: String, isPrimary: Bool, duration: TimeInterval,
+         output: String, failure: String?, rejectionReason: String?) {
+        self.model = model
+        self.isPrimary = isPrimary
+        self.duration = duration
+        self.failure = failure
+        self.rejectionReason = rejectionReason
+        self.text = AppPreferences.shared.captureTestText ? output : ""
+    }
 }
 
 /// Timing breakdown of one dictation, measured the way latency is actually felt:
@@ -197,7 +239,11 @@ struct DictationMetrics: Identifiable {
                 if let failure = r.failure {
                     block += "\n    Failed: \(failure)"
                 } else {
-                    block += "\n    Out: \(r.text)"
+                    // Distinguish "withheld" from "the model returned nothing" —
+                    // an empty line here would read as the latter.
+                    block += r.text.isEmpty
+                        ? "\n    (text not captured — enable Capture test text)"
+                        : "\n    Out: \(r.text)"
                     if let reason = r.rejectionReason {
                         block += "\n    ⚠️ would be rejected: \(reason)"
                     }
@@ -222,7 +268,13 @@ struct DictationMetrics: Identifiable {
             if let failure = result.failure {
                 block += "\n    Failed: \(failure)"
             } else {
-                block += "\n    Raw: \(result.text)"
+                if !result.text.isEmpty {
+                    block += "\n    Raw: \(result.text)"
+                } else if !result.looksLikeNoSpeech {
+                    // Empty here means withheld, not "the recogniser heard
+                    // nothing" — that case is covered by the line below.
+                    block += "\n    (text not captured — enable Capture test text)"
+                }
                 if result.looksLikeNoSpeech { block += "\n    (blocked as no speech)" }
             }
         }

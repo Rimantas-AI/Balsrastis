@@ -180,7 +180,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                             STTComparisonResult(model: primaryVariant.label,
                                                 isPrimary: true,
                                                 duration: CFAbsoluteTimeGetCurrent() - sttStart,
-                                                text: "",
+                                                transcript: "",
                                                 failure: error.localizedDescription),
                             forRun: runID)
                     }
@@ -198,7 +198,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         STTComparisonResult(model: primaryVariant.label,
                                             isPrimary: true,
                                             duration: metrics.transcription,
-                                            text: result.text,
+                                            transcript: result.text,
                                             failure: nil),
                         forRun: runID)
                 }
@@ -321,7 +321,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         STTComparisonResult(model: variant.label,
                                             isPrimary: false,
                                             duration: CFAbsoluteTimeGetCurrent() - start,
-                                            text: result.text,
+                                            transcript: result.text,
                                             failure: nil),
                         forRun: runID)
                 } catch {
@@ -329,7 +329,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         STTComparisonResult(model: variant.label,
                                             isPrimary: false,
                                             duration: CFAbsoluteTimeGetCurrent() - start,
-                                            text: "",
+                                            transcript: "",
                                             failure: error.localizedDescription),
                         forRun: runID)
                 }
@@ -368,7 +368,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         AIComparisonResult(model: model,
                                            isPrimary: isPrimary,
                                            duration: CFAbsoluteTimeGetCurrent() - start,
-                                           text: output,
+                                           output: output,
                                            failure: nil,
                                            rejectionReason: rejection),
                         forRun: runID)
@@ -377,7 +377,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         AIComparisonResult(model: model,
                                            isPrimary: isPrimary,
                                            duration: CFAbsoluteTimeGetCurrent() - start,
-                                           text: "",
+                                           output: "",
                                            failure: error.localizedDescription,
                                            rejectionReason: nil),
                         forRun: runID)

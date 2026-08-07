@@ -518,6 +518,28 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   `UsageLog.rotateIfHeaderChanged` renames the old file instead. **Any future
   column change must keep this working; a week of runs is not something to
   discard because a field was added.**
+- v1.6.9 — **comparison results now honour the capture gate.** Found by reviewing
+  the v1.6.7–v1.6.8 diff, not by a failure.
+  Settings promises that dictated content is only ever kept when "Capture test
+  text" is on, and `reportBlock`'s own comment stated it: *"capture is the real
+  gate"*. Both comparison modes broke that. `STTComparisonResult.text` (since
+  v1.6.2) and `AIComparisonResult.text` (v1.6.8) stored the full transcript and
+  the full cleaned output regardless, so turning on a comparison **without**
+  capture still produced a Copy Report containing every model's version of what
+  was said. The CSV usage log was never affected — it holds no comparison fields
+  at all — so this was a Copy Report leak, not a log leak.
+  Fixed at the **source**, not at export: both structs now take the text through
+  an initialiser that drops it unless capture is on, so the words never enter
+  memory. An export-time filter would have kept them in memory and would have
+  had to be remembered again on the next surface that prints a result.
+  Two details worth keeping if this code is touched: `looksLikeNoSpeech` became a
+  *stored* property, because computing it from a dropped `text` would have
+  reported every arm as no-speech; and empty text now renders as "(text not
+  captured)" rather than "(empty)", which read as "the model returned nothing".
+  ⚠️ Still true and accepted: a comparison round issues 3 Claude calls (primary +
+  2 candidates) and 6 STT calls on one key. A `429` caused by the diagnostic
+  would hit the *primary* call too and fail a real dictation. Acceptable for a
+  deliberate test round; `failure_category` now makes it visible as `rate_limited`.
 - v1.6.6 — **on-disk usage log** (`UsageLog`, Settings → Diagnostics → "Log
   statistics to disk", off by default), the last thing missing before roadmap
   step 2. `MetricsStore` is memory-only and resets on relaunch, so "did a

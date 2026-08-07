@@ -324,8 +324,14 @@ private struct MetricsRow: View {
                                 .font(.system(size: 10))
                                 .foregroundStyle(.orange)
                         } else {
-                            Text(result.text.isEmpty ? "(empty)" : result.text)
+                            // "(empty)" would read as "the model returned
+                            // nothing"; the text is simply not kept unless
+                            // capture is on.
+                            Text(result.text.isEmpty
+                                 ? "(text not captured \u{2014} enable Capture test text)"
+                                 : result.text)
                                 .font(.system(size: 11))
+                                .foregroundStyle(result.text.isEmpty ? .tertiary : .primary)
                                 .textSelection(.enabled)
                             if let reason = result.rejectionReason {
                                 Text("would be rejected: \(reason)")
@@ -397,9 +403,17 @@ private struct MetricsRow: View {
                     .font(.system(size: 10))
                     .foregroundStyle(.orange)
             } else {
-                Text(result.text)
-                    .font(.system(size: 11))
-                    .textSelection(.enabled)
+                if !result.text.isEmpty {
+                    Text(result.text)
+                        .font(.system(size: 11))
+                        .textSelection(.enabled)
+                } else if !result.looksLikeNoSpeech {
+                    // Withheld, not "heard nothing" — the no-speech line below
+                    // covers that case and would otherwise be contradicted.
+                    Text("(text not captured \u{2014} enable Capture test text)")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
                 if result.looksLikeNoSpeech {
                     Text("blocked as no speech")
                         .font(.system(size: 9))
