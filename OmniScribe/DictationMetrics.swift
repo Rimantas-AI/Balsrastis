@@ -39,14 +39,18 @@ struct STTComparisonResult: Identifiable {
     /// Settings is that daily use never holds dictated content — an export-time
     /// filter would still have kept every model's transcript in memory, and
     /// would have been easy to forget on the next surface that prints a result.
+    ///
+    /// `capturingText` is passed in rather than read from `AppPreferences` so a
+    /// run's privacy mode is fixed when the dictation starts. Reading it here
+    /// would let a setting changed mid-run apply to some arms and not others.
     init(model: String, isPrimary: Bool, duration: TimeInterval,
-         transcript: String, failure: String?) {
+         transcript: String, capturingText: Bool, failure: String?) {
         self.model = model
         self.isPrimary = isPrimary
         self.duration = duration
         self.failure = failure
         self.looksLikeNoSpeech = failure == nil && transcript.looksLikeNoSpeech
-        self.text = AppPreferences.shared.captureTestText ? transcript : ""
+        self.text = capturingText ? transcript : ""
     }
 }
 
@@ -84,13 +88,13 @@ struct AIComparisonResult: Identifiable {
     /// user has explicitly turned on test-text capture. Same reasoning as
     /// `STTComparisonResult.init` — the gate belongs at the source, not at export.
     init(model: String, isPrimary: Bool, duration: TimeInterval,
-         output: String, failure: String?, rejectionReason: String?) {
+         output: String, capturingText: Bool, failure: String?, rejectionReason: String?) {
         self.model = model
         self.isPrimary = isPrimary
         self.duration = duration
         self.failure = failure
         self.rejectionReason = rejectionReason
-        self.text = AppPreferences.shared.captureTestText ? output : ""
+        self.text = capturingText ? output : ""
     }
 }
 

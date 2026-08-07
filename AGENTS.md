@@ -518,6 +518,28 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   `UsageLog.rotateIfHeaderChanged` renames the old file instead. **Any future
   column change must keep this working; a week of runs is not something to
   discard because a field was added.**
+- v1.6.10 — **the cleanup benchmark became a true shadow test, and settings are
+  snapshotted per run.** Both from review, before the C1 round rather than after
+  it went wrong.
+  The candidate models used to be fired *alongside* the production call, on the
+  reasoning that "started early costs the user nothing". That reasoning was
+  wrong in one specific way: three requests on one API key at once means a `429`
+  provoked by the benchmark could fail the very dictation the user is waiting
+  for. **A diagnostic must not be able to degrade the thing it measures.** The
+  candidates now run *after* the text has been pasted.
+  Concurrency bought nothing here anyway. The STT comparison genuinely needs the
+  same audio because a second take differs in pace and mic distance; the cleanup
+  comparison feeds every arm byte-identical *text*, so it stays fair whenever it
+  runs. The incumbent is no longer re-called at all — its row comes from the
+  production request, which is both the honest number under real conditions and
+  one fewer request. A C1 run is now 1 normal call + 1 candidate, not 3 at once.
+  **Settings are snapshotted once per run** (`capturingText`, `comparingCleanup`,
+  `mode`, model, vocabulary). Previously the comparison structs read
+  `AppPreferences.shared.captureTestText` at construction, deep inside async
+  arms that finish out of order — a setting toggled mid-run could have applied
+  to some arms and not others on the *same* dictation. A run now has exactly one
+  privacy mode for its whole life. This also removes a hidden global dependency
+  from two value types, which is why the flag is a parameter and not a lookup.
 - v1.6.9 — **comparison results now honour the capture gate.** Found by reviewing
   the v1.6.7–v1.6.8 diff, not by a failure.
   Settings promises that dictated content is only ever kept when "Capture test

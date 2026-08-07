@@ -143,9 +143,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             break
         }
 
+        // Snapshot every setting this run depends on, once, here.
+        //
+        // The pipeline is async and its comparison arms finish out of order, so a
+        // live read part-way through could see a value the user changed mid-run —
+        // one arm keeping its transcript while another discards it, on the same
+        // dictation. A run must have exactly one privacy mode and one model
+        // choice for its whole life, whatever the user does to Settings meanwhile.
         let sttModelChoice = AppPreferences.shared.sttModel
         let vocabulary = AppPreferences.shared.vocabulary
         let isComparing = AppPreferences.shared.compareSTTModels
+        let capturingText = AppPreferences.shared.captureTestText
+        let comparingCleanup = AppPreferences.shared.compareAICleanup
+        let mode = AppPreferences.shared.selectedMode
         let runID = metrics.id
         // The primary always runs with the vocabulary prompt, since that is what
         // daily use does; the comparison covers the no-prompt arms.
@@ -156,6 +166,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 samples: samples,
                 vocabulary: vocabulary,
                 excluding: primaryVariant,
+                capturingText: capturingText,
                 runID: runID
             )
         }
@@ -181,6 +192,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                                 isPrimary: true,
                                                 duration: CFAbsoluteTimeGetCurrent() - sttStart,
                                                 transcript: "",
+                                                capturingText: capturingText,
                                                 failure: error.localizedDescription),
                             forRun: runID)
                     }
@@ -190,7 +202,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 metrics.sttModel = sttModelChoice
                 metrics.transcriptWordCount = result.text
                     .split(whereSeparator: \.isWhitespace).count
-                if AppPreferences.shared.captureTestText {
+                if capturingText {
                     metrics.transcribedText = result.text
                 }
                 if isComparing {
@@ -199,6 +211,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                             isPrimary: true,
                                             duration: metrics.transcription,
                                             transcript: result.text,
+                                            capturingText: capturingText,
                                             failure: nil),
                         forRun: runID)
                 }
@@ -237,26 +250,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     return
                 }
 
-                let mode = AppPreferences.shared.selectedMode
                 WindowManager.shared.updateHUD(phase: .polishing)
 
-                // Fire the candidate cleanup models *before* awaiting the primary
-                // one, on the same transcript. Started alongside rather than after,
-                // so the comparison costs the user nothing — same rule as the STT
-                // comparison, and the reason neither is allowed to be awaited.
-                if AppPreferences.shared.compareAICleanup {
+                if comparingCleanup {
                     metrics.comparedAIModels = AppPreferences.aiComparisonModels
-                    self.compareAICleanup(text: result.text,
-                                          mode: mode,
-                                          primaryModel: self.aiCoordinator.activeModelIdentifier,
-                                          runID: metrics.id)
                 }
 
                 let aiStart = CFAbsoluteTimeGetCurrent()
                 let processed = try await self.aiCoordinator.process(text: result.text, mode: mode)
                 metrics.aiProcessing = CFAbsoluteTimeGetCurrent() - aiStart
                 metrics.aiModel = self.aiCoordinator.activeModelIdentifier
-                if AppPreferences.shared.captureTestText {
+                if capturingText {
                     metrics.processedText = processed
                 }
                 print("[AppDelegate] ✨ Processed (\(mode.displayName)): \"\(processed)\"")
@@ -279,6 +283,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 metrics.injection = CFAbsoluteTimeGetCurrent() - injectStart
 
                 self.complete(metrics, outcome: DictationMetrics.insertedOutcome, failure: nil)
+
+                // Shadow benchmark — deliberately *after* the text has been
+                // pasted, and deliberately not concurrent with the primary call.
+                //
+                // Running candidates alongside the production call meant three
+                // requests on one key at once, so a 429 provoked by the benchmark
+                // could fail the very dictation the user was waiting for. A
+                // diagnostic must not be able to degrade the thing it measures.
+                //
+                // Concurrency buys nothing here anyway: unlike the STT comparison,
+                // where a second take would differ in pace and mic distance, every
+                // arm gets byte-identical input text, so it stays a fair
+                // comparison no matter when it runs.
+                if comparingCleanup {
+                    // The incumbent's row comes from the production call that just
+                    // ran — the real number under real conditions, and one request
+                    // saved. Only genuine candidates are actually called.
+                    MetricsStore.shared.recordAIComparison(
+                        AIComparisonResult(model: metrics.aiModel,
+                                           isPrimary: true,
+                                           duration: metrics.aiProcessing,
+                                           output: processed,
+                                           capturingText: capturingText,
+                                           failure: nil,
+                                           rejectionReason: metrics.aiCleanupRejection.isEmpty
+                                               ? nil : metrics.aiCleanupRejection),
+                        forRun: runID)
+
+                    self.benchmarkCleanupCandidates(text: result.text,
+                                                    mode: mode,
+                                                    excluding: metrics.aiModel,
+                                                    capturingText: capturingText,
+                                                    runID: runID)
+                }
             } catch {
                 // Only the error's *case* is recorded, never its message: server
                 // text can quote request content or a key fragment, and the log
@@ -306,6 +344,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func compareSTTModels(samples: [Float],
                                   vocabulary: String,
                                   excluding primaryVariant: STTVariant,
+                                  capturingText: Bool,
                                   runID: UUID) {
         for variant in AppPreferences.comparisonVariants where variant != primaryVariant {
             Task { [weak self] in
@@ -322,6 +361,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                             isPrimary: false,
                                             duration: CFAbsoluteTimeGetCurrent() - start,
                                             transcript: result.text,
+                                            capturingText: capturingText,
                                             failure: nil),
                         forRun: runID)
                 } catch {
@@ -330,6 +370,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                             isPrimary: false,
                                             duration: CFAbsoluteTimeGetCurrent() - start,
                                             transcript: "",
+                                            capturingText: capturingText,
                                             failure: error.localizedDescription),
                         forRun: runID)
                 }
@@ -337,47 +378,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Sends the same transcript to every cleanup model in
-    /// `AppPreferences.aiComparisonModels`, purely to fill in the Diagnostics
-    /// comparison (`AppPreferences.compareAICleanup`).
+    /// Runs the candidate cleanup models on the same transcript, after the
+    /// user's text has already been inserted.
     ///
-    /// The primary model is included, so the report shows every candidate against
-    /// the incumbent on identical input. That means one extra call for the primary
-    /// model — its own timing here is measured separately from the pipeline's, and
-    /// keeping the arms symmetrical is worth more than saving one request during a
-    /// deliberate test round.
-    ///
-    /// Fire-and-forget, like the STT comparison: nothing awaits these, so the text
-    /// the user is waiting for is never delayed, and a candidate model failing is
-    /// recorded and otherwise ignored.
-    private func compareAICleanup(text: String,
-                                  mode: ProcessingMode,
-                                  primaryModel: String,
-                                  runID: UUID) {
-        for model in AppPreferences.aiComparisonModels {
+    /// The primary model is **not** called again — its row is taken from the
+    /// production request, which is both the honest number and one fewer request.
+    /// Fire-and-forget: nothing awaits these, and a candidate failing is recorded
+    /// and otherwise ignored.
+    private func benchmarkCleanupCandidates(text: String,
+                                            mode: ProcessingMode,
+                                            excluding primaryModel: String,
+                                            capturingText: Bool,
+                                            runID: UUID) {
+        for model in AppPreferences.aiComparisonModels where model != primaryModel {
             let service = ClaudeService(model: model)
-            let isPrimary = model == primaryModel
             Task {
                 let start = CFAbsoluteTimeGetCurrent()
                 do {
                     let output = try await service.process(text: text, mode: mode)
+                    // The quality question, not the speed one: cleanup mode
+                    // promises corrections, and a candidate that starts rewriting
+                    // is unusable however fast it is.
                     let rejection = mode == .ltTyping
                         ? ProcessingMode.cleanupRejectionReason(raw: text, processed: output)
                         : nil
                     MetricsStore.shared.recordAIComparison(
                         AIComparisonResult(model: model,
-                                           isPrimary: isPrimary,
+                                           isPrimary: false,
                                            duration: CFAbsoluteTimeGetCurrent() - start,
                                            output: output,
+                                           capturingText: capturingText,
                                            failure: nil,
                                            rejectionReason: rejection),
                         forRun: runID)
                 } catch {
                     MetricsStore.shared.recordAIComparison(
                         AIComparisonResult(model: model,
-                                           isPrimary: isPrimary,
+                                           isPrimary: false,
                                            duration: CFAbsoluteTimeGetCurrent() - start,
                                            output: "",
+                                           capturingText: capturingText,
                                            failure: error.localizedDescription,
                                            rejectionReason: nil),
                         forRun: runID)

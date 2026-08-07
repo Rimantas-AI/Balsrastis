@@ -40,10 +40,10 @@
 	     CFBundleShortVersionString, so a stale value silently mislabels which
 	     build produced a set of measurements. -->
 	<key>CFBundleVersion</key>
-	<string>14</string>
+	<string>15</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>1.6.9</string>
+	<string>1.6.10</string>
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
