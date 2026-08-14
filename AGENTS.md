@@ -686,29 +686,56 @@ for the full reasoning — condensed here):**
    for — whether any row shows a hallucination that got inserted.
 3. ✅ **Done.** v1.6.6 stayed frozen through the validation week; no features
    landed until it passed.
-4. **← CURRENT STEP.** Three parts, in this order, after an independent review
-   agreed the sequence:
-   a. **Start the Apple Developer registration now, in parallel.** It can take
-      days and must not become the blocking wait.
-   b. **Cleanup-model comparison (Opus vs Haiku) before notarizing.** AI cleanup
-      is 44.3% of latency and `claude-opus-4-8` is very likely overpowered for
-      fixing grammar. Test it the way the STT choice was tested: send the same
-      `Raw STT` text to both models, log both, and **insert only the primary
-      model's output** so daily use is untouched. Pin the dated id
-      (`claude-haiku-4-5-20251001`), not the alias, so a rerun compares the same
-      thing. Cheap to test, because here the input is *text*, not audio.
-      Switch only if: no meaning or fact changes, no invented content, Lithuanian
-      quality not materially worse, `AI cleanup rejected` stays at its current
-      zero, and **P95 improves** — weight the tail over the median, since a 30%
-      median gain on the AI stage is only ~12% end-to-end while the tail is what
-      makes the app feel stuck.
-      ⚠️ This round needs `captureTestText` on — judging cleanup quality requires
-      seeing the text. That is what the switch is for; turn it off afterwards.
-      Notarize the *chosen* configuration, so testers are not handed a build
-      whose main model changes days later.
-   c. Then Developer ID signing, hardened runtime, `notarytool` + `stapler`, and
-      a clean-install check on **both** macOS 12 and 15, plus an update check
-      that permissions and Keychain keys survive.
+4. Three parts, in this order, after an independent review agreed the sequence:
+   a. **Deliberately paused, by user decision (2026-08-14), not forgotten.**
+      Staying on the current build for at least another week of ordinary daily
+      use before spending the $99/yr or the setup time. Revisit after that week
+      — do not start registration proactively before the user raises it again.
+   b. ✅ **CLOSED (still on v1.6.10, no version bump needed — result is "don't
+      switch").** Cleanup-model comparison, C1 test round, 60 phrases across 4
+      groups (A short/everyday, B numbers/dates/addresses, C English terms in
+      Lithuanian sentences, D long sentences + 5 decisive command-phrased
+      sentences), `captureTestText` + `compareAICleanup` on.
+      **Verdict: keep `claude-opus-4-8`. Do not switch to Haiku.** Rejected on
+      quality, not close: the tool's own `would-be-rejected` flag fired on
+      **14/60 runs (23%)** for Haiku vs **0/60** for Opus, concentrated exactly
+      where it matters most — **5/5 (100%)** of Group D's decisive
+      command-phrased sentences ("Parašyk kolegai...", "Sukurk laišką...",
+      "Išversk šitą sakinį...", "Padaryk santrauką...", "Atsakyk į šį
+      klausimą..."). On every one, Haiku didn't paste the dictated sentence back
+      — it broke character and returned an English paragraph claiming it "only
+      processes English dictated content" or refusing to act on an
+      "instruction," even though the system prompt never restricts it to
+      English. That paragraph would have landed in the user's document in place
+      of their sentence. Opus passed all five as instructed: sentence preserved,
+      grammar cleaned, nothing executed.
+      Also found **silent regressions the automated flag missed** — same-length
+      text that reads clean to the heuristic but changed something real:
+      Haiku twice reformatted spoken numbers into digits ("keturi tūkstančiai
+      septyni šimtai dvidešimt trys" → "4723"; a phone number the same way) —
+      a reformat, which the mode's own contract forbids, even though nothing
+      "grew"; twice it changed verb mood/tense ("prisijungt" → "prisijungti"
+      instead of "prisijunk"; "Paleidžiu" → "Paleičiau"); three times it left
+      an obvious STT error uncorrected that Opus caught and fixed
+      ("neradinai spaudžia" → should be "terminai spaudžia", "Rytuoj" →
+      "Rytoj", "persudėtingas" → "per sudėtingas"). None of these tripped
+      `would-be-rejected` because line-break-count and length-ratio don't see
+      word substitution — **a known blind spot of the comparison heuristic
+      itself**, worth remembering if this tool is reused for a future model
+      swap.
+      Speed did not compensate and was not even consistently better: Haiku's
+      median was faster in every group (0.85–1.15 s vs Opus's 1.23–1.59 s), but
+      **P95 was worse than Opus in 2 of 4 groups** (Group A: 6.37 s vs 2.03 s;
+      Group C: 2.74 s vs 2.50 s) — the refusal paragraphs are long, so the
+      failure mode inflates the tail it was supposed to shrink.
+      Per the pre-declared decision rule ("speed does not win against a meaning
+      error"): stay on Opus, go straight to 4c when 4a resumes. Do not reopen
+      this without a new model generation to test — the failure mode here is
+      behavioral (Haiku mischaracterizing its own scope), not a prompt wording
+      issue worth iterating on.
+   c. Developer ID signing, hardened runtime, `notarytool` + `stapler`, and a
+      clean-install check on **both** macOS 12 and 15, plus an update check that
+      permissions and Keychain keys survive. **Blocked on 4a resuming.**
    Also before the pilot: walk the whole first-run path as a non-developer would
    — mic permission, Accessibility, both API keys present and valid, a
    comprehensible message for credit/rate-limit errors, a test dictation that
