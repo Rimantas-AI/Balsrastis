@@ -495,10 +495,15 @@ final class MetricsStore: ObservableObject {
             "OmniScribe Diagnostics",
             "App version: \(bundleVersion)",
             "macOS: \(osVersion)",
+        ]
+        if let tester = SettingsView.testerName {
+            lines.append("Tester: \(tester)")
+        }
+        lines.append(contentsOf: [
             "Attempts: \(recent.count) \u{00B7} Inserted: \(successfulRuns) \u{00B7} Blocked: \(blockedRuns)",
             "Successful runs only \u{2014} Average: \(f(averageLatency)) \u{00B7} Median: \(f(medianLatency)) \u{00B7} Slowest: \(f(slowestLatency))",
             "",
-        ]
+        ])
 
         let summaries = sttModelSummaries
         if !summaries.isEmpty {

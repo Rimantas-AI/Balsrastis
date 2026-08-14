@@ -40,10 +40,17 @@
 	     CFBundleShortVersionString, so a stale value silently mislabels which
 	     build produced a set of measurements. -->
 	<key>CFBundleVersion</key>
-	<string>15</string>
+	<string>16</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>1.6.10</string>
+	<string>1.6.11</string>
+
+	<!-- Blank in every CI-built release. For a closed-pilot copy, stamp this
+	     with the tester's name post-build (see PILOT-STAMPING.md) before
+	     sending them their .zip — Settings and Copy Report then identify
+	     whose build it is, without a separate build per tester. -->
+	<key>OmniScribeTesterName</key>
+	<string></string>
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>

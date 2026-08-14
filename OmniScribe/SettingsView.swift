@@ -37,6 +37,17 @@ struct SettingsView: View {
         // resizable in WindowManager, which also enforces the matching minimum.
         .frame(minWidth: 650, idealWidth: 850, minHeight: 450, idealHeight: 650)
     }
+
+    /// Set only on a closed-pilot copy stamped post-build (see
+    /// PILOT-STAMPING.md); every CI-built release ships this blank, so `nil`
+    /// here also covers normal daily use and is not itself a signal of anything.
+    /// Not private — `DictationMetrics.fullReport()` reads it too, so a leaked
+    /// report is traceable the same way a leaked build is.
+    static var testerName: String? {
+        let name = (Bundle.main.infoDictionary?["OmniScribeTesterName"] as? String ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? nil : name
+    }
 }
 
 // MARK: – Diagnostics (per-stage timings)
@@ -118,6 +129,13 @@ private struct DiagnosticsSettingsView: View {
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .textSelection(.enabled)
+
+            if let tester = SettingsView.testerName {
+                Text("Testing build for \(tester)")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .textSelection(.enabled)
+            }
 
             modelComparisonSummary
         }
