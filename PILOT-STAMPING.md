@@ -8,7 +8,37 @@ Settings → Diagnostics then shows "Testing build for `<name>`", and Copy Repor
 includes a `Tester: <name>` line — so a build or a report that turns up somewhere
 it shouldn't is traceable to whose copy it was.
 
-## Steps (repeat per tester)
+## Step 0 — get explicit consent, before sending anything
+
+Send the terms below and **wait for an affirmative reply** before building or
+sending their `.zip`. The point is a reply that exists, not just terms that
+were included alongside the file — "I agree" said back to you is what makes
+this a beta agreement rather than a footnote no one necessarily read.
+
+> **OmniScribe — privatus beta testas (30 dienų)**
+>
+> Ačiū, kad sutikai išbandyti! Prieš siunčiant `.zip`, prašau vieno dalyko —
+> atsakyk trumpai:
+>
+> *"Perskaičiau ir sutinku su OmniScribe closed beta sąlygomis."*
+>
+> **Sąlygos:**
+> - Tai privati beta versija, programa ir jos kodas priklauso man.
+> - Šis pilotas galioja **30 dienų** nuo gavimo dienos.
+> - Prašau **nepersiųsti, nesidalinti, nepublikuoti, neparduoti** šios
+>   programos ar jos kodo jokiam kitam asmeniui, ir nenaudoti jos kaip
+>   pagrindo kuriant panašų ar konkuruojantį produktą.
+> - Diktuotas tekstas ir garsas niekur nesiunčiami be tavo pačio API raktų
+>   (juos įsivedi Settings skiltyje); diagnostikos statistika, jei ją
+>   įjungsi, lieka tik tavo kompiuteryje.
+>
+> Gavęs sutikimą, atsiųsiu `.zip` su tavo vardu pažymėta kopija. Naudok
+> laisvai kasdieniam diktavimui ir rašyk man tiesiogiai, kas veikia, kas ne
+> — tam ir yra testas.
+
+Only once that reply is in hand, move to stamping.
+
+## Steps (repeat per tester, after their consent reply)
 
 ```bash
 # 1. Start from a clean copy of the downloaded release each time.
@@ -43,3 +73,8 @@ the next tester so each `.zip` starts from the same clean build.
 - Quarantine removal on their end is unchanged: `xattr -dr com.apple.quarantine`.
 - A name is enough — no need for anything more identifying than a first name or
   initials both of you recognize.
+- **BYO API keys protect your OpenAI/Anthropic bill, nothing else.** Anyone
+  holding a copy of the `.app` can enter their own keys and run it fully — it
+  is not a usage gate. The consent step, the stamped name, and the proprietary
+  LICENSE are what this pilot actually relies on; keep that straight if this
+  doc is extended later.
