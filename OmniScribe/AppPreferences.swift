@@ -77,6 +77,7 @@ final class AppPreferences: ObservableObject {
     private let compareSTTModelsKey = "OmniScribe.compareSTTModels"
     private let logUsageStatisticsKey = "OmniScribe.logUsageStatistics"
     private let compareAICleanupKey = "OmniScribe.compareAICleanup"
+    private let hotkeyKey = "OmniScribe.hotkey"
 
     /// Context the speech recogniser should expect.
     ///
@@ -200,6 +201,17 @@ final class AppPreferences: ObservableObject {
          STTVariant(model: model, prompt: .none)]
     }
 
+    /// The global shortcut that starts and stops dictation.
+    ///
+    /// Made changeable after a Mac editor pointed out that the hardcoded ⌥Space
+    /// is what a good number of Mac users press to switch input sources — and
+    /// `HotkeyManager` consumes the event, so those users lost their language
+    /// switching with no recourse. Read live on every key event, so a change
+    /// takes effect immediately without reinstalling the event tap.
+    @Published var hotkey: HotkeyCombo {
+        didSet { defaults.set(hotkey.rawValue, forKey: hotkeyKey) }
+    }
+
     /// The processing mode applied after transcription. Persisted so it survives
     /// relaunch. `didSet` writes through to `UserDefaults`.
     @Published var selectedMode: ProcessingMode {
@@ -228,6 +240,8 @@ final class AppPreferences: ObservableObject {
         compareSTTModels = defaults.bool(forKey: compareSTTModelsKey)
         logUsageStatistics = defaults.bool(forKey: logUsageStatisticsKey)
         compareAICleanup = defaults.bool(forKey: compareAICleanupKey)
+        hotkey = defaults.string(forKey: hotkeyKey)
+            .flatMap(HotkeyCombo.init(rawValue:)) ?? .fallback
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }

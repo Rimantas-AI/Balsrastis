@@ -463,6 +463,17 @@ private struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section {
+                Picker("Shortcut", selection: $prefs.hotkey) {
+                    ForEach(HotkeyCombo.allCases) { combo in
+                        Text(combo.displayName).tag(combo)
+                    }
+                }
+                .help("The key combination that starts and stops dictation. OmniScribe swallows this combination system-wide, so pick one you do not already use for something else.")
+
+                Text(prefs.hotkey.conflictNote)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
                 Picker("Processing Mode", selection: $prefs.selectedMode) {
                     ForEach(ProcessingMode.allCases, id: \.self) { mode in
                         Text(mode.displayName).tag(mode)
@@ -487,7 +498,7 @@ private struct GeneralSettingsView: View {
                 Toggle("Compare STT models", isOn: $prefs.compareSTTModels)
                     .help("Sends each recording to every model at once, both with and without the vocabulary prompt, and shows their raw transcripts side by side in Diagnostics. Only the model selected above is reshaped and pasted, so dictation is not slowed down or changed.")
             } footer: {
-                Text("The processing mode is applied to every dictation until you change it. Activate dictation with \u{2325}Space. The STT model above is the one whose text is actually inserted.")
+                Text("The processing mode is applied to every dictation until you change it. Activate dictation with \(prefs.hotkey.displayName). The STT model above is the one whose text is actually inserted.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

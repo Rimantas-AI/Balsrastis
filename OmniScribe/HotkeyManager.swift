@@ -1,7 +1,8 @@
 import AppKit
 import ApplicationServices
 
-/// Installs a global `CGEventTap` that intercepts **Option + Space** system-wide.
+/// Installs a global `CGEventTap` that intercepts the user's chosen shortcut
+/// (`AppPreferences.hotkey`, see `HotkeyCombo`) system-wide.
 ///
 /// Design decisions:
 /// - Uses `CGEventTap` (not `NSEvent.addGlobalMonitorForEvents`) so the event
@@ -13,9 +14,9 @@ import ApplicationServices
 /// - If the system disables the tap after a timeout, it is automatically re-enabled.
 final class HotkeyManager {
 
-    /// Invoked on the main queue every time ⌥Space is pressed. The coordinator
-    /// decides what to do (start vs. stop dictation) so this class stays a pure
-    /// input source with no knowledge of the audio pipeline.
+    /// Invoked on the main queue every time the chosen shortcut is pressed. The
+    /// coordinator decides what to do (start vs. stop dictation) so this class
+    /// stays a pure input source with no knowledge of the audio pipeline.
     private let onTrigger: () -> Void
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -72,7 +73,7 @@ final class HotkeyManager {
         CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
 
-        print("[HotkeyManager] ✅ Global hotkey ⌥Space registered.")
+        print("[HotkeyManager] ✅ Global hotkey \(AppPreferences.shared.hotkey.displayName) registered.")
     }
 
     // MARK: – Uninstall
@@ -83,7 +84,7 @@ final class HotkeyManager {
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
         }
-        print("[HotkeyManager] Global hotkey ⌥Space unregistered.")
+        print("[HotkeyManager] Global hotkey unregistered.")
     }
 
     // MARK: – Event Handling
@@ -98,19 +99,15 @@ final class HotkeyManager {
         }
 
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-        let flags   = event.flags
 
-        // kVK_Space = 0x31 = 49
-        let isSpace = keyCode == 49
+        // Read live rather than caching at install time, so changing the
+        // shortcut in Settings takes effect on the next keypress without
+        // tearing down and reinstalling the tap (which would re-prompt nothing
+        // but is one more thing to get wrong). This callback runs on the main
+        // run loop the tap was added to, so reading shared state is safe here.
+        let combo = AppPreferences.shared.hotkey
 
-        // Option pressed, but NOT Command / Control / Shift (avoids conflicts with
-        // system shortcuts that use ⌥Space as a component, e.g. Input Source switching).
-        let isOptionOnly = flags.contains(.maskAlternate)
-                        && !flags.contains(.maskCommand)
-                        && !flags.contains(.maskControl)
-                        && !flags.contains(.maskShift)
-
-        guard isSpace && isOptionOnly else {
+        guard combo.matches(keyCode: keyCode, flags: event.flags) else {
             return Unmanaged.passRetained(event)  // Not our shortcut – pass through.
         }
 
@@ -125,7 +122,7 @@ final class HotkeyManager {
     // MARK: – Hotkey Action
 
     private func didTriggerHotkey() {
-        print("[HotkeyManager] 🎤 ⌥Space triggered")
+        print("[HotkeyManager] 🎤 \(AppPreferences.shared.hotkey.displayName) triggered")
         onTrigger()
     }
 }

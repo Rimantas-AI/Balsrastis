@@ -33,6 +33,7 @@
 		00000000000000000000EE /* DictationMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DE /* DictationMetrics.swift */; };
 		00000000000000000000F0 /* FailureCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000E0 /* FailureCategory.swift */; };
 		00000000000000000000EF /* UsageLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000DF /* UsageLog.swift */; };
+		00000000000000000000F2 /* HotkeyCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000F1 /* HotkeyCombo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +66,7 @@
 		00000000000000000000DE /* DictationMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationMetrics.swift; sourceTree = "<group>"; };
 		00000000000000000000E0 /* FailureCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FailureCategory.swift; sourceTree = "<group>"; };
 		00000000000000000000DF /* UsageLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageLog.swift; sourceTree = "<group>"; };
+		00000000000000000000F1 /* HotkeyCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCombo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +124,7 @@
 				00000000000000000000DE /* DictationMetrics.swift */,
 				00000000000000000000E0 /* FailureCategory.swift */,
 				00000000000000000000DF /* UsageLog.swift */,
+				00000000000000000000F1 /* HotkeyCombo.swift */,
 				0000000000000000000000B8 /* Assets.xcassets */,
 				0000000000000000000000B6 /* Info.plist */,
 				0000000000000000000000B7 /* OmniScribe.entitlements */,
@@ -223,6 +226,7 @@
 				00000000000000000000EE /* DictationMetrics.swift in Sources */,
 				00000000000000000000F0 /* FailureCategory.swift in Sources */,
 				00000000000000000000EF /* UsageLog.swift in Sources */,
+				00000000000000000000F2 /* HotkeyCombo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -26,12 +26,13 @@ enum AppState: String {
 ///
 /// All public methods are safe to call from any thread – they dispatch to
 /// the main queue internally.
-final class MenuBarManager {
+final class MenuBarManager: NSObject, NSMenuDelegate {
 
     // MARK: Private state
 
     private let statusItem: NSStatusItem
     private let statusMenuItem = NSMenuItem()   // Shows "OmniScribe – <state>" as info row.
+    private let hotkeyHintItem = NSMenuItem()   // Shows the currently chosen shortcut.
 
     private(set) var currentState: AppState = .idle {
         didSet { refreshButton() }
@@ -39,10 +40,21 @@ final class MenuBarManager {
 
     // MARK: Init
 
-    init() {
+    override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        super.init()
         configureButton()
         configureMenu()
+    }
+
+    // MARK: – NSMenuDelegate
+
+    /// The shortcut is user-changeable, but the menu is built once at launch, so
+    /// its hint is refreshed the moment before the menu is shown rather than
+    /// when the preference changes — no subscription to keep in sync, and the
+    /// text is correct whenever anyone can actually read it.
+    func menuWillOpen(_ menu: NSMenu) {
+        hotkeyHintItem.title = "Activate: \(AppPreferences.shared.hotkey.displayName)"
     }
 
     // MARK: – Public API
@@ -89,9 +101,11 @@ final class MenuBarManager {
         menu.addItem(.separator())
 
         // --- Hotkey hint ---
-        let hintItem = NSMenuItem(title: "Activate: \u{2325}Space", action: nil, keyEquivalent: "")
-        hintItem.isEnabled = false
-        menu.addItem(hintItem)
+        // Title is set here and refreshed in `menuWillOpen`, so it follows the
+        // user's choice instead of permanently claiming ⌥Space.
+        hotkeyHintItem.title = "Activate: \(AppPreferences.shared.hotkey.displayName)"
+        hotkeyHintItem.isEnabled = false
+        menu.addItem(hotkeyHintItem)
 
         menu.addItem(.separator())
 
@@ -111,6 +125,7 @@ final class MenuBarManager {
         quitItem.target = self
         menu.addItem(quitItem)
 
+        menu.delegate = self
         statusItem.menu = menu
     }
 
