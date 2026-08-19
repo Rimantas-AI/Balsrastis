@@ -77,7 +77,11 @@ final class AppPreferences: ObservableObject {
     private let compareSTTModelsKey = "OmniScribe.compareSTTModels"
     private let logUsageStatisticsKey = "OmniScribe.logUsageStatistics"
     private let compareAICleanupKey = "OmniScribe.compareAICleanup"
-    private let hotkeyKey = "OmniScribe.hotkey"
+    // v2 because v1.6.12 stored a case name from a fixed list under the old key.
+    // That format is deliberately not migrated: the list it referred to is gone,
+    // one of its five entries (⌘⇧D) was Apple Mail's Send, and the build was a
+    // day old with no testers on it. Anyone who had changed it re-records once.
+    private let hotkeyKey = "OmniScribe.hotkeyV2"
 
     /// Context the speech recogniser should expect.
     ///
@@ -203,13 +207,14 @@ final class AppPreferences: ObservableObject {
 
     /// The global shortcut that starts and stops dictation.
     ///
-    /// Made changeable after a Mac editor pointed out that the hardcoded ⌥Space
-    /// is what a good number of Mac users press to switch input sources — and
-    /// `HotkeyManager` consumes the event, so those users lost their language
-    /// switching with no recourse. Read live on every key event, so a change
-    /// takes effect immediately without reinstalling the event tap.
+    /// Recorded from the user's own keypress — see `HotkeyCombo` for why a list
+    /// of suggested combinations was withdrawn. Read live on every key event, so
+    /// a change takes effect on the next press without reinstalling the tap.
     @Published var hotkey: HotkeyCombo {
-        didSet { defaults.set(hotkey.rawValue, forKey: hotkeyKey) }
+        didSet {
+            guard let data = try? JSONEncoder().encode(hotkey) else { return }
+            defaults.set(data, forKey: hotkeyKey)
+        }
     }
 
     /// The processing mode applied after transcription. Persisted so it survives
@@ -240,8 +245,9 @@ final class AppPreferences: ObservableObject {
         compareSTTModels = defaults.bool(forKey: compareSTTModelsKey)
         logUsageStatistics = defaults.bool(forKey: logUsageStatisticsKey)
         compareAICleanup = defaults.bool(forKey: compareAICleanupKey)
-        hotkey = defaults.string(forKey: hotkeyKey)
-            .flatMap(HotkeyCombo.init(rawValue:)) ?? .fallback
+        hotkey = defaults.data(forKey: hotkeyKey)
+            .flatMap { try? JSONDecoder().decode(HotkeyCombo.self, from: $0) }
+            ?? .default
 
         selectedProvider = AILayerCoordinator.shared.selectedProvider
     }

@@ -21,6 +21,15 @@ final class HotkeyManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
+    /// Set while Settings is capturing a new shortcut.
+    ///
+    /// The tap is session-wide, so it sees the keys being recorded too — without
+    /// this, pressing the *current* shortcut in order to replace it would start a
+    /// dictation instead. Only ever touched from the main thread: the recorder
+    /// runs in the Settings UI and the tap callback is delivered on the main run
+    /// loop it was installed on.
+    static var isRecording = false
+
     // MARK: – Init / Deinit
 
     init(onTrigger: @escaping () -> Void) {
@@ -97,6 +106,11 @@ final class HotkeyManager {
             if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
             return nil
         }
+
+        // Let every key through untouched while Settings is recording a new
+        // shortcut, so the recorder sees the real keypress and no dictation
+        // starts behind the Settings window.
+        guard !Self.isRecording else { return Unmanaged.passRetained(event) }
 
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
 

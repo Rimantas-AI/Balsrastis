@@ -455,6 +455,96 @@ private struct MetricsRow: View {
     }
 }
 
+// MARK: – Shortcut recorder
+
+/// Captures the next keypress and stores it as the dictation shortcut.
+///
+/// Recording rather than choosing from a list, because which combinations are
+/// free depends on the apps this particular person runs — see `HotkeyCombo`.
+/// The keys are read with a *local* monitor, which only fires while this window
+/// is focused, and `HotkeyManager.isRecording` silences the global tap for the
+/// duration so re-recording the current shortcut cannot start a dictation.
+private struct ShortcutRecorderRow: View {
+    @ObservedObject private var prefs = AppPreferences.shared
+    @State private var isRecording = false
+    @State private var monitor: Any?
+    @State private var rejected = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("Shortcut")
+                Spacer()
+                Text(isRecording ? "Press keys\u{2026}" : prefs.hotkey.displayName)
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundStyle(isRecording ? .secondary : .primary)
+                Button(isRecording ? "Cancel" : "Change\u{2026}") {
+                    isRecording ? stop() : start()
+                }
+                if prefs.hotkey != .default {
+                    Button("Reset") {
+                        stop()
+                        prefs.hotkey = .default
+                    }
+                }
+            }
+
+            if rejected {
+                Text("Add \u{2318}, \u{2325} or \u{2303}. A shortcut without one would fire while you type.")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            } else if isRecording {
+                Text("Press the combination you want, or Escape to cancel.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else if let conflict = prefs.hotkey.knownConflict {
+                Text(conflict)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                // The one thing that is true of every shortcut, stated once,
+                // instead of a per-combination guess about what is free.
+                Text("OmniScribe takes this combination from every other app while it runs.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .onDisappear(perform: stop)
+    }
+
+    private func start() {
+        guard monitor == nil else { return }
+        isRecording = true
+        rejected = false
+        HotkeyManager.isRecording = true
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
+            capture(event)
+            return nil   // Consume, so the keypress never reaches the UI behind.
+        }
+    }
+
+    private func stop() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
+        isRecording = false
+        HotkeyManager.isRecording = false
+    }
+
+    private func capture(_ event: NSEvent) {
+        // Escape on its own cancels; Escape *with* modifiers is a real choice.
+        if event.keyCode == 53, HotkeyCombo.flags(from: event.modifierFlags).isEmpty {
+            stop()
+            return
+        }
+        guard let combo = HotkeyCombo(event: event) else {
+            rejected = true    // Stay in recording mode so they can try again.
+            return
+        }
+        prefs.hotkey = combo
+        stop()
+    }
+}
+
 // MARK: – General (mode + provider)
 
 private struct GeneralSettingsView: View {
@@ -463,16 +553,7 @@ private struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Shortcut", selection: $prefs.hotkey) {
-                    ForEach(HotkeyCombo.allCases) { combo in
-                        Text(combo.displayName).tag(combo)
-                    }
-                }
-                .help("The key combination that starts and stops dictation. OmniScribe swallows this combination system-wide, so pick one you do not already use for something else.")
-
-                Text(prefs.hotkey.conflictNote)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                ShortcutRecorderRow()
 
                 Picker("Processing Mode", selection: $prefs.selectedMode) {
                     ForEach(ProcessingMode.allCases, id: \.self) { mode in
