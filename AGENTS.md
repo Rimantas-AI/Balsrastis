@@ -518,6 +518,47 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   `UsageLog.rotateIfHeaderChanged` renames the old file instead. **Any future
   column change must keep this working; a week of runs is not something to
   discard because a field was added.**
+- v1.6.14 — **the shortcut says what already owns it.** Recording ⌃Space,
+  ⌘Space, ⌘Tab, a screenshot combination or Mail's ⌘⇧D now names the owner
+  instead of leaving the collision to surface later.
+  The list is documented Apple defaults plus one reported conflict, and the bar
+  is deliberately that high — see v1.6.13 for why. **An absent combination means
+  "nothing known", never "free", and the UI must never imply otherwise.** Keep
+  that distinction if entries are added.
+  Research also **reversed the plan to change the default**, which is worth
+  recording because the instinct was to change it as penance for v1.6.12:
+  Superwhisper ships ⌥Space as its default for the same job; ⌥Space's stock
+  macOS behaviour is a non-breaking space users mostly hit by accident; and the
+  language switcher it was suspected of stealing is actually **⌃Space**
+  (⌃⌥Space for next). So people who switch layouts with ⌥Space remapped it
+  themselves — the collision is real but narrower than the report implied. Both
+  real input-source combinations are now in the list.
+- v1.6.13 — **the shortcut is recorded, not chosen from a list.** v1.6.12 had
+  shipped five suggested combinations, each annotated with what it "usually"
+  conflicts with. Those annotations were guesses written as fact, and the
+  MacArena editor broke two of five: ⌥Space (some users remap it to switch input
+  sources) and **⌘⇧D, which is Send in Apple Mail** — an app this tool is
+  specifically meant to dictate into.
+  The fix was not a better list. Which combinations are free depends on the apps
+  a particular person runs, which is not knowable from here, so the list was
+  withdrawn entirely in favour of capturing the user's own keypress.
+  Details that matter if this is touched: recording uses a *local* monitor and
+  sets `HotkeyManager.isRecording`, so re-recording the current shortcut cannot
+  start a dictation behind the Settings window; Shift alone is rejected as a
+  modifier (⇧A is how a capital A is typed); and `displayName` is rendered once
+  at record time from the key pressed, which avoids maintaining a
+  keycode-to-character table per keyboard layout.
+- v1.6.12 — **the shortcut became changeable at all.** Until here ⌥Space was
+  hardcoded *and consumed* (`HotkeyManager` returns `nil`), so anyone using it
+  to switch input sources lost that silently, with no way to change it — and
+  that lands hardest on this app's own audience, who alternate between
+  Lithuanian and English layouts all day. Reported by a reader, not found in
+  testing. Superseded two releases later; kept in this history because the
+  reason it existed is still the reason the recorder exists.
+- v1.6.11 — **per-tester build stamping** (`OmniScribeTesterName` in
+  `Info.plist`, blank in every CI build; see `PILOT-STAMPING.md`). Lets one CI
+  build be stamped per tester in Terminal — no rebuild, no Xcode, no Apple
+  Developer account. Settings and Copy Report then identify whose copy it is.
 - v1.6.10 — **the cleanup benchmark became a true shadow test, and settings are
   snapshotted per run.** Both from review, before the C1 round rather than after
   it went wrong.
@@ -745,6 +786,40 @@ for the full reasoning — condensed here):**
 5. Closed pilot with 5-10 Lithuanian-dictating Mac users (mixed technical
    skill, mixed hardware). The real signal is not feature requests — it's
    whether they keep opening the app unprompted after the novelty wears off.
+
+   **Distribution is set up (2026-08-14); recruitment is the open half.**
+   - Repo went **private** and `LICENSE` went **MIT → proprietary**. Both were
+     live problems, not tidiness: the source *and* the Releases page were
+     world-readable, and MIT expressly grants "distribute, sublicense, and/or
+     sell". The swap binds going forward only — it cannot revoke rights for
+     anyone who cloned while it was public.
+   - `PILOT-STAMPING.md` holds the whole handout procedure: send the terms,
+     **wait for an explicit "I agree" reply**, then stamp that copy with the
+     tester's name and send it directly. 30-day pilot window.
+   - ⚠️ **BYO API keys are not a usage control.** They protect the OpenAI /
+     Anthropic bill and nothing else — anyone holding the `.app` enters their
+     own keys and it runs. This was briefly written down as a protection and it
+     was wrong. What the pilot actually leans on is the private repo, the
+     licence, the consent reply and the stamped name.
+   - A full licence/activation backend is **deliberately not built**. For 5-10
+     known people it is disproportionate, and it would not hide the prompts or
+     the VAD from anyone determined to read the binary. Revisit before a 50-100
+     person beta or anything paid.
+
+   **Recruitment, as of 2026-08-19.** Contacts and the reasoning behind them are
+   in Memora (`d2226a9e0b39`), not here, since they are people rather than code.
+   The parts that bear on the product:
+   - The MacArena editor was approached and, without ever installing it, found
+     both hotkey defects behind v1.6.12-v1.6.14. Worth remembering as evidence
+     for how cheap outside eyes are compared with another self-test round.
+   - **Do not aim the first pilot at lawyers or doctors.** SEMANTIKA.LT / VDU
+     already ships a Lithuanian transcriber with dedicated legal and medical
+     modules, ~800 uses/day, deployed at LRT. It is a different category —
+     audio *files* in, text out, not live dictation into the focused app — so
+     it is not a competitor for this product, but it does own those verticals.
+   - The gap this product sits in is real and confirmed: **Apple still does not
+     support Lithuanian dictation**, ten years after MacArena wrote that it
+     would not come soon.
 6. Only after pilot feedback: Raw Dictation mode, faster/cheaper models for
    simple modes, and any Pro/paid tier — let real usage patterns decide what's
    actually worth building, not speculation.
