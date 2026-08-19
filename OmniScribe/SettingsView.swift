@@ -497,13 +497,16 @@ private struct ShortcutRecorderRow: View {
                 Text("Press the combination you want, or Escape to cancel.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            } else if let conflict = prefs.hotkey.knownConflict {
-                Text(conflict)
+            } else if let advisory = prefs.hotkey.advisory {
+                // Orange only when something documented already owns it — the
+                // softer notes are information, not a warning.
+                Text(advisory)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(prefs.hotkey.reservedBy == nil ? Color.secondary : Color.orange)
             } else {
-                // The one thing that is true of every shortcut, stated once,
-                // instead of a per-combination guess about what is free.
+                // The one thing true of every shortcut, stated once. Note what
+                // it does *not* say: that this combination is free. Nothing here
+                // knows that, and the last version's guesses at it were wrong.
                 Text("OmniScribe takes this combination from every other app while it runs.")
                     .font(.caption)
                     .foregroundStyle(.secondary)

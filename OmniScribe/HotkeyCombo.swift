@@ -129,13 +129,83 @@ struct HotkeyCombo: Equatable, Codable {
         return typed.isEmpty ? "Key \(keyCode)" : typed
     }
 
-    /// The only two conflicts anyone has actually reported. Shown for the current
-    /// shortcut when it applies — deliberately not a general table of guesses.
-    var knownConflict: String? {
-        if self == Self.default {
-            return "Some Mac users press \u{2325}Space to switch input sources. If you do, record a different one."
+    // MARK: – What already owns a combination
+
+    private struct Reservation {
+        let keyCode: Int64
+        let modifiers: CGEventFlags
+        let owner: String
+    }
+
+    /// Combinations with a **documented** owner: an Apple default, or a conflict
+    /// someone reported from real use.
+    ///
+    /// The bar for being in this list is deliberately high, because the previous
+    /// version of this file shipped a table of combinations labelled "usually
+    /// free" that were never checked — two of the five were wrong. So: an entry
+    /// here means it is documented or was reported. An *absent* combination
+    /// means "nothing known about it", which is not the same as "free", and the
+    /// UI must not imply otherwise.
+    private static let reservations: [Reservation] = [
+        // Input sources — the pair this whole thread started from. Note it is
+        // ⌃Space, not ⌥Space, that macOS ships as the language switcher.
+        .init(keyCode: 49, modifiers: [.maskControl],
+              owner: "macOS: select the previous input source"),
+        .init(keyCode: 49, modifiers: [.maskControl, .maskAlternate],
+              owner: "macOS: select the next input source"),
+
+        // Spotlight and Finder search.
+        .init(keyCode: 49, modifiers: [.maskCommand],
+              owner: "macOS: Spotlight search"),
+        .init(keyCode: 49, modifiers: [.maskCommand, .maskAlternate],
+              owner: "macOS: Finder search window"),
+
+        // Apple's own Dictation on 2021+ MacBooks with a microphone key.
+        .init(keyCode: 96, modifiers: [],
+              owner: "Apple Dictation on MacBooks with a microphone key"),
+
+        // App switcher and Spaces.
+        .init(keyCode: 48, modifiers: [.maskCommand],
+              owner: "macOS: switch applications"),
+        .init(keyCode: 123, modifiers: [.maskControl],
+              owner: "macOS: move one space left"),
+        .init(keyCode: 124, modifiers: [.maskControl],
+              owner: "macOS: move one space right"),
+        .init(keyCode: 126, modifiers: [.maskControl],
+              owner: "macOS: Mission Control"),
+        .init(keyCode: 125, modifiers: [.maskControl],
+              owner: "macOS: application windows"),
+
+        // Screenshots.
+        .init(keyCode: 20, modifiers: [.maskCommand, .maskShift],
+              owner: "macOS: screenshot the whole screen"),
+        .init(keyCode: 21, modifiers: [.maskCommand, .maskShift],
+              owner: "macOS: screenshot a selection"),
+        .init(keyCode: 23, modifiers: [.maskCommand, .maskShift],
+              owner: "macOS: screenshot and recording options"),
+
+        // Reported from real use rather than documented by Apple: this one cost
+        // a release. Dictating into mail is a main use of this app, so losing
+        // Send to the dictation shortcut is not a small collision.
+        .init(keyCode: 2, modifiers: [.maskCommand, .maskShift],
+              owner: "Apple Mail: Send"),
+    ]
+
+    /// Set when something documented already claims this combination.
+    var reservedBy: String? {
+        Self.reservations.first { $0.keyCode == keyCode && $0.modifiers == modifiers }?.owner
+    }
+
+    /// The note worth showing about the current shortcut, strongest first.
+    /// `nil` means nothing is known about it — **not** that it is free.
+    var advisory: String? {
+        if let owner = reservedBy {
+            return "Already used by \u{2014} \(owner). Dictation will win, and that stops working."
         }
-        if Self.functionKeyNames[keyCode] == "F13", modifiers.isEmpty {
+        if self == Self.default {
+            return "Some people remap \u{2325}Space to switch input sources. If you did, record a different one."
+        }
+        if Self.functionKeyNames[keyCode] != nil, modifiers.isEmpty, keyCode == 105 {
             return "MacBook keyboards have no F13 key."
         }
         return nil
