@@ -134,7 +134,8 @@ Raktus gauni:
 1. Pastatyk žymeklį ten, kur nori teksto (TextEdit, Mail, naršyklė, žinutės…).
 2. Paspausk **⌥ (Option) + Space** — apačioje atsiras įrašymo indikatorius.
 3. Kalbėk **lietuviškai, aiškiai**.
-4. Nutilk ~2 sek. (arba paspausk **⌥Space dar kartą**) — įrašymas sustos.
+4. Baigęs kalbėti tylėk — **po maždaug 1,2 sek. tylos įrašymas sustoja pats**
+   (arba paspausk **⌥Space dar kartą**, jei nenori laukti).
 5. Po kelių sekundžių sutvarkytas tekstas atsiras ties žymekliu.
 
 **Režimą** keiti: meniu → **Settings → General → Processing Mode**:
@@ -148,15 +149,29 @@ Raktus gauni:
 
 ## 3a. Diktavimo trukmė (limitai)
 
-- **Kol kalbi be ~2 sek. pauzės** — įrašoma toliau, fiksuoto laiko limito nėra.
-- Nutildžius ~2 sek. — įrašymas **sustoja automatiškai** (arba paspausk ⌥Space).
-- Vienas diktavimas patikimai veikia **iki kelių minučių** (transkripcijos užklausos
-  riba — 120 s; OpenAI failo riba — 25 MB ≈ ~13 min garso).
+**Kada įrašymas sustoja pats:**
+
+- **Nustojus kalbėti daugiau nei ~1,2 sek. — įrašymas sustoja automatiškai.**
+  Trumpesnės pauzės sakinio viduryje jo nenutraukia, tad galvoti garsiai galima.
+- Jei paspaudei ⌥Space, bet **iš viso nieko nepasakei** — įrašymas pats
+  išsijungia po ~6 sek., kad neliktų veikti be reikalo.
+- Bet kada gali sustabdyti pats — **paspausk ⌥Space dar kartą**.
+
+**Kiek gali kalbėti iš viso:**
+
+- **Kol kalbi be ilgesnių nei ~1,2 sek. pauzių, įrašoma toliau** — fiksuoto
+  laiko limito nėra.
+- Vienas diktavimas patikimai veikia **iki kelių minučių** (transkripcijos
+  užklausos riba — 120 s; OpenAI failo riba — 25 MB ≈ ~13 min garso).
 - Labai ilgo teksto **redaguotas** rezultatas gali būti apkarpytas (Claude ~8000
   token'ų riba, ~5000 žodžių).
 
-💡 **Patarimas:** diktuok sakiniais ar pastraipomis, nutildamas tarp jų — natūraliausia
-ir patikimiausia. Ilgesniems tekstams — kelios trumpos „porcijos".
+💡 **Patarimas:** diktuok sakiniais ar pastraipomis, darydamas pauzę tarp jų —
+natūraliausia ir patikimiausia. Ilgesniems tekstams — kelios trumpos „porcijos".
+
+> ⚠️ **Jei aplinkoje nuolatinis triukšmas** (ventiliatorius, oro kondicionierius),
+> automatinis sustabdymas gali nesuveikti — programa girdi triukšmą kaip garsą ir
+> laukia tylos, kuri neateina. Tada tiesiog paspausk **⌥Space dar kartą**.
 
 ## 4. Problemų sprendimas
 

@@ -32,7 +32,7 @@ Everything hangs off one cycle in `AppDelegate.finishDictation()`:
 ```
 ⌥Space (HotkeyManager, CGEventTap)
   → AudioSessionManager.start()           capture mic, convert to 16 kHz mono Float32
-  → VoiceActivityDetector                 auto-stop after ~2 s of silence …
+  → VoiceActivityDetector                 auto-stop after ~1.2 s of silence …
       OR ⌥Space again                     … or manual stop
   → AudioSessionManager.stop() → [Float]  the captured samples
   → CloudWhisperService.transcribe()      OpenAI Whisper API → Lithuanian text
@@ -66,7 +66,7 @@ are **not** surfaced in the UI yet. To debug, run from Terminal and watch stdout
 
 **Audio**
 - `AudioSessionManager.swift` — `AVAudioEngine`, taps input, converts to 16 kHz mono Float32, feeds VAD; handles device changes; removes tap **before** stopping engine.
-- `VoiceActivityDetector.swift` — RMS-based; only counts silence **after** it has first detected speech above threshold (0.012). Fires `onSilenceTimeout` once after ~2 s silence.
+- `VoiceActivityDetector.swift` — RMS-based; only counts silence **after** it has first detected speech above threshold (0.012). Fires `onSilenceTimeout` once after ~1.2 s silence, and `onPreSpeechTimeout` after 6 s with no speech at all.
 - `STTResult.swift` — provider-agnostic result `{ text, language, audioDuration, source }`.
 
 **STT (speech → text)**
@@ -835,11 +835,11 @@ before writing any code.
 
 There is **no hard recording time cap** — `AudioSessionManager` accumulates samples
 in memory (~1.9 MB/min as a 16 kHz mono 16-bit WAV) and stops on VAD silence
-(~2 s) or a second ⌥Space. The binding constraints are:
+(~1.2 s) or a second ⌥Space. The binding constraints are:
 
 | Limit | Value | Where to change |
 |---|---|---|
-| VAD silence auto-stop | ~2 s | `VoiceActivityDetector` (`silenceDuration`) |
+| VAD silence auto-stop | 1.2 s | `VoiceActivityDetector` (`silenceDuration`) |
 | Transcription request timeout | **120 s** | `CloudWhisperService.init` (`timeoutIntervalForResource`) |
 | OpenAI Whisper file cap | 25 MB ≈ ~13 min audio | OpenAI API (hard) |
 | Claude reshape output cap | **8192 tokens** (~5000 words) | `ClaudeService.init` (`maxTokens`) |
