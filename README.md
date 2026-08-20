@@ -5,7 +5,7 @@
 # OmniScribe — naudojimo instrukcija
 
 [![Build OmniScribe](https://github.com/g4me2011-lang/omniScribe/actions/workflows/build.yml/badge.svg)](https://github.com/g4me2011-lang/omniScribe/actions/workflows/build.yml)
-[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![License: Source Available](https://img.shields.io/badge/License-Source%20Available-blue.svg)](LICENSE)
 
 Balso diktavimo įrankis macOS'ui. Paspaudi **⌥Space**, kalbi lietuviškai — ir
 sutvarkytas tekstas atsiranda ten, kur tavo žymeklis (bet kurioje programoje).
@@ -60,9 +60,10 @@ Accessibility leidimo) ir įklijuoja tekstą per iškarpinę.
 > vien mano žodžiu. Būtent todėl šaltinio kodas yra viešai matomas: pasitikrink pats arba
 > paprašyk ką nors, kas moka skaityti Swift.
 
-**Licencija:** kodas viešas, kad jį būtų galima peržiūrėti, bet **ne** atviro
-kodo licencija — platinti, parduoti ar leisti savo versijos negalima be
-sutikimo. → [`LICENSE`](LICENSE)
+**Licencija:** kodą galima skaityti, tikrinti ir **pačiam susikompiliuoti** —
+kaip tik tam, kad galėtum įsitikinti, jog paskelbtas binaras atitinka
+paskelbtą kodą. Bet tai **ne** atviro kodo licencija: platinti, parduoti ar
+leisti savo versijos negalima be sutikimo. → [`LICENSE`](LICENSE)
 
 ---
 

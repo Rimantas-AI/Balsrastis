@@ -1,19 +1,62 @@
+OmniScribe — Source-Available License
 Copyright (c) 2026 OmniScribe (g4me2011-lang). All rights reserved.
 
-This software and its source code are proprietary and confidential. No
-permission is granted to use, copy, modify, merge, publish, distribute,
-sublicense, or sell copies of this software, in whole or in part, without
-prior written permission from the copyright holder.
+This is NOT an open-source licence. The source code is published so that
+anyone can read it and satisfy themselves about what the software does —
+particularly that it does not misuse the API keys it asks for. Publishing
+the source grants the rights listed under "You may" and nothing beyond them.
 
-If you have received a copy of this software as an invited closed-beta
-tester, that copy is provided solely for your own personal evaluation. It
-does not grant you any right to share, forward, publish, or otherwise
-distribute the software or its source code to any other person.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+YOU MAY:
+
+  1. Read, inspect, audit and study the source code, for any purpose.
+
+  2. Build the software from source and run your own build on machines you
+     control, in order to verify that the published binaries match the
+     published source, or simply to use it yourself.
+
+  3. Run official builds of the software for your own personal or internal
+     business use.
+
+  4. Quote short excerpts of the code when discussing, reviewing or
+     reporting problems with this software, with attribution.
+
+
+YOU MAY NOT, without prior written permission from the copyright holder:
+
+  1. Redistribute the software or its source code, in original or modified
+     form, to any other person — including forwarding a build to a friend,
+     re-uploading it, or publishing it elsewhere.
+
+  2. Sell, rent, sublicense or otherwise commercially exploit the software
+     or any derivative of it.
+
+  3. Publish a modified version, or distribute a product derived from this
+     code.
+
+  4. Use this source code as the basis of a competing product.
+
+  5. Remove or alter copyright notices, licence text, or author attribution.
+
+
+CLOSED BETA:
+
+  A build received as an invited beta tester is provided for your own
+  evaluation only. It does not grant any right to share, forward or
+  publish that build. Beta builds may carry a marker identifying the
+  tester they were issued to.
+
+
+NO WARRANTY:
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+  The software sends audio to OpenAI and transcribed text to Anthropic using
+  API keys you supply. You are responsible for your own use of those services
+  and for any charges they bill you.
