@@ -25,6 +25,28 @@ Programa gyvena meniu juostoje: jokio lango, jokios Dock ikonos. Balsą į tekst
 verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
 (Anthropic).
 
+## Kaip tai veikia
+
+**1. Paspausk ⌥Space ir kalbėk.** Ekrano apačioje pasirodo diktavimo indikatorius.
+
+<p align="center">
+  <img src="docs/images/01-omniscribe-listening.png" alt="OmniScribe klausosi lietuviško diktavimo" width="900">
+</p>
+
+**2. Baigus kalbėti, sutvarkytas tekstas įterpiamas ten, kur buvo žymeklis.**
+
+<p align="center">
+  <img src="docs/images/02-omniscribe-result.png" alt="OmniScribe įterptas sutvarkytas lietuviškas tekstas" width="900">
+</p>
+
+### Meniu ir nustatymai
+
+<p align="center">
+  <img src="docs/images/03-omniscribe-settings.png" alt="OmniScribe bendrieji nustatymai" width="640">
+  <br>
+  <img src="docs/images/04-omniscribe-menu.png" alt="OmniScribe meniu juostos meniu" width="420">
+</p>
+
 ## Ką reikia žinoti prieš diegiant
 
 | | |
