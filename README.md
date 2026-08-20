@@ -39,13 +39,16 @@ verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
   <img src="docs/images/02-omniscribe-result.png" alt="OmniScribe įterptas sutvarkytas lietuviškas tekstas" width="900">
 </p>
 
-### Meniu ir nustatymai
+<details>
+<summary><strong>Meniu ir nustatymai</strong> (paspausk, kad pamatytum)</summary>
 
 <p align="center">
   <img src="docs/images/03-omniscribe-settings.png" alt="OmniScribe bendrieji nustatymai" width="640">
-  <br>
+  <br><br>
   <img src="docs/images/04-omniscribe-menu.png" alt="OmniScribe meniu juostos meniu" width="420">
 </p>
+
+</details>
 
 ## Ką reikia žinoti prieš diegiant
 
