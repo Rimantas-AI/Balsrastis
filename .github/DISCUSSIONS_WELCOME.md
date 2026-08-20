@@ -17,9 +17,9 @@ sutvarkytas tekstas atsiranda bet kurioje programoje (OpenAI Whisper + Claude).
 - 🗣️ **Pasidalinti** — kaip naudoji, kokiam darbui, kas patinka
 
 **Prieš klausiant:**
-1. Peržiūrėk [README instrukciją](https://github.com/g4me2011-lang/omniScribe#readme) —
+1. Peržiūrėk [README instrukciją](https://github.com/Rimantas-AI/omniScribe#readme) —
    ten yra dažniausių problemų sprendimai (leidimai, „Open Anyway", API raktai).
-2. Radai klaidą? Geriau atidaryk [Issue](https://github.com/g4me2011-lang/omniScribe/issues)
+2. Radai klaidą? Geriau atidaryk [Issue](https://github.com/Rimantas-AI/omniScribe/issues)
    su logais.
 
 **Patiko ir sutaupė laiko?** Gali įmesti kelias EUR kavai ☕

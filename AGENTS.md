@@ -4,7 +4,7 @@
 > works, why each key decision was made, and the traps that already cost days.**
 > Written for another AI agent (or developer) picking up the project cold.
 
-Repo: `https://github.com/g4me2011-lang/omniScribe`
+Repo: `https://github.com/Rimantas-AI/omniScribe`
 
 ---
 
@@ -139,7 +139,7 @@ quarantine-blocked), then grant permissions.
 
 **Verifying a CI run from a headless/agent context** (no `gh` auth): use the public
 REST API, e.g.
-`curl -s https://api.github.com/repos/g4me2011-lang/omniScribe/actions/runs`
+`curl -s https://api.github.com/repos/Rimantas-AI/omniScribe/actions/runs`
 and `.../runs/{id}/jobs` for step results. Logs need auth (403 unauthenticated).
 
 ---
