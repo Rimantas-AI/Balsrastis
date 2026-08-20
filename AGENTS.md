@@ -11,9 +11,10 @@ Repo: `https://github.com/Rimantas-AI/omniScribe`
 ## 1. What OmniScribe is
 
 A **menu-bar-only macOS app** for voice dictation with AI post-processing. The user
-presses a global hotkey (**⌥Space / Option+Space**), speaks, and cleaned-up text is
-**pasted into whatever app currently has focus** (TextEdit, Mail, Slack, browser,
-this chat box — anything).
+presses a global hotkey (**⌥Space** by default, changeable in Settings since
+v1.6.13 — see `HotkeyCombo`), speaks, and cleaned-up text is **pasted into
+whatever app currently has focus** (TextEdit, Mail, Slack, browser, this chat
+box — anything).
 
 The unique value: it doesn't just transcribe — it **reshapes** the text with an LLM
 according to a selected *mode* (grammar cleanup, professional email, code snippet,
@@ -44,23 +45,28 @@ Everything hangs off one cycle in `AppDelegate.finishDictation()`:
 States are shown via the menu-bar icon (`MenuBarManager`: idle / listening /
 processing) and a floating panel (`WindowManager` + `HUDPanel` + `RecordingHUDView`).
 
-All errors in the async pipeline are `catch`-ed and `print`-ed with an ❌ prefix; they
-are **not** surfaced in the UI yet. To debug, run from Terminal and watch stdout
-(see §7).
+Errors in the async pipeline are `catch`-ed, shown to the user in the HUD
+(`HUDPhase.error`) and recorded in Settings → Diagnostics, which also exports a
+full run history via **Copy Report**. They are `print`-ed with an ❌ prefix as
+well, but **reaching for Terminal is now the wrong first move**: launching the
+app from a terminal attributes Microphone and Accessibility to the *terminal*,
+which manufactures failures that do not exist in normal use. Read Diagnostics
+first; §7 is the fallback.
 
 ---
 
-## 3. File / module map (21 Swift files)
+## 3. File / module map
 
 **AppCore / lifecycle**
 - `OmniScribeApp.swift` — `@main`, `Settings { EmptyView() }`, no `WindowGroup`.
 - `AppDelegate.swift` — owns all services; orchestrates the dictation cycle. **Start here.**
 - `MenuBarManager.swift` — `NSStatusItem`, 3-state icon, menu (Settings / Quit).
 - `PermissionManager.swift` — requests Microphone + Accessibility, shows NSAlerts.
-- `AppPreferences.swift` — `ObservableObject`, persists `selectedMode` + `selectedProvider` (UserDefaults; **not** secrets).
+- `AppPreferences.swift` — `ObservableObject`, persists every non-secret choice in UserDefaults: mode, provider, STT model, vocabulary prompt, hotkey, and the three diagnostic toggles. **Never secrets** — those live in `KeychainManager`. Read once per run and snapshotted, see §12.
 
 **Hotkey / OS interop**
-- `HotkeyManager.swift` — global **CGEventTap** for ⌥Space; **requires Accessibility**; guards with `AXIsProcessTrusted()`. Takes an `onTrigger` closure.
+- `HotkeyManager.swift` — global **CGEventTap**; **requires Accessibility**; guards with `AXIsProcessTrusted()`. Takes an `onTrigger` closure. Reads `AppPreferences.hotkey` live on every keypress, so a change applies without reinstalling the tap.
+- `HotkeyCombo.swift` — the user's chosen shortcut (key code + modifiers + display name), recorded from a real keypress. **Read its header before touching the shortcut** — it explains why a list of suggested combinations was withdrawn.
 - `TextInjector.swift` — `@MainActor`; clipboard-save → set string → synthesize ⌘V via `CGEvent` (`.cghidEventTap`) → `Task.sleep(120 ms)` → clipboard-restore. Requires Accessibility.
 - `ClipboardState.swift` — deep-copies `NSPasteboardItem`s so text/image/file clipboard survives.
 
@@ -82,8 +88,14 @@ are **not** surfaced in the UI yet. To debug, run from Terminal and watch stdout
 **Security**
 - `KeychainManager.swift` — generic-password CRUD keyed by provider `rawValue` under service `com.omniscribe.app.apikeys`. Keys **never** touch UserDefaults. **Per-machine** (keys do not travel with the app).
 
+**Diagnostics / observability** (added v1.2.0 onward — the tooling every later
+decision was made from; see §12)
+- `DictationMetrics.swift` — per-run timing breakdown plus `MetricsStore` (in-memory history, 60 entries) and `fullReport()`, the **Copy Report** text. Dictated text is only ever held here when `captureTestText` is on, and is dropped at construction otherwise.
+- `UsageLog.swift` — opt-in CSV appended to Application Support, surviving relaunch and app updates. **Numbers only, never words** — the reduction happens in `usageLogRow(appVersion:)`, at the boundary. Keep it that way if columns are added.
+- `FailureCategory.swift` — classifies an error into a fixed label so the log records the *case* and never a server message, which can quote request content.
+
 **UI**
-- `SettingsView.swift` — native `TabView` (General + API Keys) + `Form` + `Picker`. No iOS `NavigationView`. General tab: mode + AI-provider pickers. API Keys tab: one `SecureField` per provider (Save/Remove), backed by Keychain.
+- `SettingsView.swift` — native `TabView` (General + API Keys + Diagnostics) + `Form` + `Picker`. No iOS `NavigationView`. General: shortcut recorder, mode, provider, STT model, comparison toggles. API Keys: one `SecureField` per provider (Save/Remove), backed by Keychain. Diagnostics: timings, per-model summaries, Copy Report.
 - `RecordingHUDView.swift` — SwiftUI HUD content (listening/processing).
 - `HUDPanel.swift` — non-activating `NSPanel`, `.floating` level, `ignoresMouseEvents`, `canBecomeKey = false` (must never steal focus).
 - `WindowManager.swift` — presents the Settings window and the HUD panel safely for an `LSUIElement` app.
