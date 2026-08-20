@@ -2,279 +2,80 @@
   <img src=".github/social-preview.png" alt="OmniScribe" width="640">
 </p>
 
-# OmniScribe — naudojimo instrukcija
+<h1 align="center">OmniScribe</h1>
 
-[![Build OmniScribe](https://github.com/Rimantas-AI/omniScribe/actions/workflows/build.yml/badge.svg)](https://github.com/Rimantas-AI/omniScribe/actions/workflows/build.yml)
-[![License: Source Available](https://img.shields.io/badge/License-Source%20Available-blue.svg)](LICENSE)
+<p align="center">
+  <strong>Balso diktavimas lietuviškai — bet kurioje macOS programoje.</strong>
+</p>
 
-Balso diktavimo įrankis macOS'ui. Paspaudi **⌥Space**, kalbi lietuviškai — ir
-sutvarkytas tekstas atsiranda ten, kur tavo žymeklis (bet kurioje programoje).
-
-> 📥 **Parsisiųsti:** [**Releases**](https://github.com/Rimantas-AI/omniScribe/releases/latest)
-> → `OmniScribe.zip`. Vienu paspaudimu, **be prisijungimo prie GitHub**.
-
-Programos viduje: balsą į tekstą verčia **GPT-4o mini Transcribe** (OpenAI),
-tekstą sutvarko **Claude** (Anthropic), o rezultatas įterpiamas per iškarpinę.
-Programa gyvena **meniu juostoje** — jokio lango, jokios Dock ikonos.
-
-> **Reikia:** macOS 12 ar naujesnės, interneto, ir dviejų API raktų —
-> **OpenAI** (balso atpažinimui) ir **Claude/Anthropic** (teksto redagavimui).
+<p align="center">
+  <a href="https://github.com/Rimantas-AI/omniScribe/actions/workflows/build.yml"><img src="https://github.com/Rimantas-AI/omniScribe/actions/workflows/build.yml/badge.svg" alt="Build"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Source%20Available-blue.svg" alt="License: Source Available"></a>
+  <a href="https://github.com/Rimantas-AI/omniScribe/releases/latest"><img src="https://img.shields.io/github/v/release/Rimantas-AI/omniScribe" alt="Release"></a>
+</p>
 
 ---
 
-## 0. Kur dingsta tavo duomenys ir raktai
+Paspaudi **⌥Space**, kalbi lietuviškai — ir **sutvarkytas tekstas atsiranda ten,
+kur tavo žymeklis**. Mail, Pages, Safari, Slack, bet kur.
+
+Apple lietuvių kalbos diktavimo nepalaiko iki šiol. Tai — sprendimas tam.
+
+Programa gyvena meniu juostoje: jokio lango, jokios Dock ikonos. Balsą į tekstą
+verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
+(Anthropic).
+
+## Ką reikia žinoti prieš diegiant
+
+| | |
+|---|---|
+| **Kaina** | Programa nemokama. Naudoji **savo** OpenAI ir Anthropic raktus, tad apmoki savo naudojimą — apytiksliai keli eurai per mėnesį |
+| **Reikia** | macOS 12 (Monterey) ar naujesnės. Veikia ir su **Intel**, ir su Apple Silicon |
+| **Senesnis Mac tinka** | MacBook Air ir Pro nuo 2015 m., Mac mini nuo 2014 m., iMac nuo 2015 m. |
+| **Parašas** | ⚠️ **Nenotarizuota Apple.** Diegiant reikės rankomis pašalinti karantiną |
+| **Stadija** | Beta. Kai kas neveiks |
+| **Paruošimas** | ~15–20 min., daugiausia — API raktų susikūrimas |
+
+## Parsisiuntimas
+
+**[⬇️ Atsisiųsti naujausią versiją](https://github.com/Rimantas-AI/omniScribe/releases/latest)** — be prisijungimo prie GitHub.
+
+Toliau — **[diegimo instrukcija](docs/DIEGIMAS.md)**.
+
+## Kur dingsta tavo duomenys ir raktai
 
 Programa prašo dviejų API raktų, todėl klausimas „ar ji jų kur nors nenusiųs?”
-yra teisingas klausimas. Trumpas atsakymas ir kur jį pačiam pasitikrinti:
+yra teisingas klausimas.
 
-**Raktai laikomi macOS Keychain**, ne faile ir ne programos viduje.
-→ [`OmniScribe/KeychainManager.swift`](OmniScribe/KeychainManager.swift)
+- **Raktai laikomi macOS Keychain** — ne faile, ne programos viduje
+- **Iš tavo turinio siunčiami tik du dalykai:** garsas į `api.openai.com`,
+  tekstas į `api.anthropic.com`. Tai vieninteliai du adresai visame kode
+- **Savo serverio neturiu** — nei statistikai, nei atnaujinimams
+- **Jokios telemetrijos.** Diagnostikos statistika (pagal nutylėjimą išjungta)
+  lieka tavo kompiuteryje
 
-**Iš tavo turinio siunčiami tik du dalykai:**
+Nesitikiu, kad patikėsi vien žodžiu — **[`SECURITY.md`](SECURITY.md)** rodo, kaip
+pasitikrinti pačiam: kontrolinė suma, kompiliavimas iš kodo, tinklo stebėjimas.
 
-| Kas | Kur | Kodėl |
-|---|---|---|
-| Įrašytas garsas | `api.openai.com` | Balsą paversti tekstu |
-| Gautas tekstas | `api.anthropic.com` | Sutvarkyti gramatiką |
+## Dokumentacija
 
-→ [`CloudWhisperService.swift`](OmniScribe/CloudWhisperService.swift) · [`ClaudeService.swift`](OmniScribe/ClaudeService.swift)
+- 📥 **[Diegimas](docs/DIEGIMAS.md)** — parsisiuntimas, Gatekeeper, leidimai, API raktai
+- 📖 **[Naudojimas](docs/NAUDOJIMAS.md)** — režimai, klavišų derinys, ribos
+- 🔧 **[Problemų sprendimas](docs/PROBLEMOS.md)** — kai kas nors neveikia
+- 🔒 **[Saugumas](SECURITY.md)** — ką programa daro su duomenimis ir kaip patikrinti
 
-Kartu, kaip ir bet kurioje API užklausoje, keliauja **tavo paties raktas
-autentifikacijai** ir techninė užklausos informacija (modelio pavadinimas,
-kalba). Daugiau nieko.
+## Licencija
 
-Tai **vieninteliai du adresai visame kode** — patikrinti galima paieška.
-**Savo serverio neturiu** — nei statistikai, nei atnaujinimams, nei niekam.
-Raktai keliauja tik į tų dviejų paslaugų API, tiesiogiai iš tavo kompiuterio.
+Kodą galima **skaityti, tikrinti ir savarankiškai sukompiliuoti** — kaip tik tam,
+kad galėtum įsitikinti, jog paskelbtas vykdomasis failas atitinka paskelbtą kodą.
 
-> ℹ️ Failas vadinasi `CloudWhisperService`, nes iš pradžių buvo naudojamas
-> Whisper. Numatytasis modelis dabar — **`gpt-4o-mini-transcribe`**, pasirinktas
-> po 45 klipų palyginimo (buvo tikslesnis lietuviškai ir greitesnis). `whisper-1`
-> tebėra pasirenkamas **Settings → General → STT Model**.
-
-**Jokios telemetrijos ir jokio sekimo.** Diagnostikos statistika (jei ją
-apskritai įjungsi — pagal nutylėjimą išjungta) rašoma į CSV failą tavo
-kompiuteryje ir niekur nesiunčiama; joje nėra nei teksto, nei garso, vien
-skaičiai. → [`UsageLog.swift`](OmniScribe/UsageLog.swift)
-
-**Ką programa dar daro:** klausosi vieno klavišų derinio (todėl reikia
-Accessibility leidimo) ir įklijuoja tekstą per iškarpinę.
-→ [`HotkeyManager.swift`](OmniScribe/HotkeyManager.swift) · [`TextInjector.swift`](OmniScribe/TextInjector.swift)
-
-> ⚠️ **Programa dar nenotarizuota Apple.** Tai reiškia, kad macOS nepatikrino
-> nei manęs kaip kūrėjo, nei paties failo, ir diegiant reikės apeiti karantiną
-> ranka. Notarizacija planuose, bet kol jos nėra — nesitikiu, kad pasitikėsi
-> vien mano žodžiu. Būtent todėl šaltinio kodas yra viešai matomas: pasitikrink
-> pats arba paprašyk ko nors, kas moka skaityti Swift.
-
-**Licencija:** kodą galima skaityti, tikrinti ir **pačiam susikompiliuoti** —
-kaip tik tam, kad galėtum savarankiškai įsitikinti, jog paskelbtas vykdomasis failas atitinka
-paskelbtą kodą. Bet tai **ne** atviro kodo licencija: platinti, parduoti ar
-leisti savo versijos negalima be sutikimo. → [`LICENSE`](LICENSE)
-
----
-
-## 1. Parsisiuntimas
-
-1. Atidaryk [**Releases**](https://github.com/Rimantas-AI/omniScribe/releases/latest) —
-   prisijungti prie GitHub **nereikia**.
-2. Skiltyje **Assets** spausk **`OmniScribe.zip`**.
-3. Išarchyvuok — gausi **`OmniScribe.app`** su programos ikona.
-4. Nutempk `OmniScribe.app` į **Applications** (Programos).
-
-> Programa **universali** — veikia ir su Intel, ir su Apple Silicon (M1–M4)
-> procesoriais. Reikia macOS 12 (Monterey) ar naujesnės.
-
-**Patikrink, ką atsisiuntei** (nebūtina, bet verta — programa nenotarizuota):
-
-```bash
-shasum -a 256 OmniScribe.zip
-```
-
-Suma turi sutapti su nurodyta tos versijos
-[Releases](https://github.com/Rimantas-AI/omniScribe/releases/latest) puslapyje.
-Daugiau būdų pasitikrinti — [`SECURITY.md`](SECURITY.md).
-
-<details>
-<summary>Alternatyva: naujausia kompiliacija iš Actions (reikia GitHub paskyros)</summary>
-
-Jei nori versijos, kuri dar neišleista kaip Release:
-
-1. Prisijunk prie GitHub → repozitorijos **Actions** skiltis.
-2. Spausk paskutinį žalią (✅) **„Build OmniScribe”** paleidimą.
-3. Apačioje, **Artifacts**, spausk **OmniScribe-app**.
-
-</details>
-
----
-
-## 2. Pirmas paleidimas
-
-### 2a. Leisk atidaryti (Gatekeeper)
-
-Programa pasirašyta tik laikinu (*ad-hoc*) parašu, be Apple sertifikato, todėl
-macOS pirmą kartą ją blokuoja. **Terminale** paleisk:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/OmniScribe.app
-```
-
-Tada paleisk `OmniScribe.app` (dukart). Jei vis tiek klausia — **dešinys pelės
-klavišas → Open → Open**, arba: **System Settings → Privacy & Security** → apačioje
-**„Open Anyway”**.
-
-> Meniu juostos viršuje (dešinėje, prie laikrodžio) atsiras **mikrofono ikona**.
-> **Lango nebus — tai normalu.** Spausk ikoną → matysi meniu (Settings, Quit).
-
-### 2b. Suteik leidimus
-
-Nustatymuose (macOS 15: **System Settings**, macOS 12: **System Preferences**) →
-**Privacy & Security**:
-
-| Leidimas | Kam reikia |
-|---|---|
-| **Microphone** | įrašyti balsą |
-| **Accessibility** | ⌥Space klavišui **ir** teksto įterpimui |
-| **Input Monitoring** *(dažnai reikia macOS 12'e)* | klaviatūros klavišui perimti |
-
-Įjunk **OmniScribe** kiekviename sąraše, tada **uždaryk ir paleisk programą iš naujo**
-(Accessibility įsigalioja tik po perkrovimo).
-
-### 2c. Įvesk API raktus
-
-Meniu ikona → **Settings… → API Keys**:
-
-- **GPT (OpenAI)** laukelyje → įklijuok OpenAI raktą (`sk-...` arba `sk-proj-...`)
-- **Claude** laukelyje → įklijuok Anthropic raktą (`sk-ant-...`)
-
-Spausk **Save**. Iššoks **Keychain** langas → įrašyk savo **Mac slaptažodį** →
-**Always Allow**. Prie abiejų turi atsirasti žalias **„Stored”** ✓.
-
-> ⚠️ **Nesupainiok laukelių:** `sk-...` = OpenAI, `sk-ant-...` = Claude. Sukeitus —
-> abu bus atmesti (klaida 401).
-> ⚠️ **Raktai saugomi tik šiame kompiuteryje.** Kitame Mac'e juos reikia įvesti iš naujo.
-> ⚠️ **OpenAI paskyroje turi būti kredito** (Billing), kitaip matysi klaidą `429`.
-
-Raktus gauni:
-- OpenAI: <https://platform.openai.com/api-keys>
-- Claude: <https://console.anthropic.com> → API Keys
-
----
-
-## 3. Kaip naudoti
-
-1. Pastatyk žymeklį ten, kur nori teksto (TextEdit, Mail, naršyklė, žinutės…).
-2. Paspausk **⌥ (Option) + Space** — apačioje atsiras įrašymo indikatorius.
-3. Kalbėk **lietuviškai, aiškiai**.
-4. Baigęs kalbėti tylėk — **po maždaug 1,2 sek. tylos įrašymas sustoja pats**
-   (arba paspausk **⌥Space dar kartą**, jei nenori laukti).
-5. Po kelių sekundžių sutvarkytas tekstas atsiras ties žymekliu.
-
-**Režimą** keiti: meniu → **Settings → General → Processing Mode**:
-- **Typing / Cleanup** — sutvarko gramatiką
-- **Email** — perrašo į dalykišką laišką
-- **Code** — paverčia į kodą
-- **Messenger** — trumpa žinutė
-- **Translation** — vertimas
-
-> ⌨️ **Klavišų derinį galima pasikeisti:** **Settings → General → Shortcut →
-> Change…** ir paspausk tą derinį, kurio nori. Verta, jei ⌥Space tau jau užimtas
-> — pavyzdžiui, jei juo perjungi klaviatūros kalbą.
-
----
-
-## 3a. Diktavimo trukmė (ribos)
-
-**Kada įrašymas sustoja pats:**
-
-- **Nustojus kalbėti daugiau nei ~1,2 sek. — įrašymas sustoja automatiškai.**
-  Trumpesnės pauzės sakinio viduryje jo nenutraukia, tad galvoti garsiai galima.
-- Jei paspaudei ⌥Space, bet **iš viso nieko nepasakei** — įrašymas pats
-  išsijungia po ~6 sek., kad neliktų veikti be reikalo.
-- Bet kada gali sustabdyti pats — **paspausk ⌥Space dar kartą**.
-
-**Kiek gali kalbėti iš viso:**
-
-- **Kol kalbi be ilgesnių nei ~1,2 sek. pauzių, įrašoma toliau** — fiksuoto
-  laiko limito nėra.
-- Vienas diktavimas patikimai veikia **iki kelių minučių** (transkripcijos
-  užklausos riba — 120 s; OpenAI failo riba — 25 MB ≈ ~13 min garso).
-- Labai ilgo teksto **redaguotas** rezultatas gali būti apkarpytas (Claude ~8000
-  token'ų riba, ~5000 žodžių).
-
-💡 **Patarimas:** diktuok sakiniais ar pastraipomis, darydamas pauzę tarp jų —
-natūraliausia ir patikimiausia. Ilgesniems tekstams — kelios trumpos „porcijos”.
-
-> ⚠️ **Jei aplinkoje nuolatinis triukšmas** (ventiliatorius, oro kondicionierius),
-> automatinis sustabdymas gali nesuveikti — programa girdi triukšmą kaip garsą ir
-> laukia tylos, kuri neateina. Tada tiesiog paspausk **⌥Space dar kartą**.
-
-## 4. Problemų sprendimas
-
-| Problema | Sprendimas |
-|---|---|
-| **„OmniScribe is damaged” / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`, tada paleisk |
-| **„Safari can't open the file”** | Neatidarinėk iš Safari — eik per **Finder → Applications** |
-| **Paleidus nieko nerodo** | Tai normalu — ieškok **mikrofono ikonos ekrano viršuje dešinėje**, ne lango |
-| **⌥Space neveikia** | Įjunk **Accessibility** (macOS 12: dar ir **Input Monitoring**) → **paleisk iš naujo**. Jei derinys užimtas kitos programos — **Settings → General → Shortcut → Change…** ir įrašyk kitą |
-| **Tekstas neatsiranda** | Patikrink diagnostikos žurnalą (žr. žemiau). Dažniausiai — neįvesti/blogi API raktai arba mikrofonas negauna balso |
-| **Transkripcija „🎵🎵🎵”** | Mikrofonas negauna balso: **Sound → Input** pasirink teisingą mikrofoną ir žiūrėk, kad „Input level” juostelė judėtų kalbant; išjunk foninę muziką |
-| **Neišsijungia pats po tylos** | Dažniausia priežastis — **nuolatinis foninis triukšmas** (ventiliatorius, oro kondicionierius): programa jį girdi kaip garsą ir laukia tylos, kuri neateina. Stabdyk **⌥Space dar kartą** |
-| **Klaida „API key was rejected” (401)** | Blogas arba sukeistas raktas. Settings → API Keys → **Remove** → įvesk teisingą (`sk-...` OpenAI, `sk-ant-...` Claude) |
-| **Klaida „429” / „insufficient_quota”** | OpenAI paskyroje nėra kredito — pridėk Billing'e |
-| **„Network Error”** | Nėra interneto |
-| **Kelios mikrofono ikonos meniu juostoje** | Terminale: `killall OmniScribe`, tada paleisk vieną kartą iš Applications |
-| **Keychain klausia slaptažodžio** | Įrašyk **Mac** slaptažodį (ne API raktą) → **Always Allow** |
-| **Po naujos versijos ⌥Space nustojo veikti** | Naujas parašas → Accessibility teks suteikti iš naujo: pašalink seną „–”, pridėk naują „+”, perkrauk |
-
-### Kaip pamatyti tikslią klaidą (diagnostikos žurnale)
-
-Uždaryk programą, tada **Terminale**:
-
-```bash
-/Applications/OmniScribe.app/Contents/MacOS/OmniScribe
-```
-
-Padiktuok (⌥Space → kalbėk → nutilk) ir žiūrėk į eilutes:
-- `📝 Transcription (...): "..."` — ką atpažino
-- `✨ Processed (...)` — ką sutvarkė Claude
-- `⌨️ Inserted into the focused app.` — įterpta
-- `❌ Pipeline failed: ...` — **tiksli klaida** (parodys, kur problema)
-
-> ⚠️ **Svarbu:** paleidžiant per Terminalą, leidimus (Microphone, Accessibility)
-> reikia suteikti **Terminalui**, ne OmniScribe. Kitaip mikrofonas paduos tylą
-> (`"🎵🎵🎵"`). Kasdieniam naudojimui — paleisk `OmniScribe.app` **įprastai iš
-> Applications**, ne per Terminalą.
-
----
-
-## 5. Kasdienis naudojimas — trumpai
-
-Kai viską sutvarkei vieną kartą:
-1. Paleisk `OmniScribe.app` iš Applications (dukart).
-2. Meniu juostoje — viena mikrofono ikona.
-3. Bet kur → **⌥Space** → kalbėk → tekstas atsiranda.
-
-Terminalo, logų, `xattr` kasdien **nereikia** — jie tik pirmam diegimui ar
-problemų sprendimui.
-
----
+Bet tai **ne** atviro kodo licencija: platinti, parduoti ar leisti savo versijos
+negalima be sutikimo. → [`LICENSE`](LICENSE)
 
 ## ☕ Patiko? Pavaišink kava
 
-OmniScribe yra **nemokamas, o jo šaltinio kodą galima viešai peržiūrėti**. Projektas platinamas pagal nuosavybinę licenciją — kodo negalima platinti, parduoti ar leisti savo versijos be autoriaus sutikimo. Jei sutaupė tau laiko ir nori padėkoti —
-gali įmesti kelias EUR kavai. Kiekvienas puodelis motyvuoja tobulinti toliau 🙏
+Jei sutaupė tau laiko ir nori padėkoti — gali įmesti kelias EUR kavai.
+Kiekvienas puodelis motyvuoja tobulinti toliau 🙏
 
 - ☕ **Ko-fi:** https://ko-fi.com/rimantasd
 - 💳 **Revolut:** https://revolut.me/rimant6ap
-
-*(Ačiū, kad naudoji!)*
-
-## 6. Naujos versijos diegimas
-
-Kai išleidžiama nauja versija:
-1. Parsisiųsk naują artefaktą iš Actions (kaip 1 skyriuje).
-2. Pakeisk seną `.app` Applications aplanke.
-3. `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`
-4. **Accessibility suteik iš naujo** (parašas pasikeitė) → perkrauk.
-5. API raktai Keychain'e išlieka — jų iš naujo vesti nereikia.
