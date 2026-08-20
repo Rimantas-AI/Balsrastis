@@ -1,5 +1,22 @@
 # C1 testas — Opus prieš Haiku teksto valyme
 
+> ## ✅ ŠIS ETAPAS UŽDARYTAS — liekame prie `claude-opus-4-8`
+>
+> Testas atliktas: 60 frazių, 4 grupės. **Haiku atmestas dėl kokybės, ne dėl
+> greičio.** Automatinis atmetimo požymis suveikė **14 iš 60** bandymų (23 %)
+> prieš **0 iš 60** Opus atveju — ir **5 iš 5** lemiamų D grupės sakinių, kur
+> Haiku vietoj padiktuoto sakinio grąžindavo anglišką paaiškinimą, kad
+> „apdoroja tik anglišką tekstą". Tas paaiškinimas būtų atsidūręs naudotojo
+> dokumente.
+>
+> Greitis nekompensavo: nors Haiku mediana buvo greitesnė visose grupėse,
+> **P95 buvo blogesnis nei Opus 2 grupėse iš 4** — atsisakymo paragrafai ilgi,
+> tad kaip tik tempė uodegą, kurią turėjo trumpinti.
+>
+> Pilna analizė — `AGENTS.md`, kelrodžio 4b punktas. **Nekartoti be naujos
+> modelių kartos.** Žemiau — originalus testo scenarijus, paliktas kaip
+> metodikos pavyzdys.
+
 Vienas klausimas: **ar `claude-haiku-4-5` sutvarko lietuvišką tekstą taip pat
 gerai kaip `claude-opus-4-8`, bet greičiau?**
 

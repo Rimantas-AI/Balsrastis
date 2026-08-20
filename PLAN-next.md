@@ -1,5 +1,19 @@
 # OmniScribe — planas po savaitės validacijos
 
+> ## ⚠️ ISTORINIS DOKUMENTAS — sprendimai jau priimti
+>
+> Šis tekstas rašytas **prieš** C1 testą ir kelia klausimą „notarizacija pirma
+> ar greitesnis valymo modelis pirma". Klausimas atsakytas:
+>
+> - **C1 atliktas — liekame prie `claude-opus-4-8`.** Haiku atmestas dėl
+>   kokybės (žr. `TESTING-CLEANUP.md`).
+> - **Kodas atvertas viešai**, licencija pakeista į source-available. To šiame
+>   dokumente nėra, nes tada repo buvo privatus.
+> - **Notarizacija dar neatlikta** ir tebėra kitas didelis žingsnis.
+>
+> Palikta dėl validacijos skaičių (203 bandymai, 0 haliucinacijų, delsos
+> struktūra), kurie tebegalioja. Dabartinę būklę žiūrėk `AGENTS.md` kelrodyje.
+
 Dokumentas skirtas nepriklausomam vertinimui. Savarankiškas: visi skaičiai
 pateikti, konteksto iš pokalbio nereikia.
 
