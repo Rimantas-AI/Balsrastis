@@ -57,7 +57,7 @@ Accessibility leidimo) ir įklijuoja tekstą per iškarpinę.
 > ⚠️ **Programa dar nenotarizuota Apple.** Tai reiškia, kad macOS nepatikrino
 > nei manęs kaip kūrėjo, nei paties failo, ir diegiant reikės apeiti karantiną
 > ranka. Notarizacija planuose, bet kol jos nėra — nesitikiu, kad pasitikėsi
-> vien mano žodžiu. Būtent todėl kodas ir yra atviras: pasitikrink pats arba
+> vien mano žodžiu. Būtent todėl šaltinio kodas yra viešai matomas: pasitikrink pats arba
 > paprašyk ką nors, kas moka skaityti Swift.
 
 **Licencija:** kodas viešas, kad jį būtų galima peržiūrėti, bet **ne** atviro
@@ -210,7 +210,7 @@ problemų sprendimui.
 
 ## ☕ Patiko? Pavaišink kava
 
-OmniScribe yra **nemokamas ir atviro kodo**. Jei sutaupė tau laiko ir nori padėkoti —
+OmniScribe yra **nemokamas, o jo šaltinio kodą galima viešai peržiūrėti**. Projektas platinamas pagal nuosavybinę licenciją — kodo negalima platinti, parduoti ar leisti savo versijos be autoriaus sutikimo. Jei sutaupė tau laiko ir nori padėkoti —
 gali įmesti kelias EUR kavai. Kiekvienas puodelis motyvuoja tobulinti toliau 🙏
 
 - ☕ **Ko-fi:** https://ko-fi.com/rimantasd
