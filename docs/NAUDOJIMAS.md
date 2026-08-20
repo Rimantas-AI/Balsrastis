@@ -27,7 +27,7 @@ Verta pasikeisti, jei ⌥Space tau jau užimtas — pavyzdžiui, jei juo perjung
 klaviatūros kalbą.
 
 Programa įspės, jei įrašytas derinys jau kam nors priklauso (⌃Space, ⌘Space,
-⌘Tab, ekrano nuotraukų deriniai, Apple Mail „Send” ir kiti).
+⌘Tab, ekrano nuotraukų deriniai, Apple Mail „Send“ ir kiti).
 
 ---
 
@@ -45,7 +45,7 @@ Keiti: meniu → **Settings → General → Processing Mode**.
 
 > **Typing / Cleanup** turi papildomą apsaugą: jei modelis vietoj taisymo imasi
 > **vykdyti** padiktuotą nurodymą (pvz. iš „parašyk kolegai, kad susitikimas
-> nukeliamas” padaro laišką), rezultatas atmetamas ir įklijuojamas tavo
+> nukeliamas“ padaro laišką), rezultatas atmetamas ir įklijuojamas tavo
 > originalus tekstas.
 
 ---
@@ -71,10 +71,10 @@ Keiti: meniu → **Settings → General → Processing Mode**.
 - Vienas diktavimas patikimai veikia **iki kelių minučių** (transkripcijos
   užklausos riba — 120 s; OpenAI failo riba — 25 MB ≈ ~13 min garso).
 - Labai ilgo teksto **redaguotas** rezultatas gali būti apkarpytas (Claude ~8000
-  token'ų riba, ~5000 žodžių).
+  tokenų riba, ~5000 žodžių).
 
 💡 **Patarimas:** diktuok sakiniais ar pastraipomis, darydamas pauzę tarp jų —
-natūraliausia ir patikimiausia. Ilgesniems tekstams — kelios trumpos „porcijos”.
+natūraliausia ir patikimiausia. Ilgesniems tekstams — kelios trumpos dalys.
 
 ---
 
@@ -85,7 +85,7 @@ specifinius žodžius — vardus, terminus, santrumpas. Jei nuolat diktuoji tam
 tikrus žodžius ir jie atpažįstami blogai, įrašyk juos ten sakinio pavidalu.
 
 **STT modelį** taip pat galima keisti (**Settings → General → STT Model**).
-Numatytasis `gpt-4o-mini-transcribe` pasirinktas po 45 klipų palyginimo — buvo
+Numatytasis `gpt-4o-mini-transcribe` pasirinktas po 45 garso įrašų palyginimo — buvo
 tiksliausias lietuviškai ir greičiausias. `whisper-1` lieka kaip atsarginis.
 
 ---

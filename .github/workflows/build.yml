@@ -20,8 +20,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select latest stable Xcode
-        # WhisperKit's recent releases need a modern Swift toolchain; pin the
-        # newest stable Xcode on the runner so package resolution doesn't fail.
+        # Pin the newest stable Xcode on the runner so Swift package
+        # resolution and the macOS 12 deployment target both stay supported.
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
@@ -29,7 +29,7 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Build (unsigned, auto-resolves WhisperKit)
+      - name: Build (unsigned)
         # Uses -scheme (required alongside -derivedDataPath). The shared scheme
         # lives in OmniScribe.xcodeproj/xcshareddata/xcschemes/. xcodebuild
         # resolves Swift packages automatically when building a scheme.
@@ -53,7 +53,9 @@ jobs:
         run: |
           APP="build/Build/Products/Release/OmniScribe.app"
           codesign --force --deep --sign - "$APP"
-          codesign --verify --verbose "$APP" || true
+          # No `|| true`: an ad-hoc signature that fails to verify means the
+          # zip below is broken, and shipping it silently is worse than a red build.
+          codesign --verify --verbose "$APP"
 
       - name: Zip the app
         run: |
@@ -78,7 +80,8 @@ jobs:
           body: |
             ## OmniScribe ${{ github.ref_name }}
 
-            Voice dictation for macOS (OpenAI Whisper + Claude). Menu-bar app.
+            Balso diktavimas lietuviškai — bet kurioje macOS programoje.
+            GPT-4o mini Transcribe (OpenAI) + Claude (Anthropic). Meniu juostos programa.
 
             ### Download & run
             1. Download **OmniScribe.zip** below and unzip → `OmniScribe.app`.

@@ -8,19 +8,19 @@
 
 | Problema | Sprendimas |
 |---|---|
-| **„OmniScribe is damaged” / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`, tada paleisk |
-| **„Safari can't open the file”** | Neatidarinėk iš Safari — eik per **Finder → Applications** |
+| **„OmniScribe is damaged“ / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`, tada paleisk |
+| **„Safari can't open the file“** | Neatidarinėk iš Safari — eik per **Finder → Applications** |
 | **Paleidus nieko nerodo** | Tai normalu — ieškok **mikrofono ikonos ekrano viršuje dešinėje**, ne lango |
 | **Klavišų derinys neveikia** | Įjunk **Accessibility** (macOS 12: dar ir **Input Monitoring**) → **paleisk iš naujo**. Jei derinys užimtas kitos programos — **Settings → General → Shortcut → Change…** ir įrašyk kitą |
 | **Tekstas neatsiranda** | Pažiūrėk **Settings → Diagnostics** — ten matysi, kuriame etape sustojo. Dažniausiai — neįvesti ar blogi API raktai |
-| **Transkripcija „🎵🎵🎵”** | Mikrofonas negauna balso: **Sound → Input** pasirink teisingą mikrofoną ir žiūrėk, kad „Input level” juostelė judėtų kalbant; išjunk foninę muziką |
+| **Transkripcija „🎵🎵🎵“** | Mikrofonas negauna balso: **Sound → Input** pasirink teisingą mikrofoną ir žiūrėk, kad „Input level“ juostelė judėtų kalbant; išjunk foninę muziką |
 | **Neišsijungia pats po tylos** | Dažniausia priežastis — **nuolatinis foninis triukšmas** (ventiliatorius, oro kondicionierius): programa jį girdi kaip garsą ir laukia tylos, kuri neateina. Stabdyk derinį paspausdamas dar kartą |
-| **Klaida „API key was rejected” (401)** | Blogas arba sukeistas raktas. Settings → API Keys → **Remove** → įvesk teisingą (`sk-...` OpenAI, `sk-ant-...` Claude) |
-| **Klaida „429” / „insufficient_quota”** | OpenAI paskyroje nėra kredito — pridėk Billing'e |
-| **„Network Error”** | Nėra interneto |
+| **Klaida „API key was rejected“ (401)** | Blogas arba sukeistas raktas. Settings → API Keys → **Remove** → įvesk teisingą (`sk-...` OpenAI, `sk-ant-...` Claude) |
+| **Klaida „429“ / „insufficient_quota“** | OpenAI paskyroje nėra kredito — pridėk skiltyje „Billing“ |
+| **„Network Error“** | Nėra interneto |
 | **Kelios mikrofono ikonos meniu juostoje** | Terminale: `killall OmniScribe`, tada paleisk vieną kartą iš Applications |
 | **Keychain klausia slaptažodžio** | Įrašyk **Mac** slaptažodį (ne API raktą) → **Always Allow** |
-| **Po naujos versijos derinys nustojo veikti** | Naujas parašas → Accessibility teks suteikti iš naujo: pašalink seną „−”, pridėk naują „+”, perkrauk |
+| **Po naujos versijos derinys nustojo veikti** | Naujas parašas → „Accessibility“ leidimą reikės suteikti iš naujo: pašalink seną „−“, pridėk naują „+“, perkrauk |
 
 ---
 
@@ -57,8 +57,8 @@ Padiktuok ir žiūrėk į eilutes:
 - `❌ Pipeline failed: ...` — **tiksli klaida**
 
 > ⚠️ **Svarbu:** paleidžiant per Terminalą, leidimus (Microphone, Accessibility)
-> macOS priskiria **Terminalui**, ne OmniScribe. Todėl mikrofonas gali paduoti
-> tylą (`🎵🎵🎵`) ir atsirasti problemų, kurių įprastai nėra. Tai **paskutinė**
+> macOS priskiria **Terminalui**, ne OmniScribe. Todėl mikrofonas gali
+> neperduoti garso (`🎵🎵🎵`) ir atsirasti problemų, kurių įprastai nėra. Tai **paskutinė**
 > priemonė, ne pirma — kasdien programą paleisk įprastai iš Applications.
 
 ---

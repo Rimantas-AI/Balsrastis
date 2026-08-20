@@ -87,11 +87,14 @@ ar panašų įrankį — turėtum matyti tik `api.openai.com` ir `api.anthropic.
 
 ## Radai saugumo problemą?
 
-Prašau **neskelbti viešai**, kol nepataisyta — ypač jei tai raktų nutekėjimas
+Prašau **neskelbk viešai**, kol nepataisyta — ypač jei tai raktų nutekėjimas
 ar kodo vykdymas.
 
-Praneškite per GitHub, privačiai:
+Pranešk per GitHub, privačiai:
 [**Security → Report a vulnerability**](https://github.com/Rimantas-AI/omniScribe/security/advisories/new)
 
-Jei ta forma neveikia, parašykite žinutę per [GitHub profilį](https://github.com/Rimantas-AI).
-Atsakysiu per kelias dienas.
+Ši forma **įjungta ir veikia** — pranešimą matysiu tik aš, viešai jis
+nepasirodys. Atsakysiu per kelias dienas.
+
+Jei problema nėra saugumo spraga, o tiesiog klaida — atidaryk įprastą
+[Issue](https://github.com/Rimantas-AI/omniScribe/issues).

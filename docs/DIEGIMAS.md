@@ -30,7 +30,7 @@ Daugiau būdų pasitikrinti — [`SECURITY.md`](../SECURITY.md).
 Jei nori versijos, kuri dar neišleista kaip Release:
 
 1. Prisijunk prie GitHub → repozitorijos **Actions** skiltis.
-2. Spausk paskutinį žalią (✅) **„Build OmniScribe”** paleidimą.
+2. Spausk paskutinį žalią (✅) **„Build OmniScribe“** paleidimą.
 3. Apačioje, **Artifacts**, spausk **OmniScribe-app**.
 
 </details>
@@ -48,7 +48,7 @@ xattr -dr com.apple.quarantine /Applications/OmniScribe.app
 
 Tada dukart spustelėk `OmniScribe.app`. Jei vis tiek klausia — **dešinys pelės
 klavišas → Open → Open**, arba: **System Settings → Privacy & Security** →
-apačioje **„Open Anyway”**.
+apačioje **„Open Anyway“**.
 
 > Meniu juostos viršuje (dešinėje, prie laikrodžio) atsiras **mikrofono ikona**.
 > **Lango nebus — tai normalu.** Spausk ikoną → matysi meniu (Settings, Quit).
@@ -79,13 +79,13 @@ Meniu ikona → **Settings… → API Keys**:
 - **Claude** laukelyje → įklijuok Anthropic raktą (`sk-ant-...`)
 
 Spausk **Save**. Iššoks **Keychain** langas → įrašyk savo **Mac slaptažodį** →
-**Always Allow**. Prie abiejų turi atsirasti žalias **„Stored”** ✓.
+**Always Allow**. Prie abiejų turi atsirasti žalias **„Stored“** ✓.
 
 > ⚠️ **Nesupainiok laukelių:** `sk-...` = OpenAI, `sk-ant-...` = Claude.
 > Sukeitus — abu bus atmesti (klaida 401).
-> ⚠️ **Raktai saugomi tik šiame kompiuteryje.** Kitame Mac'e juos reikia įvesti
+> ⚠️ **Raktai saugomi tik šiame kompiuteryje.** Kitame Mac kompiuteryje juos reikia įvesti
 > iš naujo.
-> ⚠️ **OpenAI paskyroje turi būti kredito** (Billing), kitaip matysi klaidą `429`.
+> ⚠️ **OpenAI paskyroje turi būti kredito** (skiltyje „Billing“), kitaip matysi klaidą `429`.
 
 Raktus gauni:
 - OpenAI: <https://platform.openai.com/api-keys>
@@ -99,9 +99,9 @@ Raktus gauni:
    [Releases](https://github.com/Rimantas-AI/omniScribe/releases/latest).
 2. Pakeisk seną `.app` Applications aplanke.
 3. `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`
-4. **Accessibility suteik iš naujo** (parašas pasikeitė): pašalink seną įrašą
-   „−”, pridėk naują „+”, tada perkrauk programą.
-5. **API raktai Keychain'e išlieka** — jų iš naujo vesti nereikia.
+4. **„Accessibility“ leidimą suteik iš naujo** (parašas pasikeitė): pašalink seną įrašą
+   „−“, pridėk naują „+“, tada perkrauk programą.
+5. **API raktai „Keychain“ saugykloje išlieka** — jų iš naujo vesti nereikia.
 
 ---
 

@@ -19,9 +19,9 @@
 Paspaudi **⌥Space**, kalbi lietuviškai — ir **sutvarkytas tekstas atsiranda ten,
 kur tavo žymeklis**. Mail, Pages, Safari, Slack, bet kur.
 
-Apple lietuvių kalbos diktavimo nepalaiko iki šiol. Tai — sprendimas tam.
+„Apple“ iki šiol nepalaiko diktavimo lietuvių kalba, todėl OmniScribe užpildo šią spragą.
 
-Programa gyvena meniu juostoje: jokio lango, jokios Dock ikonos. Balsą į tekstą
+Programa gyvena meniu juostoje: jokio lango, jokios piktogramos „Dock“ juostoje. Balsą į tekstą
 verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
 (Anthropic).
 
@@ -54,7 +54,7 @@ verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
 | **Kaina** | Programa nemokama. Naudoji **savo** OpenAI ir Anthropic raktus, tad apmoki savo naudojimą — apytiksliai keli eurai per mėnesį |
 | **Reikia** | macOS 12 (Monterey) ar naujesnės. Veikia ir su **Intel**, ir su Apple Silicon |
 | **Senesnis Mac tinka** | MacBook Air ir Pro nuo 2015 m., Mac mini nuo 2014 m., iMac nuo 2015 m. |
-| **Parašas** | ⚠️ **Nenotarizuota Apple.** Diegiant reikės rankomis pašalinti karantiną |
+| **Parašas** | ⚠️ **Programa nėra notarizuota „Apple“.** Diegiant reikės rankomis pašalinti karantiną |
 | **Stadija** | Beta. Kai kas neveiks |
 | **Paruošimas** | ~15–20 min., daugiausia — API raktų susikūrimas |
 
@@ -66,7 +66,7 @@ Toliau — **[diegimo instrukcija](docs/DIEGIMAS.md)**.
 
 ## Kur dingsta tavo duomenys ir raktai
 
-Programa prašo dviejų API raktų, todėl klausimas „ar ji jų kur nors nenusiųs?”
+Programa prašo dviejų API raktų, todėl klausimas „Ar ji jų kur nors nenusiųs?“
 yra teisingas klausimas.
 
 - **Raktai laikomi macOS Keychain** — ne faile, ne programos viduje
