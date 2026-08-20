@@ -10,10 +10,8 @@
 Balso diktavimo įrankis macOS'ui. Paspaudi **⌥Space**, kalbi lietuviškai — ir
 sutvarkytas tekstas atsiranda ten, kur tavo žymeklis (bet kurioje programoje).
 
-> 💡 **Paprasčiausias parsisiuntimas:** eik į repo
-> [**Releases**](https://github.com/Rimantas-AI/omniScribe/releases) skiltį ir
-> parsisiųsk `OmniScribe.zip` — vienu paspaudimu, be prisijungimo. (Jei Releases dar
-> tuščias, naudok Actions Artifacts, kaip aprašyta žemiau.)
+> 📥 **Parsisiųsti:** [**Releases**](https://github.com/Rimantas-AI/omniScribe/releases/latest)
+> → `OmniScribe.zip`. Vienu paspaudimu, **be prisijungimo prie GitHub**.
 
 Po nugara: balsą į tekstą verčia **OpenAI Whisper**, tekstą sutvarko **Claude**, o
 rezultatas įterpiamas per iškarpinę. Programa gyvena **meniu juostoje** — jokio lango,
@@ -57,8 +55,8 @@ Accessibility leidimo) ir įklijuoja tekstą per iškarpinę.
 > ⚠️ **Programa dar nenotarizuota Apple.** Tai reiškia, kad macOS nepatikrino
 > nei manęs kaip kūrėjo, nei paties failo, ir diegiant reikės apeiti karantiną
 > ranka. Notarizacija planuose, bet kol jos nėra — nesitikiu, kad pasitikėsi
-> vien mano žodžiu. Būtent todėl šaltinio kodas yra viešai matomas: pasitikrink pats arba
-> paprašyk ką nors, kas moka skaityti Swift.
+> vien mano žodžiu. Būtent todėl šaltinio kodas yra viešai matomas: pasitikrink
+> pats arba paprašyk ko nors, kas moka skaityti Swift.
 
 **Licencija:** kodą galima skaityti, tikrinti ir **pačiam susikompiliuoti** —
 kaip tik tam, kad galėtum įsitikinti, jog paskelbtas binaras atitinka
@@ -69,11 +67,25 @@ leisti savo versijos negalima be sutikimo. → [`LICENSE`](LICENSE)
 
 ## 1. Parsisiuntimas
 
-1. Prisijunk prie GitHub → atidaryk repo **Actions** skiltį.
+1. Atidaryk [**Releases**](https://github.com/Rimantas-AI/omniScribe/releases/latest) —
+   prisijungti prie GitHub **nereikia**.
+2. Skiltyje **Assets** spausk **`OmniScribe.zip`**.
+3. Išarchyvuok — gausi **`OmniScribe.app`** su programos ikona.
+4. Nutempk `OmniScribe.app` į **Applications** (Programos).
+
+> Programa **universali** — veikia ir su Intel, ir su Apple Silicon (M1–M4)
+> procesoriais. Reikia macOS 12 (Monterey) ar naujesnės.
+
+<details>
+<summary>Alternatyva: naujausias build'as iš Actions (reikia GitHub paskyros)</summary>
+
+Jei nori versijos, kuri dar neišleista kaip Release:
+
+1. Prisijunk prie GitHub → repo **Actions** skiltis.
 2. Spausk paskutinį žalią (✅) **„Build OmniScribe"** paleidimą.
-3. Puslapio apačioje, **Artifacts**, spausk **OmniScribe-app** → parsisiųs `.zip`.
-4. Išarchyvuok (dukart, kol gausi failą **`OmniScribe.app`** su programos ikona).
-5. Nutempk `OmniScribe.app` į **Applications** (Programos).
+3. Apačioje, **Artifacts**, spausk **OmniScribe-app**.
+
+</details>
 
 ---
 
@@ -81,7 +93,8 @@ leisti savo versijos negalima be sutikimo. → [`LICENSE`](LICENSE)
 
 ### 2a. Leisk atidaryti (Gatekeeper)
 
-Programa pasirašyta laikinai, todėl macOS pirmą kartą blokuoja. **Terminale** paleisk:
+Programa pasirašyta tik laikinu (*ad-hoc*) parašu, be Apple sertifikato, todėl
+macOS pirmą kartą ją blokuoja. **Terminale** paleisk:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/OmniScribe.app
@@ -145,6 +158,10 @@ Raktus gauni:
 - **Messenger** — trumpa žinutė
 - **Translation** — vertimas
 
+> ⌨️ **Klavišų derinį galima pasikeisti:** **Settings → General → Shortcut →
+> Change…** ir paspausk tą derinį, kurio nori. Verta, jei ⌥Space tau jau užimtas
+> — pavyzdžiui, jei juo perjungi klaviatūros kalbą.
+
 ---
 
 ## 3a. Diktavimo trukmė (limitai)
@@ -180,10 +197,10 @@ natūraliausia ir patikimiausia. Ilgesniems tekstams — kelios trumpos „porci
 | **„OmniScribe is damaged" / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`, tada paleisk |
 | **„Safari can't open the file"** | Neatidarinėk iš Safari — eik per **Finder → Applications** |
 | **Paleidus nieko nerodo** | Tai normalu — ieškok **mikrofono ikonos ekrano viršuje dešinėje**, ne lango |
-| **⌥Space neveikia** | Įjunk **Accessibility** (macOS 12: dar ir **Input Monitoring**) → **paleisk iš naujo**. Patikrink, ar ⌥Space neužimtas įvesties šaltinio perjungimui (Keyboard nustatymai) |
+| **⌥Space neveikia** | Įjunk **Accessibility** (macOS 12: dar ir **Input Monitoring**) → **paleisk iš naujo**. Jei derinys užimtas kitos programos — **Settings → General → Shortcut → Change…** ir įrašyk kitą |
 | **Tekstas neatsiranda** | Patikrink logus (žr. žemiau). Dažniausiai — neįvesti/blogi API raktai arba mikrofonas negauna balso |
 | **Transkripcija „🎵🎵🎵"** | Mikrofonas negauna balso: **Sound → Input** pasirink teisingą mikrofoną ir žiūrėk, kad „Input level" juostelė judėtų kalbant; išjunk foninę muziką |
-| **Neišsijungia pats po tylos** | Ta pati priežastis — mikrofonas negauna kalbos. Kol kas stabdyk **⌥Space dar kartą** |
+| **Neišsijungia pats po tylos** | Dažniausia priežastis — **nuolatinis foninis triukšmas** (ventiliatorius, oro kondicionierius): programa jį girdi kaip garsą ir laukia tylos, kuri neateina. Stabdyk **⌥Space dar kartą** |
 | **Klaida „API key was rejected" (401)** | Blogas arba sukeistas raktas. Settings → API Keys → **Remove** → įvesk teisingą (`sk-...` OpenAI, `sk-ant-...` Claude) |
 | **Klaida „429" / „insufficient_quota"** | OpenAI paskyroje nėra kredito — pridėk Billing'e |
 | **„Network Error"** | Nėra interneto |

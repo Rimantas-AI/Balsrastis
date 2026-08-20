@@ -1,10 +1,10 @@
 blank_issues_enabled: true
 contact_links:
   - name: 💬 Klausimai ir diskusijos
-    url: https://github.com/g4me2011-lang/omniScribe/discussions
+    url: https://github.com/Rimantas-AI/omniScribe/discussions
     about: Bendriems klausimams, idėjoms ir atsiliepimams (ne klaidoms)
   - name: 📖 Instrukcija (README)
-    url: https://github.com/g4me2011-lang/omniScribe#readme
+    url: https://github.com/Rimantas-AI/omniScribe#readme
     about: Kaip įdiegti, naudoti ir spręsti problemas
   - name: ☕ Paremk kava
     url: https://ko-fi.com/rimantasd
