@@ -12,7 +12,7 @@ final class AILayerCoordinator {
     /// one conforming instance — nothing else in the app changes.
     private let providers: [AIProviderID: AIProviderProtocol]
 
-    private let selectedProviderKey = "OmniScribe.selectedProvider"
+    private let selectedProviderKey = "Balsrastis.selectedProvider"
     private let defaults: UserDefaults
 
     init(providers: [AIProviderProtocol] = [ClaudeService()],

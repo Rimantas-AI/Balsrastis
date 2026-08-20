@@ -73,17 +73,17 @@ final class PermissionManager {
             switch self {
             case .microphoneDenied:
                 return """
-                OmniScribe needs microphone access to record your voice.
+                Balsraštis needs microphone access to record your voice.
 
                 Please enable it in System Settings \u{2192} Privacy & Security \u{2192} Microphone.
                 """
             case .accessibilityDenied:
                 return """
-                OmniScribe needs Accessibility access to inject transcribed text \
+                Balsraštis needs Accessibility access to inject transcribed text \
                 into other apps.
 
                 Please enable it in System Settings \u{2192} Privacy & Security \u{2192} \
-                Accessibility, then relaunch OmniScribe.
+                Accessibility, then relaunch Balsraštis.
                 """
             }
         }

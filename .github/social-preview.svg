@@ -31,11 +31,11 @@
   </g>
 
   <!-- Wordmark -->
-  <text x="248" y="192" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="84" font-weight="700" fill="#ffffff" letter-spacing="-1">OmniScribe</text>
+  <text x="248" y="192" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="84" font-weight="700" fill="#ffffff" letter-spacing="-1">Balsraštis</text>
 
   <!-- Tagline -->
-  <text x="96" y="320" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#e6edf7">Kalbi — ir tvarkingas tekstas atsiranda</text>
-  <text x="96" y="382" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#e6edf7">bet kurioje <tspan fill="#6ea8fe">macOS</tspan> programoje.</text>
+  <text x="96" y="320" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#e6edf7">Kalbėk. Parašyta.</text>
+  <text x="96" y="382" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#e6edf7">Diktuok lietuviškai — bet kurioje <tspan fill="#6ea8fe">macOS</tspan> programoje.</text>
 
   <!-- Hotkey chip -->
   <g transform="translate(96,452)">
@@ -44,5 +44,5 @@
   </g>
 
   <!-- Feature line -->
-  <text x="96" y="560" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="27" fill="#8ea0bd">Balso diktavimas lietuviškai  ·  GPT-4o mini Transcribe + Claude  ·  kodas viešai peržiūrimas</text>
+  <text x="96" y="560" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="27" fill="#8ea0bd">GPT-4o mini Transcribe + Claude  ·  kodas viešai peržiūrimas</text>
 </svg>

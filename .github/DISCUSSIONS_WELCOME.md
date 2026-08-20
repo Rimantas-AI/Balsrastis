@@ -6,9 +6,9 @@
 
 ---
 
-## 👋 Sveiki atvykę į OmniScribe bendruomenę!
+## 👋 Sveiki atvykę į Balsraštis bendruomenę!
 
-**OmniScribe** — balso diktavimas macOS'ui: paspaudi ⌥Space, kalbi lietuviškai, ir
+**Balsraštis** — balso diktavimas macOS'ui: paspaudi ⌥Space, kalbi lietuviškai, ir
 sutvarkytas tekstas atsiranda bet kurioje programoje (OpenAI Whisper + Claude).
 
 Čia gali:
@@ -17,9 +17,9 @@ sutvarkytas tekstas atsiranda bet kurioje programoje (OpenAI Whisper + Claude).
 - 🗣️ **Pasidalinti** — kaip naudoji, kokiam darbui, kas patinka
 
 **Prieš klausiant:**
-1. Peržiūrėk [README instrukciją](https://github.com/Rimantas-AI/omniScribe#readme) —
+1. Peržiūrėk [README instrukciją](https://github.com/Rimantas-AI/Balsrastis#readme) —
    ten yra dažniausių problemų sprendimai (leidimai, „Open Anyway", API raktai).
-2. Radai klaidą? Geriau atidaryk [Issue](https://github.com/Rimantas-AI/omniScribe/issues)
+2. Radai klaidą? Geriau atidaryk [Issue](https://github.com/Rimantas-AI/Balsrastis/issues)
    su logais.
 
 **Patiko ir sutaupė laiko?** Gali įmesti kelias EUR kavai ☕

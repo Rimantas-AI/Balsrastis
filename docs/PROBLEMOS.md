@@ -8,7 +8,7 @@
 
 | Problema | Sprendimas |
 |---|---|
-| **„OmniScribe is damaged“ / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`, tada paleisk |
+| **„Balsraštis is damaged“ / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/Balsrastis.app`, tada paleisk |
 | **„Safari can't open the file“** | Neatidarinėk iš Safari — eik per **Finder → Applications** |
 | **Paleidus nieko nerodo** | Tai normalu — ieškok **mikrofono ikonos ekrano viršuje dešinėje**, ne lango |
 | **Klavišų derinys neveikia** | Įjunk **Accessibility** (macOS 12: dar ir **Input Monitoring**) → **paleisk iš naujo**. Jei derinys užimtas kitos programos — **Settings → General → Shortcut → Change…** ir įrašyk kitą |
@@ -18,7 +18,7 @@
 | **Klaida „API key was rejected“ (401)** | Blogas arba sukeistas raktas. Settings → API Keys → **Remove** → įvesk teisingą (`sk-...` OpenAI, `sk-ant-...` Claude) |
 | **Klaida „429“ / „insufficient_quota“** | OpenAI paskyroje nėra kredito — pridėk skiltyje „Billing“ |
 | **„Network Error“** | Nėra interneto |
-| **Kelios mikrofono ikonos meniu juostoje** | Terminale: `killall OmniScribe`, tada paleisk vieną kartą iš Applications |
+| **Kelios mikrofono ikonos meniu juostoje** | Terminale: `killall Balsrastis`, tada paleisk vieną kartą iš Applications |
 | **Keychain klausia slaptažodžio** | Įrašyk **Mac** slaptažodį (ne API raktą) → **Always Allow** |
 | **Po naujos versijos derinys nustojo veikti** | Naujas parašas → „Accessibility“ leidimą reikės suteikti iš naujo: pašalink seną „−“, pridėk naują „+“, perkrauk |
 
@@ -46,7 +46,7 @@ kam nors atsiųsti.
 Uždaryk programą, tada **Terminale**:
 
 ```bash
-/Applications/OmniScribe.app/Contents/MacOS/OmniScribe
+/Applications/Balsrastis.app/Contents/MacOS/Balsraštis
 ```
 
 Padiktuok ir žiūrėk į eilutes:
@@ -57,7 +57,7 @@ Padiktuok ir žiūrėk į eilutes:
 - `❌ Pipeline failed: ...` — **tiksli klaida**
 
 > ⚠️ **Svarbu:** paleidžiant per Terminalą, leidimus (Microphone, Accessibility)
-> macOS priskiria **Terminalui**, ne OmniScribe. Todėl mikrofonas gali
+> macOS priskiria **Terminalui**, ne Balsraštis. Todėl mikrofonas gali
 > neperduoti garso (`🎵🎵🎵`) ir atsirasti problemų, kurių įprastai nėra. Tai **paskutinė**
 > priemonė, ne pirma — kasdien programą paleisk įprastai iš Applications.
 
@@ -65,7 +65,7 @@ Padiktuok ir žiūrėk į eilutes:
 
 ## Vis tiek neveikia?
 
-Atidaryk [Issue](https://github.com/Rimantas-AI/omniScribe/issues) ir pridėk
+Atidaryk [Issue](https://github.com/Rimantas-AI/Balsrastis/issues) ir pridėk
 **Copy Report** turinį. Iš jo dažniausiai matyti, kas vyksta.
 
 Radai saugumo problemą? → [`SECURITY.md`](../SECURITY.md)

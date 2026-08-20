@@ -13,22 +13,24 @@
 	<!-- Privacy usage strings (required by macOS / App Store review) -->
 	<!-- ============================================================ -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>OmniScribe uses the microphone to record your voice and transcribe speech to text.</string>
+	<string>Balsraštis uses the microphone to record your voice and transcribe speech to text.</string>
 
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>OmniScribe uses speech recognition to transcribe your recorded voice into text.</string>
+	<string>Balsraštis uses speech recognition to transcribe your recorded voice into text.</string>
 
 	<!-- ============================================================ -->
 	<!-- Bundle metadata                                               -->
 	<!-- ============================================================ -->
 	<key>CFBundleName</key>
-	<string>OmniScribe</string>
+	<string>Balsrastis</string>
 
+	<!-- Rodomas vardas su lietuviška raide; failas diske lieka ASCII (Balsrastis.app),
+	     kad build'as ir keliai nepriklausytų nuo koduotės. -->
 	<key>CFBundleDisplayName</key>
-	<string>OmniScribe</string>
+	<string>Balsraštis</string>
 
 	<key>CFBundleIdentifier</key>
-	<string>com.omniscribe.app</string>
+	<string>lt.balsrastis.app</string>
 
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
@@ -40,16 +42,16 @@
 	     CFBundleShortVersionString, so a stale value silently mislabels which
 	     build produced a set of measurements. -->
 	<key>CFBundleVersion</key>
-	<string>20</string>
+	<string>21</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>1.6.15</string>
+	<string>1.7.0</string>
 
 	<!-- Blank in every CI-built release. For a closed-pilot copy, this is
 	     stamped with the tester's name after the build, so Settings and Copy
 	     Report identify whose build it is without needing a separate build
 	     per tester. -->
-	<key>OmniScribeTesterName</key>
+	<key>BalsrastisTesterName</key>
 	<string></string>
 
 	<key>CFBundleDevelopmentRegion</key>

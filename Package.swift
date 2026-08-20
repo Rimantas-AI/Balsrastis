@@ -1,6 +1,6 @@
 // swift-tools-version: 5.9
 //
-// Package.swift – OmniScribe
+// Package.swift – Balsrastis
 //
 // Skirtas vienam tikslui: `swift build` – patikrinti, ar kodas kompiliuojasi
 // terminale be Xcode (šiame projekte pilno Xcode nėra, tikrasis .app statomas
@@ -16,7 +16,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "OmniScribe",
+    name: "Balsrastis",
     platforms: [
         // Turi sutapti su .xcodeproj deployment target, kitaip ši patikra
         // praleistų API, kurių senesnėje macOS nėra.
@@ -24,12 +24,12 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "OmniScribe",
-            path: "OmniScribe",
+            name: "Balsrastis",
+            path: "Balsrastis",
             // Info.plist ir .entitlements naudojami Xcode; SPM build jų nereikia.
             exclude: [
                 "Info.plist",
-                "OmniScribe.entitlements",
+                "Balsrastis.entitlements",
                 "Assets.xcassets"
             ],
             swiftSettings: [

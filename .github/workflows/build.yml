@@ -1,6 +1,6 @@
-name: Build OmniScribe
+name: Build Balsrastis
 
-# Runs on GitHub's free macOS servers. Produces a ready-to-run OmniScribe.app
+# Runs on GitHub's free macOS servers. Produces a ready-to-run Balsrastis.app
 # you can download from the run's "Artifacts" section — no local compiling.
 
 on:
@@ -31,13 +31,13 @@ jobs:
 
       - name: Build (unsigned)
         # Uses -scheme (required alongside -derivedDataPath). The shared scheme
-        # lives in OmniScribe.xcodeproj/xcshareddata/xcschemes/. xcodebuild
+        # lives in Balsrastis.xcodeproj/xcshareddata/xcschemes/. xcodebuild
         # resolves Swift packages automatically when building a scheme.
         run: |
           set -o pipefail
           xcodebuild \
-            -project OmniScribe.xcodeproj \
-            -scheme OmniScribe \
+            -project Balsrastis.xcodeproj \
+            -scheme Balsrastis \
             -configuration Release \
             -derivedDataPath build \
             MACOSX_DEPLOYMENT_TARGET=12.0 \
@@ -51,7 +51,7 @@ jobs:
         # permission will need re-granting after each new build (the signature
         # changes every time).
         run: |
-          APP="build/Build/Products/Release/OmniScribe.app"
+          APP="build/Build/Products/Release/Balsrastis.app"
           codesign --force --deep --sign - "$APP"
           # No `|| true`: an ad-hoc signature that fails to verify means the
           # zip below is broken, and shipping it silently is worse than a red build.
@@ -60,13 +60,13 @@ jobs:
       - name: Zip the app
         run: |
           cd build/Build/Products/Release
-          ditto -c -k --keepParent OmniScribe.app OmniScribe.zip
+          ditto -c -k --keepParent Balsrastis.app Balsrastis.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: OmniScribe-app
-          path: build/Build/Products/Release/OmniScribe.zip
+          name: Balsrastis-app
+          path: build/Build/Products/Release/Balsrastis.zip
           if-no-files-found: error
 
       # On a version tag (e.g. v1.0.0) publish a GitHub Release with a direct,
@@ -75,19 +75,19 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          name: OmniScribe ${{ github.ref_name }}
-          files: build/Build/Products/Release/OmniScribe.zip
+          name: Balsrastis ${{ github.ref_name }}
+          files: build/Build/Products/Release/Balsrastis.zip
           body: |
-            ## OmniScribe ${{ github.ref_name }}
+            ## Balsrastis ${{ github.ref_name }}
 
             Balso diktavimas lietuviškai — bet kurioje macOS programoje.
             GPT-4o mini Transcribe (OpenAI) + Claude (Anthropic). Meniu juostos programa.
 
             ### Download & run
-            1. Download **OmniScribe.zip** below and unzip → `OmniScribe.app`.
+            1. Download **Balsrastis.zip** below and unzip → `Balsrastis.app`.
             2. Move it to **Applications**.
             3. First launch (ad-hoc signed) — in Terminal:
-               `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`
+               `xattr -dr com.apple.quarantine /Applications/Balsrastis.app`
             4. Grant **Microphone** + **Accessibility** (see README), and enter your
                **OpenAI** and **Claude** API keys in Settings → API Keys.
 

@@ -3,11 +3,11 @@ import AppKit
 
 /// Application entry point.
 ///
-/// OmniScribe is a *Menu Bar only* app – no Dock icon, no windows.
+/// Balsraštis is a *Menu Bar only* app – no Dock icon, no windows.
 /// All lifecycle logic lives in `AppDelegate`; this struct satisfies
 /// the SwiftUI `App` protocol requirement and wires up the delegate.
 @main
-struct OmniScribeApp: App {
+struct BalsrastisApp: App {
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 

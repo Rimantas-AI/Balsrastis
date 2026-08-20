@@ -70,18 +70,18 @@ final class AppPreferences: ObservableObject {
     static let shared = AppPreferences()
 
     private let defaults: UserDefaults
-    private let modeKey = "OmniScribe.selectedMode"
-    private let vocabularyKey = "OmniScribe.vocabulary"
-    private let captureTestTextKey = "OmniScribe.captureTestText"
-    private let sttModelKey = "OmniScribe.sttModel"
-    private let compareSTTModelsKey = "OmniScribe.compareSTTModels"
-    private let logUsageStatisticsKey = "OmniScribe.logUsageStatistics"
-    private let compareAICleanupKey = "OmniScribe.compareAICleanup"
+    private let modeKey = "Balsrastis.selectedMode"
+    private let vocabularyKey = "Balsrastis.vocabulary"
+    private let captureTestTextKey = "Balsrastis.captureTestText"
+    private let sttModelKey = "Balsrastis.sttModel"
+    private let compareSTTModelsKey = "Balsrastis.compareSTTModels"
+    private let logUsageStatisticsKey = "Balsrastis.logUsageStatistics"
+    private let compareAICleanupKey = "Balsrastis.compareAICleanup"
     // v2 because v1.6.12 stored a case name from a fixed list under the old key.
     // That format is deliberately not migrated: the list it referred to is gone,
     // one of its five entries (⌘⇧D) was Apple Mail's Send, and the build was a
     // day old with no testers on it. Anyone who had changed it re-records once.
-    private let hotkeyKey = "OmniScribe.hotkeyV2"
+    private let hotkeyKey = "Balsrastis.hotkeyV2"
 
     /// Context the speech recogniser should expect.
     ///
@@ -99,7 +99,7 @@ final class AppPreferences: ObservableObject {
     }
 
     static let defaultVocabulary = """
-    Tai lietuviška techninė diktacija apie macOS programą „OmniScribe". Programos \
+    Tai lietuviška techninė diktacija apie macOS programą „Balsraštis". Programos \
     HUD, tariama raidėmis H-U-D, rodo būsenas „Listening", „Transcribing" ir \
     „Polishing". Nustatymuose yra skiltys „API Keys" ir „Diagnostics", o ten \
     mygtukai „Copy Report" ir „Clear Diagnostics". Galimi terminai: Mac \

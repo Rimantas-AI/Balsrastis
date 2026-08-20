@@ -44,7 +44,7 @@ struct SettingsView: View {
     /// Not private — `DictationMetrics.fullReport()` reads it too, so a leaked
     /// report is traceable the same way a leaked build is.
     static var testerName: String? {
-        let name = (Bundle.main.infoDictionary?["OmniScribeTesterName"] as? String ?? "")
+        let name = (Bundle.main.infoDictionary?["BalsrastisTesterName"] as? String ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return name.isEmpty ? nil : name
     }
@@ -125,7 +125,7 @@ private struct DiagnosticsSettingsView: View {
             // build actually replaced the old one, which matters because every
             // ad-hoc build has to be re-granted Accessibility and a failed
             // install looks identical to a successful one.
-            Text("Timings above are successful runs only. \u{00B7} OmniScribe \(Self.appVersion) \u{00B7} macOS \(Self.osVersion)")
+            Text("Timings above are successful runs only. \u{00B7} Balsraštis \(Self.appVersion) \u{00B7} macOS \(Self.osVersion)")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .textSelection(.enabled)
@@ -507,7 +507,7 @@ private struct ShortcutRecorderRow: View {
                 // The one thing true of every shortcut, stated once. Note what
                 // it does *not* say: that this combination is free. Nothing here
                 // knows that, and the last version's guesses at it were wrong.
-                Text("OmniScribe takes this combination from every other app while it runs.")
+                Text("Balsraštis takes this combination from every other app while it runs.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

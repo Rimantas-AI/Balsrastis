@@ -22,7 +22,7 @@ final class WindowManager {
         if settingsWindow == nil {
             let controller = NSHostingController(rootView: SettingsView())
             let window = NSWindow(contentViewController: controller)
-            window.title = "OmniScribe Settings"
+            window.title = "Balsraštis Settings"
             // .resizable lets the Diagnostics tab be enlarged — useful both for
             // reading more history rows and for taking a clean, full screenshot.
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable]

@@ -4,7 +4,7 @@
 
 **Raktai.** Abu API raktai laikomi **macOS Keychain** — ne faile, ne
 `UserDefaults`, ne programos viduje.
-→ [`OmniScribe/KeychainManager.swift`](OmniScribe/KeychainManager.swift)
+→ [`Balsrastis/KeychainManager.swift`](Balsrastis/KeychainManager.swift)
 
 **Kas siunčiama.** Iš tavo turinio išeina du dalykai:
 
@@ -19,7 +19,7 @@ informacija (modelio pavadinimas, kalba) — kaip bet kurioje API užklausoje.
 **Tai vieninteliai du adresai visame kode.** Pasitikrink:
 
 ```bash
-grep -rn "https://" OmniScribe/*.swift
+grep -rn "https://" Balsrastis/*.swift
 ```
 
 **Savo serverio neturiu.** Nei statistikai, nei atnaujinimams, nei niekam.
@@ -27,7 +27,7 @@ Duomenys niekada nekeliauja per mane.
 
 **Jokios telemetrijos.** Diagnostikos statistika (pagal nutylėjimą **išjungta**)
 rašoma į CSV failą tavo kompiuteryje. Joje nėra nei teksto, nei garso — vien
-skaičiai. → [`OmniScribe/UsageLog.swift`](OmniScribe/UsageLog.swift)
+skaičiai. → [`Balsrastis/UsageLog.swift`](Balsrastis/UsageLog.swift)
 
 **Kokių leidimų reikia ir kodėl:**
 
@@ -48,11 +48,11 @@ Užtat gali pasitikrinti pats.
 Terminale, atsisiuntimų aplanke:
 
 ```bash
-shasum -a 256 OmniScribe.zip
+shasum -a 256 Balsrastis.zip
 ```
 
 Palygink su suma, nurodyta tos versijos
-[Releases](https://github.com/Rimantas-AI/omniScribe/releases) puslapyje. Jei
+[Releases](https://github.com/Rimantas-AI/Balsrastis/releases) puslapyje. Jei
 nesutampa — **nediek** ir parašyk man.
 
 ### 2. Susikompiliuok pats
@@ -60,9 +60,9 @@ nesutampa — **nediek** ir parašyk man.
 Licencija tai leidžia būtent tam, kad nereikėtų tikėti paskelbtu failu:
 
 ```bash
-git clone https://github.com/Rimantas-AI/omniScribe.git
-cd omniScribe
-xcodebuild -project OmniScribe.xcodeproj -scheme OmniScribe -configuration Release build
+git clone https://github.com/Rimantas-AI/Balsrastis.git
+cd Balsrastis
+xcodebuild -project Balsrastis.xcodeproj -scheme Balsrastis -configuration Release build
 ```
 
 Reikia Xcode. Rezultatas — ta pati programa iš kodo, kurį matai.
@@ -91,10 +91,10 @@ Prašau **neskelbk viešai**, kol nepataisyta — ypač jei tai raktų nutekėji
 ar kodo vykdymas.
 
 Pranešk per GitHub, privačiai:
-[**Security → Report a vulnerability**](https://github.com/Rimantas-AI/omniScribe/security/advisories/new)
+[**Security → Report a vulnerability**](https://github.com/Rimantas-AI/Balsrastis/security/advisories/new)
 
 Ši forma **įjungta ir veikia** — pranešimą matysiu tik aš, viešai jis
 nepasirodys. Atsakysiu per kelias dienas.
 
 Jei problema nėra saugumo spraga, o tiesiog klaida — atidaryk įprastą
-[Issue](https://github.com/Rimantas-AI/omniScribe/issues).
+[Issue](https://github.com/Rimantas-AI/Balsrastis/issues).

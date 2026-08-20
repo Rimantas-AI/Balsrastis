@@ -17,7 +17,7 @@ enum AppState: String {
         }
     }
 
-    var tooltip: String { "OmniScribe – \(rawValue)" }
+    var tooltip: String { "Balsraštis – \(rawValue)" }
 }
 
 // MARK: – MenuBarManager
@@ -31,7 +31,7 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
     // MARK: Private state
 
     private let statusItem: NSStatusItem
-    private let statusMenuItem = NSMenuItem()   // Shows "OmniScribe – <state>" as info row.
+    private let statusMenuItem = NSMenuItem()   // Shows "Balsraštis – <state>" as info row.
     private let hotkeyHintItem = NSMenuItem()   // Shows the currently chosen shortcut.
 
     private(set) var currentState: AppState = .idle {
@@ -78,7 +78,7 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
         guard let button = statusItem.button else { return }
         button.image = makeIcon(for: currentState)
         button.toolTip = currentState.tooltip
-        statusMenuItem.title = "OmniScribe – \(currentState.rawValue)"
+        statusMenuItem.title = "Balsraštis – \(currentState.rawValue)"
     }
 
     private func makeIcon(for state: AppState) -> NSImage? {
@@ -94,7 +94,7 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
         let menu = NSMenu()
 
         // --- Info row (disabled, shows current state) ---
-        statusMenuItem.title = "OmniScribe – Idle"
+        statusMenuItem.title = "Balsraštis – Idle"
         statusMenuItem.isEnabled = false
         menu.addItem(statusMenuItem)
 
@@ -119,7 +119,7 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
 
         // --- Quit ---
-        let quitItem = NSMenuItem(title: "Quit OmniScribe",
+        let quitItem = NSMenuItem(title: "Quit Balsraštis",
                                   action: #selector(quitApp),
                                   keyEquivalent: "q")
         quitItem.target = self

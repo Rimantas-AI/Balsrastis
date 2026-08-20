@@ -19,11 +19,11 @@ Kas turėjo įvykti.
 **Aplinka:**
 - macOS versija: (pvz. 15.7 arba 12.7)
 - Mac tipas: Intel / Apple Silicon
-- OmniScribe versija: (pvz. v1.1.0)
+- Balsraštis versija: (pvz. v1.1.0)
 
 **Logai (labai padeda):**
 Paleisk per Terminalą:
-`/Applications/OmniScribe.app/Contents/MacOS/OmniScribe`
+`/Applications/Balsrastis.app/Contents/MacOS/Balsraštis`
 padiktuok, ir įklijuok eilutes su `[AppDelegate]` arba `❌`.
 
 > Rašyti gali lietuviškai arba angliškai. / English is fine too.

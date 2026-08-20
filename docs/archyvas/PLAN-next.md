@@ -1,4 +1,4 @@
-# OmniScribe — planas po savaitės validacijos
+# Balsraštis — planas po savaitės validacijos
 
 > ## ⚠️ ISTORINIS DOKUMENTAS — sprendimai jau priimti
 >

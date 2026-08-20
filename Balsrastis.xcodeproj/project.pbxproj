@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0000000000000000000000C1 /* OmniScribeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000000B1 /* OmniScribeApp.swift */; };
+		0000000000000000000000C1 /* BalsrastisApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000000B1 /* BalsrastisApp.swift */; };
 		0000000000000000000000C2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000000B2 /* AppDelegate.swift */; };
 		0000000000000000000000C3 /* MenuBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000000B3 /* MenuBarManager.swift */; };
 		0000000000000000000000C4 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000000B4 /* PermissionManager.swift */; };
@@ -37,14 +37,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0000000000000000000000AF /* OmniScribe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OmniScribe.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0000000000000000000000B1 /* OmniScribeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OmniScribeApp.swift; sourceTree = "<group>"; };
+		0000000000000000000000AF /* Balsrastis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Balsrastis.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0000000000000000000000B1 /* BalsrastisApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalsrastisApp.swift; sourceTree = "<group>"; };
 		0000000000000000000000B2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0000000000000000000000B3 /* MenuBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarManager.swift; sourceTree = "<group>"; };
 		0000000000000000000000B4 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
 		0000000000000000000000B5 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		0000000000000000000000B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0000000000000000000000B7 /* OmniScribe.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OmniScribe.entitlements; sourceTree = "<group>"; };
+		0000000000000000000000B7 /* Balsrastis.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Balsrastis.entitlements; sourceTree = "<group>"; };
 		0000000000000000000000B8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0000000000000000000000B9 /* AudioSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionManager.swift; sourceTree = "<group>"; };
 		0000000000000000000000BA /* VoiceActivityDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceActivityDetector.swift; sourceTree = "<group>"; };
@@ -83,7 +83,7 @@
 		0000000000000000000000A2 /* root */ = {
 			isa = PBXGroup;
 			children = (
-				0000000000000000000000A4 /* OmniScribe */,
+				0000000000000000000000A4 /* Balsrastis */,
 				0000000000000000000000A3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -91,15 +91,15 @@
 		0000000000000000000000A3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0000000000000000000000AF /* OmniScribe.app */,
+				0000000000000000000000AF /* Balsrastis.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0000000000000000000000A4 /* OmniScribe */ = {
+		0000000000000000000000A4 /* Balsrastis */ = {
 			isa = PBXGroup;
 			children = (
-				0000000000000000000000B1 /* OmniScribeApp.swift */,
+				0000000000000000000000B1 /* BalsrastisApp.swift */,
 				0000000000000000000000B2 /* AppDelegate.swift */,
 				0000000000000000000000B3 /* MenuBarManager.swift */,
 				0000000000000000000000B4 /* PermissionManager.swift */,
@@ -127,17 +127,17 @@
 				00000000000000000000F1 /* HotkeyCombo.swift */,
 				0000000000000000000000B8 /* Assets.xcassets */,
 				0000000000000000000000B6 /* Info.plist */,
-				0000000000000000000000B7 /* OmniScribe.entitlements */,
+				0000000000000000000000B7 /* Balsrastis.entitlements */,
 			);
-			path = OmniScribe;
+			path = Balsrastis;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		0000000000000000000000A5 /* OmniScribe */ = {
+		0000000000000000000000A5 /* Balsrastis */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0000000000000000000000A7 /* Build configuration list for PBXNativeTarget "OmniScribe" */;
+			buildConfigurationList = 0000000000000000000000A7 /* Build configuration list for PBXNativeTarget "Balsrastis" */;
 			buildPhases = (
 				0000000000000000000000AC /* Sources */,
 				0000000000000000000000AD /* Frameworks */,
@@ -147,9 +147,9 @@
 			);
 			dependencies = (
 			);
-			name = OmniScribe;
-			productName = OmniScribe;
-			productReference = 0000000000000000000000AF /* OmniScribe.app */;
+			name = Balsrastis;
+			productName = Balsrastis;
+			productReference = 0000000000000000000000AF /* Balsrastis.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -167,7 +167,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 0000000000000000000000A6 /* Build configuration list for PBXProject "OmniScribe" */;
+			buildConfigurationList = 0000000000000000000000A6 /* Build configuration list for PBXProject "Balsrastis" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -180,7 +180,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0000000000000000000000A5 /* OmniScribe */,
+				0000000000000000000000A5 /* Balsrastis */,
 			);
 		};
 /* End PBXProject section */
@@ -201,7 +201,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0000000000000000000000C1 /* OmniScribeApp.swift in Sources */,
+				0000000000000000000000C1 /* BalsrastisApp.swift in Sources */,
 				0000000000000000000000C2 /* AppDelegate.swift in Sources */,
 				0000000000000000000000C3 /* MenuBarManager.swift in Sources */,
 				0000000000000000000000C4 /* PermissionManager.swift in Sources */,
@@ -353,20 +353,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = OmniScribe/OmniScribe.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Balsrastis/Balsrastis.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = OmniScribe/Info.plist;
+				INFOPLIST_FILE = Balsrastis/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.6.15;
-				PRODUCT_BUNDLE_IDENTIFIER = com.omniscribe.app;
+				MARKETING_VERSION = 1.7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = lt.balsrastis.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -378,20 +378,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = OmniScribe/OmniScribe.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Balsrastis/Balsrastis.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = OmniScribe/Info.plist;
+				INFOPLIST_FILE = Balsrastis/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.6.15;
-				PRODUCT_BUNDLE_IDENTIFIER = com.omniscribe.app;
+				MARKETING_VERSION = 1.7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = lt.balsrastis.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -401,7 +401,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0000000000000000000000A6 /* Build configuration list for PBXProject "OmniScribe" */ = {
+		0000000000000000000000A6 /* Build configuration list for PBXProject "Balsrastis" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0000000000000000000000A8 /* Debug */,
@@ -410,7 +410,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0000000000000000000000A7 /* Build configuration list for PBXNativeTarget "OmniScribe" */ = {
+		0000000000000000000000A7 /* Build configuration list for PBXNativeTarget "Balsrastis" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0000000000000000000000AA /* Debug */,

@@ -1,10 +1,10 @@
 blank_issues_enabled: true
 contact_links:
   - name: 💬 Klausimai ir diskusijos
-    url: https://github.com/Rimantas-AI/omniScribe/discussions
+    url: https://github.com/Rimantas-AI/Balsrastis/discussions
     about: Bendriems klausimams, idėjoms ir atsiliepimams (ne klaidoms)
   - name: 📖 Instrukcija (README)
-    url: https://github.com/Rimantas-AI/omniScribe#readme
+    url: https://github.com/Rimantas-AI/Balsrastis#readme
     about: Kaip įdiegti, naudoti ir spręsti problemas
   - name: ☕ Paremk kava
     url: https://ko-fi.com/rimantasd

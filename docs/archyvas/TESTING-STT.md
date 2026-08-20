@@ -24,8 +24,8 @@ supranta lietuvių kalbą.
 
 ## Pasiruošimas
 
-1. `killall OmniScribe` (senoji versija turi būti užbaigta)
-2. Įdiegti **v1.6.1**, `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`
+1. `killall Balsrastis` (senoji versija turi būti užbaigta)
+2. Įdiegti **v1.6.1**, `xattr -dr com.apple.quarantine /Applications/Balsrastis.app`
 3. Accessibility perleisti iš naujo („−" senam įrašui, „+" naujam)
 4. Settings → **General**: įjungti **„Compare STT models"**
 5. Settings → **Diagnostics**: įjungti **„Capture test text"**, spausti **Clear Diagnostics**

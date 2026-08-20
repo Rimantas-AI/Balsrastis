@@ -1,17 +1,18 @@
 <p align="center">
-  <img src=".github/social-preview.png" alt="OmniScribe" width="640">
+  <img src=".github/social-preview.png" alt="Balsraštis" width="640">
 </p>
 
-<h1 align="center">OmniScribe</h1>
+<h1 align="center">Balsraštis</h1>
 
 <p align="center">
-  <strong>Balso diktavimas lietuviškai — bet kurioje macOS programoje.</strong>
+  <strong>Kalbėk. Parašyta.</strong><br>
+  Diktuok lietuviškai — sutvarkytas tekstas atsiranda bet kurioje macOS programoje.
 </p>
 
 <p align="center">
-  <a href="https://github.com/Rimantas-AI/omniScribe/actions/workflows/build.yml"><img src="https://github.com/Rimantas-AI/omniScribe/actions/workflows/build.yml/badge.svg" alt="Build"></a>
+  <a href="https://github.com/Rimantas-AI/Balsrastis/actions/workflows/build.yml"><img src="https://github.com/Rimantas-AI/Balsrastis/actions/workflows/build.yml/badge.svg" alt="Build"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Source%20Available-blue.svg" alt="License: Source Available"></a>
-  <a href="https://github.com/Rimantas-AI/omniScribe/releases/latest"><img src="https://img.shields.io/github/v/release/Rimantas-AI/omniScribe" alt="Release"></a>
+  <a href="https://github.com/Rimantas-AI/Balsrastis/releases/latest"><img src="https://img.shields.io/github/v/release/Rimantas-AI/Balsrastis" alt="Release"></a>
 </p>
 
 ---
@@ -19,7 +20,7 @@
 Paspaudi **⌥Space**, kalbi lietuviškai — ir **sutvarkytas tekstas atsiranda ten,
 kur tavo žymeklis**. Mail, Pages, Safari, Slack, bet kur.
 
-„Apple“ iki šiol nepalaiko diktavimo lietuvių kalba, todėl OmniScribe užpildo šią spragą.
+„Apple“ iki šiol nepalaiko diktavimo lietuvių kalba, todėl Balsraštis užpildo šią spragą.
 
 Programa gyvena meniu juostoje: jokio lango, jokios piktogramos „Dock“ juostoje. Balsą į tekstą
 verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
@@ -30,22 +31,22 @@ verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
 **1. Paspausk ⌥Space ir kalbėk.** Ekrano apačioje pasirodo diktavimo indikatorius.
 
 <p align="center">
-  <img src="docs/images/01-omniscribe-listening.png" alt="OmniScribe klausosi lietuviško diktavimo" width="900">
+  <img src="docs/images/01-omniscribe-listening.png" alt="Balsraštis klausosi lietuviško diktavimo" width="900">
 </p>
 
 **2. Baigus kalbėti, sutvarkytas tekstas įterpiamas ten, kur buvo žymeklis.**
 
 <p align="center">
-  <img src="docs/images/02-omniscribe-result.png" alt="OmniScribe įterptas sutvarkytas lietuviškas tekstas" width="900">
+  <img src="docs/images/02-omniscribe-result.png" alt="Balsraštis įterptas sutvarkytas lietuviškas tekstas" width="900">
 </p>
 
 <details>
 <summary><strong>Meniu ir nustatymai</strong> (paspausk, kad pamatytum)</summary>
 
 <p align="center">
-  <img src="docs/images/03-omniscribe-settings.png" alt="OmniScribe bendrieji nustatymai" width="640">
+  <img src="docs/images/03-omniscribe-settings.png" alt="Balsraštis bendrieji nustatymai" width="640">
   <br><br>
-  <img src="docs/images/04-omniscribe-menu.png" alt="OmniScribe meniu juostos meniu" width="420">
+  <img src="docs/images/04-omniscribe-menu.png" alt="Balsraštis meniu juostos meniu" width="420">
 </p>
 
 </details>
@@ -63,7 +64,7 @@ verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
 
 ## Parsisiuntimas
 
-**[⬇️ Atsisiųsti naujausią versiją](https://github.com/Rimantas-AI/omniScribe/releases/latest)** — be prisijungimo prie GitHub.
+**[⬇️ Atsisiųsti naujausią versiją](https://github.com/Rimantas-AI/Balsrastis/releases/latest)** — be prisijungimo prie GitHub.
 
 Toliau — **[diegimo instrukcija](docs/DIEGIMAS.md)**.
 

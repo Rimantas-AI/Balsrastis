@@ -21,7 +21,7 @@ actor UsageLog {
     static let shared = UsageLog()
     private init() {}
 
-    /// `~/Library/Application Support/OmniScribe/usage-log.csv`.
+    /// `~/Library/Application Support/Balsrastis/usage-log.csv`.
     ///
     /// Application Support rather than the app bundle: the bundle is replaced
     /// wholesale on every update, which would throw the week's data away exactly
@@ -29,7 +29,7 @@ actor UsageLog {
     nonisolated static var fileURL: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory,
                                             in: .userDomainMask)[0]
-        return base.appendingPathComponent("OmniScribe", isDirectory: true)
+        return base.appendingPathComponent("Balsrastis", isDirectory: true)
                    .appendingPathComponent("usage-log.csv")
     }
 

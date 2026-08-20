@@ -11,8 +11,17 @@ final class KeychainManager {
     static let shared = KeychainManager()
     private init() {}
 
-    /// One service namespace for all OmniScribe API keys.
-    private let service = "com.omniscribe.app.apikeys"
+    /// One service namespace for all API keys.
+    private let service = "lt.balsrastis.app.apikeys"
+
+    /// The namespace used while the app was called OmniScribe.
+    ///
+    /// Renaming the bundle would otherwise have silently orphaned every stored
+    /// key — the entries stay in the Keychain, but under a service this app no
+    /// longer looks at, so it would simply report no key and ask the user to
+    /// paste both again on every machine. `apiKey(for:)` migrates on first read
+    /// instead. Safe to delete once no install predates the rename.
+    private let legacyService = "com.omniscribe.app.apikeys"
 
     enum KeychainError: LocalizedError {
         case encodingFailed
@@ -58,7 +67,26 @@ final class KeychainManager {
     // MARK: – Read
 
     /// Returns the stored key, or `nil` if none is set for this provider.
+    ///
+    /// Falls back to the pre-rename namespace once, copying anything found into
+    /// the current one, so an install that predates the rename keeps working
+    /// without the user re-entering both keys.
     func apiKey(for provider: AIProviderID) throws -> String? {
+        if let key = try read(provider: provider, from: service) {
+            return key
+        }
+        // `try?` on an Optional-returning throwing call flattens to String?, so
+        // this covers both "no legacy entry" and "legacy lookup failed".
+        guard let legacy = try? read(provider: provider, from: legacyService) else {
+            return nil
+        }
+        // Copy forward; the old entry is left alone rather than deleted, so a
+        // failure here cannot lose the only copy of a key.
+        try? setAPIKey(legacy, for: provider)
+        return legacy
+    }
+
+    private func read(provider: AIProviderID, from service: String) throws -> String? {
         let query: [String: Any] = [
             kSecClass as String:            kSecClassGenericPassword,
             kSecAttrService as String:      service,

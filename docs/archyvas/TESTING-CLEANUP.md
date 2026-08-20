@@ -27,10 +27,10 @@ Jei Haiku išlaiko kokybę — tai didžiausias likęs greičio laimėjimas prie
 
 ## Pasiruošimas
 
-1. `killall OmniScribe`
-2. Įdiegti **v1.6.10**, `xattr -dr com.apple.quarantine /Applications/OmniScribe.app`
+1. `killall Balsrastis`
+2. Įdiegti **v1.6.10**, `xattr -dr com.apple.quarantine /Applications/Balsrastis.app`
 3. Accessibility perleisti („−" senam, „+" naujam)
-4. Patikrinti, kad Diagnostics apačioje rašo **`OmniScribe 1.6.10`**
+4. Patikrinti, kad Diagnostics apačioje rašo **`Balsraštis 1.6.10`**
 
 **Jungikliai:**
 

@@ -492,7 +492,7 @@ final class MetricsStore: ObservableObject {
         let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
 
         var lines = [
-            "OmniScribe Diagnostics",
+            "Balsraštis Diagnostics",
             "App version: \(bundleVersion)",
             "macOS: \(osVersion)",
         ]

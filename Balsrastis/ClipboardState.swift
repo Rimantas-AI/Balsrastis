@@ -1,6 +1,6 @@
 import AppKit
 
-/// An in-memory snapshot of the general pasteboard, taken before OmniScribe
+/// An in-memory snapshot of the general pasteboard, taken before Balsraštis
 /// overwrites it with generated text and restored immediately after pasting.
 ///
 /// Each `NSPasteboardItem` is deep-copied (every representation type + its data)
@@ -26,7 +26,7 @@ struct ClipboardState {
     }
 
     /// Restores the captured contents back onto `pasteboard`, replacing whatever
-    /// OmniScribe temporarily wrote there.
+    /// Balsraštis temporarily wrote there.
     func restore(to pasteboard: NSPasteboard) {
         pasteboard.clearContents()
         // Nothing was on the clipboard originally – leaving it cleared is correct.

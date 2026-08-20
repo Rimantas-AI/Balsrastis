@@ -1,14 +1,14 @@
-# OmniScribe — Agent / LLM Handoff Guide
+# Balsraštis — Agent / LLM Handoff Guide
 
 > Read this fully before changing anything. It captures **what the app is, how it
 > works, why each key decision was made, and the traps that already cost days.**
 > Written for another AI agent (or developer) picking up the project cold.
 
-Repo: `https://github.com/Rimantas-AI/omniScribe`
+Repo: `https://github.com/Rimantas-AI/Balsrastis`
 
 ---
 
-## 1. What OmniScribe is
+## 1. What Balsraštis is
 
 A **menu-bar-only macOS app** for voice dictation with AI post-processing. The user
 presses a global hotkey (**⌥Space** by default, changeable in Settings since
@@ -58,7 +58,7 @@ first; §7 is the fallback.
 ## 3. File / module map
 
 **AppCore / lifecycle**
-- `OmniScribeApp.swift` — `@main`, `Settings { EmptyView() }`, no `WindowGroup`.
+- `BalsraštisApp.swift` — `@main`, `Settings { EmptyView() }`, no `WindowGroup`.
 - `AppDelegate.swift` — owns all services; orchestrates the dictation cycle. **Start here.**
 - `MenuBarManager.swift` — `NSStatusItem`, 3-state icon, menu (Settings / Quit).
 - `PermissionManager.swift` — requests Microphone + Accessibility, shows NSAlerts.
@@ -122,7 +122,7 @@ decision was made from; see §12)
 
 7. **macOS 12.0 minimum, single universal build.** One build runs on 12 → 15 → newer (macOS is backward-compatible). Do **not** split into per-OS versions; use `if #available(...)` for newer-only APIs. WhisperKit removal is what allowed dropping the target from 14 to 12.
 
-8. **App Sandbox is DISABLED** (`OmniScribe.entitlements`). CGEventTap + Accessibility + global paste can't work under the sandbox. Consequence: distribution is **Developer ID + notarization**, not the Mac App Store.
+8. **App Sandbox is DISABLED** (`Balsraštis.entitlements`). CGEventTap + Accessibility + global paste can't work under the sandbox. Consequence: distribution is **Developer ID + notarization**, not the Mac App Store.
 
 ---
 
@@ -134,24 +134,24 @@ Mac. All compiling happens on **GitHub Actions macOS runners**. Never assume a l
 
 - Workflow: `.github/workflows/build.yml`. Trigger: push to `main` or manual dispatch.
 - Runner `macos-15` + `maxim-lobanov/setup-xcode@v1 latest-stable` (a modern Xcode is required or SwiftPM resolution fails).
-- Build command uses **`-scheme OmniScribe`** (a shared scheme exists at
-  `OmniScribe.xcodeproj/xcshareddata/xcschemes/OmniScribe.xcscheme`). ⚠️ `-derivedDataPath`
+- Build command uses **`-scheme Balsrastis`** (a shared scheme exists at
+  `Balsrastis.xcodeproj/xcshareddata/xcschemes/Balsraštis.xcscheme`). ⚠️ `-derivedDataPath`
   **requires** `-scheme`, not `-target` — this cost a failed build.
 - `MACOSX_DEPLOYMENT_TARGET=14.0` was passed in CI while WhisperKit existed; the
   project target is now **12.0**. Keep CI override ≥ project target.
 - Build is **unsigned** (`CODE_SIGNING_ALLOWED=NO`) then **ad-hoc signed**
   (`codesign --force --deep --sign -`) so it launches.
-- Output: `OmniScribe.zip` uploaded as artifact **`OmniScribe-app`**. After WhisperKit
+- Output: `Balsrastis.zip` uploaded as artifact **`Balsrastis-app`**. After WhisperKit
   removal the app is tiny (~0.3 MB) — models are not bundled; STT is cloud.
 
 **To ship the built app to a user's Mac:** download the artifact (requires being
-logged into GitHub), unzip twice → `OmniScribe.app`, then on the Mac:
-`xattr -dr com.apple.quarantine /Applications/OmniScribe.app` (ad-hoc apps are
+logged into GitHub), unzip twice → `Balsrastis.app`, then on the Mac:
+`xattr -dr com.apple.quarantine /Applications/Balsrastis.app` (ad-hoc apps are
 quarantine-blocked), then grant permissions.
 
 **Verifying a CI run from a headless/agent context** (no `gh` auth): use the public
 REST API, e.g.
-`curl -s https://api.github.com/repos/Rimantas-AI/omniScribe/actions/runs`
+`curl -s https://api.github.com/repos/Rimantas-AI/Balsrastis/actions/runs`
 and `.../runs/{id}/jobs` for step results. Logs need auth (403 unauthenticated).
 
 ---
@@ -164,8 +164,8 @@ and `.../runs/{id}/jobs` for step results. Logs need auth (403 unauthenticated).
 | **Accessibility** | CGEventTap hotkey **and** synthetic ⌘V paste | Privacy → Accessibility |
 | **Speech Recognition** | only if using the Apple `LocalTranscriptionService` path (not the active OpenAI path) | Privacy → Speech Recognition |
 
-**Gotcha — running from Terminal attributes permissions to Terminal, not OmniScribe.**
-When you launch `…/OmniScribe.app/Contents/MacOS/OmniScribe` from a terminal to see
+**Gotcha — running from Terminal attributes permissions to Terminal, not Balsraštis.**
+When you launch `…/Balsrastis.app/Contents/MacOS/Balsraštis` from a terminal to see
 logs, macOS attributes Microphone/Accessibility to the **terminal app**. If the
 terminal lacks Microphone permission, macOS feeds **silent (zero) buffers with no
 error** → Whisper returns `"🎵🎵🎵"` (its silence hallucination) → VAD never detects
@@ -181,7 +181,7 @@ This only disappears with a real Developer ID signature.
 
 ## 7. Debugging / testing
 
-- Run from Terminal to see logs: `/Applications/OmniScribe.app/Contents/MacOS/OmniScribe`
+- Run from Terminal to see logs: `/Applications/Balsrastis.app/Contents/MacOS/Balsraštis`
   (mind the permission gotcha above — grant the terminal Mic+Accessibility).
 - Log prefixes to grep: `[HotkeyManager]`, `[AppDelegate]`, `[CloudWhisperService]`.
   Key lines: `✅ Global hotkey ⌥Space registered`, `⏹️ Recording stopped – N samples`,
@@ -191,9 +191,9 @@ This only disappears with a real Developer ID signature.
 - No auto-stop after silence = VAD never saw speech = same root cause (silent audio),
   or genuine mic level below the 0.012 RMS threshold.
 - Multiple menu-bar mic icons = multiple instances (each Terminal launch spawns one);
-  `killall OmniScribe`. NOTE: an isolated agent shell may not see the user's GUI
+  `killall Balsrastis`. NOTE: an isolated agent shell may not see the user's GUI
   processes — have the **user** run `killall`.
-- Crash reports: `~/Library/Logs/DiagnosticReports/OmniScribe*.ips` (JSON; parse the
+- Crash reports: `~/Library/Logs/DiagnosticReports/Balsraštis*.ips` (JSON; parse the
   `faultingThread` frames — that's how the WhisperKit SIGSEGV was pinpointed).
 
 ---
@@ -387,7 +387,7 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   standard Lithuanian vocabulary prompt, `gpt-4o-mini-transcribe` returned that
   **prompt back verbatim** as its "transcript" on two separate recordings, and
   `gpt-4o-transcribe` answered with sentences assembled from the prompt's subject
-  matter that were never spoken (one of them — "OmniScribe transkribuoja jūsų
+  matter that were never spoken (one of them — "Balsraštis transkribuoja jūsų
   balsą ir įrašo tekstą į dokumentą" — appears nowhere in the prompt at all).
   `whisper-1` transcribed the same audio correctly every time. The models do not
   interpret `prompt` the same way: whisper treats it as a spelling/style bias,
@@ -567,7 +567,7 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   Lithuanian and English layouts all day. Reported by a reader, not found in
   testing. Superseded two releases later; kept in this history because the
   reason it existed is still the reason the recorder exists.
-- v1.6.11 — **per-tester build stamping** (`OmniScribeTesterName` in
+- v1.6.11 — **per-tester build stamping** (`BalsraštisTesterName` in
   `Info.plist`, blank in every CI build; the handout procedure is kept out of
   the public repo). Lets one CI
   build be stamped per tester in Terminal — no rebuild, no Xcode, no Apple

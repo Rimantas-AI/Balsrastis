@@ -120,7 +120,7 @@ actor CloudWhisperService {
     // MARK: – Request building
 
     private func makeRequest(apiKey: String, wav: Data, vocabulary: String, model: String) -> URLRequest {
-        let boundary = "OmniScribeBoundary-\(UUID().uuidString)"
+        let boundary = "BalsrastisBoundary-\(UUID().uuidString)"
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
