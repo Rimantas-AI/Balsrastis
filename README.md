@@ -24,6 +24,48 @@ jokios Dock ikonos.
 
 ---
 
+## 0. Kur dingsta tavo duomenys ir raktai
+
+Programa prašo dviejų API raktų, todėl klausimas „ar ji jų kur nors nenusiųs?"
+yra teisingas klausimas. Trumpas atsakymas ir kur jį pačiam pasitikrinti:
+
+**Raktai laikomi macOS Keychain**, ne faile ir ne programos viduje.
+→ [`OmniScribe/KeychainManager.swift`](OmniScribe/KeychainManager.swift)
+
+**Iš tavo kompiuterio išeina lygiai du dalykai, ir daugiau nieko:**
+
+| Kas | Kur | Kodėl |
+|---|---|---|
+| Įrašytas garsas | `api.openai.com` | Balsą paversti tekstu |
+| Gautas tekstas | `api.anthropic.com` | Sutvarkyti gramatiką |
+
+→ [`CloudWhisperService.swift`](OmniScribe/CloudWhisperService.swift) · [`ClaudeService.swift`](OmniScribe/ClaudeService.swift)
+
+Tai vieninteliai du adresai visame kode. **Savo serverio neturiu** — nei
+statistikai, nei atnaujinimams, nei niekam. Tavo raktai keliauja tik į tų
+dviejų paslaugų API, tiesiogiai iš tavo kompiuterio.
+
+**Jokios telemetrijos ir jokio sekimo.** Diagnostikos statistika (jei ją
+apskritai įjungsi — pagal nutylėjimą išjungta) rašoma į CSV failą tavo
+kompiuteryje ir niekur nesiunčiama; joje nėra nei teksto, nei garso, vien
+skaičiai. → [`UsageLog.swift`](OmniScribe/UsageLog.swift)
+
+**Ką programa dar daro:** klausosi vieno klavišų derinio (todėl reikia
+Accessibility leidimo) ir įklijuoja tekstą per iškarpinę.
+→ [`HotkeyManager.swift`](OmniScribe/HotkeyManager.swift) · [`TextInjector.swift`](OmniScribe/TextInjector.swift)
+
+> ⚠️ **Programa dar nenotarizuota Apple.** Tai reiškia, kad macOS nepatikrino
+> nei manęs kaip kūrėjo, nei paties failo, ir diegiant reikės apeiti karantiną
+> ranka. Notarizacija planuose, bet kol jos nėra — nesitikiu, kad pasitikėsi
+> vien mano žodžiu. Būtent todėl kodas ir yra atviras: pasitikrink pats arba
+> paprašyk ką nors, kas moka skaityti Swift.
+
+**Licencija:** kodas viešas, kad jį būtų galima peržiūrėti, bet **ne** atviro
+kodo licencija — platinti, parduoti ar leisti savo versijos negalima be
+sutikimo. → [`LICENSE`](LICENSE)
+
+---
+
 ## 1. Parsisiuntimas
 
 1. Prisijunk prie GitHub → atidaryk repo **Actions** skiltį.

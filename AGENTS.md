@@ -536,7 +536,7 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
 - v1.6.13 — **the shortcut is recorded, not chosen from a list.** v1.6.12 had
   shipped five suggested combinations, each annotated with what it "usually"
   conflicts with. Those annotations were guesses written as fact, and the
-  MacArena editor broke two of five: ⌥Space (some users remap it to switch input
+  reader broke two of five: ⌥Space (some users remap it to switch input
   sources) and **⌘⇧D, which is Send in Apple Mail** — an app this tool is
   specifically meant to dictate into.
   The fix was not a better list. Which combinations are free depends on the apps
@@ -809,7 +809,7 @@ for the full reasoning — condensed here):**
    **Recruitment, as of 2026-08-19.** Contacts and the reasoning behind them are
    in Memora (`d2226a9e0b39`), not here, since they are people rather than code.
    The parts that bear on the product:
-   - The MacArena editor was approached and, without ever installing it, found
+   - An outside reader was approached and, without ever installing it, found
      both hotkey defects behind v1.6.12-v1.6.14. Worth remembering as evidence
      for how cheap outside eyes are compared with another self-test round.
    - **Do not aim the first pilot at lawyers or doctors.** SEMANTIKA.LT / VDU
