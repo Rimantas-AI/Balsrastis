@@ -5,8 +5,8 @@
 <h1 align="center">Balsraštis</h1>
 
 <p align="center">
-  <strong>Kalbėk. Parašyta.</strong><br>
-  Diktuok lietuviškai — sutvarkytas tekstas atsiranda bet kurioje macOS programoje.
+  <strong>Kalbėk. Balsraštis rašo.</strong><br>
+  Išmanus diktavimas lietuviškai „macOS“ kompiuteriui.
 </p>
 
 <p align="center">
@@ -17,8 +17,10 @@
 
 ---
 
-Paspaudi **⌥Space**, kalbi lietuviškai — ir **sutvarkytas tekstas atsiranda ten,
-kur tavo žymeklis**. Mail, Pages, Safari, Slack, bet kur.
+Mintį pasakyk — tekstu pasirūpins Balsraštis.
+
+Paspaudi **⌥Space**, kalbi lietuviškai, o Balsraštis **perrašo, sutvarko ir
+įterpia** tekstą į programą, kurioje dirbi. Mail, Pages, Safari, Slack, bet kur.
 
 „Apple“ iki šiol nepalaiko diktavimo lietuvių kalba, todėl Balsraštis užpildo šią spragą.
 
@@ -31,22 +33,22 @@ verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
 **1. Paspausk ⌥Space ir kalbėk.** Ekrano apačioje pasirodo diktavimo indikatorius.
 
 <p align="center">
-  <img src="docs/images/01-omniscribe-listening.png" alt="Balsraštis klausosi lietuviško diktavimo" width="900">
+  <img src="docs/images/01-balsrastis-listening.png" alt="Balsraštis klausosi lietuviško diktavimo" width="900">
 </p>
 
 **2. Baigus kalbėti, sutvarkytas tekstas įterpiamas ten, kur buvo žymeklis.**
 
 <p align="center">
-  <img src="docs/images/02-omniscribe-result.png" alt="Balsraštis įterptas sutvarkytas lietuviškas tekstas" width="900">
+  <img src="docs/images/02-balsrastis-result.png" alt="Balsraštis įterptas sutvarkytas lietuviškas tekstas" width="900">
 </p>
 
 <details>
 <summary><strong>Meniu ir nustatymai</strong> (paspausk, kad pamatytum)</summary>
 
 <p align="center">
-  <img src="docs/images/03-omniscribe-settings.png" alt="Balsraštis bendrieji nustatymai" width="640">
+  <img src="docs/images/03-balsrastis-settings.png" alt="Balsraštis bendrieji nustatymai" width="640">
   <br><br>
-  <img src="docs/images/04-omniscribe-menu.png" alt="Balsraštis meniu juostos meniu" width="420">
+  <img src="docs/images/04-balsrastis-menu.png" alt="Balsraštis meniu juostos meniu" width="420">
 </p>
 
 </details>
@@ -88,6 +90,7 @@ pasitikrinti pačiam: kontrolinė suma, kompiliavimas iš kodo, tinklo stebėjim
 - 📥 **[Diegimas](docs/DIEGIMAS.md)** — parsisiuntimas, Gatekeeper, leidimai, API raktai
 - 📖 **[Naudojimas](docs/NAUDOJIMAS.md)** — režimai, klavišų derinys, ribos
 - 🔧 **[Problemų sprendimas](docs/PROBLEMOS.md)** — kai kas nors neveikia
+- ❓ **[DUK](docs/DUK.md)** — raktai, kaina, modeliai, leidimai
 - 🔒 **[Saugumas](SECURITY.md)** — ką programa daro su duomenimis ir kaip patikrinti
 
 ## Licencija
