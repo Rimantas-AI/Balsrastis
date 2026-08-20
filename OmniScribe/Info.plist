@@ -45,10 +45,10 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.6.14</string>
 
-	<!-- Blank in every CI-built release. For a closed-pilot copy, stamp this
-	     with the tester's name post-build (see PILOT-STAMPING.md) before
-	     sending them their .zip — Settings and Copy Report then identify
-	     whose build it is, without a separate build per tester. -->
+	<!-- Blank in every CI-built release. For a closed-pilot copy, this is
+	     stamped with the tester's name after the build, so Settings and Copy
+	     Report identify whose build it is without needing a separate build
+	     per tester. -->
 	<key>OmniScribeTesterName</key>
 	<string></string>
 

@@ -556,7 +556,8 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   testing. Superseded two releases later; kept in this history because the
   reason it existed is still the reason the recorder exists.
 - v1.6.11 — **per-tester build stamping** (`OmniScribeTesterName` in
-  `Info.plist`, blank in every CI build; see `PILOT-STAMPING.md`). Lets one CI
+  `Info.plist`, blank in every CI build; the handout procedure is kept out of
+  the public repo). Lets one CI
   build be stamped per tester in Terminal — no rebuild, no Xcode, no Apple
   Developer account. Settings and Copy Report then identify whose copy it is.
 - v1.6.10 — **the cleanup benchmark became a true shadow test, and settings are
@@ -793,7 +794,7 @@ for the full reasoning — condensed here):**
      world-readable, and MIT expressly grants "distribute, sublicense, and/or
      sell". The swap binds going forward only — it cannot revoke rights for
      anyone who cloned while it was public.
-   - `PILOT-STAMPING.md` holds the whole handout procedure: send the terms,
+   - The handout procedure — kept out of the public repo — is: send the terms,
      **wait for an explicit "I agree" reply**, then stamp that copy with the
      tester's name and send it directly. 30-day pilot window.
    - ⚠️ **BYO API keys are not a usage control.** They protect the OpenAI /

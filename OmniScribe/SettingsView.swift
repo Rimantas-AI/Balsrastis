@@ -38,9 +38,9 @@ struct SettingsView: View {
         .frame(minWidth: 650, idealWidth: 850, minHeight: 450, idealHeight: 650)
     }
 
-    /// Set only on a closed-pilot copy stamped post-build (see
-    /// PILOT-STAMPING.md); every CI-built release ships this blank, so `nil`
-    /// here also covers normal daily use and is not itself a signal of anything.
+    /// Set only on a closed-pilot copy, stamped into `Info.plist` after the
+    /// build; every CI-built release ships this blank, so `nil` here also
+    /// covers normal daily use and is not itself a signal of anything.
     /// Not private — `DictationMetrics.fullReport()` reads it too, so a leaked
     /// report is traceable the same way a leaked build is.
     static var testerName: String? {
