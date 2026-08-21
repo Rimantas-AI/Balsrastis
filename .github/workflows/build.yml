@@ -29,6 +29,11 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
+      # Apsaugų patikros pirma: jos veikia per sekundes ir tikrina būtent tai,
+      # kas saugo naudotojo dokumentą. Nepavykus — statyti nebeverta.
+      - name: Run guard checks
+        run: swift run GuardChecks
+
       - name: Build (unsigned)
         # Uses -scheme (required alongside -derivedDataPath). The shared scheme
         # lives in Balsrastis.xcodeproj/xcshareddata/xcschemes/. xcodebuild

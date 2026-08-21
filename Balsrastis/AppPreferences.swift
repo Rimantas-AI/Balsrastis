@@ -99,14 +99,10 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(vocabulary, forKey: vocabularyKey) }
     }
 
-    static let defaultVocabulary = """
-    Tai lietuviška techninė diktacija apie macOS programą „Balsraštis". Programos \
-    HUD, tariama raidėmis H-U-D, rodo būsenas „Listening", „Transcribing" ir \
-    „Polishing". Nustatymuose yra skiltys „API Keys" ir „Diagnostics", o ten \
-    mygtukai „Copy Report" ir „Clear Diagnostics". Galimi terminai: Mac \
-    slaptažodis, API raktas, Keychain, Always Allow, TextEdit, Accessibility, \
-    GitHub, Claude, Whisper. Klaidos pranešimas gali būti „No microphone signal".
-    """
+    /// Lives in `TranscriptGuards.swift` so the echo check can be tested
+    /// against the real prompt without pulling in this type.
+    static let defaultVocabulary = LithuanianDictation.defaultVocabulary
+
 
     /// Whether the raw Whisper transcript and AI-reshaped result are captured
     /// into Diagnostics history at all (see `DictationMetrics.transcribedText` /

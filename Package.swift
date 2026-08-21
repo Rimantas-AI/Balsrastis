@@ -23,18 +23,37 @@ let package = Package(
         .macOS(.v12)
     ],
     targets: [
-        .executableTarget(
+        // Biblioteka, ne vykdomasis failas: SPM tas pačias rinkmenas gali priskirti
+        // tik vienam taikiniui, o testams reikia nuo jų priklausyti. Tikroji .app
+        // vis tiek statoma per `xcodebuild`, tad čia nieko neprarandama —
+        // `swift build` ir toliau tikrina, ar viskas kompiliuojasi.
+        //
+        // `BalsrastisApp.swift` praleistas, nes `@main` bibliotekoje neturi prasmės.
+        .target(
             name: "Balsrastis",
             path: "Balsrastis",
             // Info.plist ir .entitlements naudojami Xcode; SPM build jų nereikia.
             exclude: [
                 "Info.plist",
                 "Balsrastis.entitlements",
-                "Assets.xcassets"
+                "Assets.xcassets",
+                "BalsrastisApp.swift"
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")
             ]
+        ),
+        // Apsaugų patikros. Sąmoningai ne XCTest: jis ateina su pilnu Xcode,
+        // kurio šiame kompiuteryje nėra, o testų rinkinys, kurio negali paleisti
+        // vietoje, parašomas kartą ir daugiau niekada netikrinamas.
+        //
+        // Įtraukia tik tuos failus, kuriems nereikia nei tinklo, nei mikrofono,
+        // nei API raktų — todėl `swift run GuardChecks` veikia per sekundes ir
+        // bet kur.
+        .executableTarget(
+            name: "GuardChecks",
+            dependencies: ["Balsrastis"],
+            path: "Tests/GuardChecks"
         )
     ]
 )

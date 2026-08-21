@@ -87,6 +87,10 @@ yra teisingas klausimas.
 Nesitikiu, kad patikėsi vien žodžiu — **[`SECURITY.md`](SECURITY.md)** rodo, kaip
 pasitikrinti pačiam: kontrolinė suma, kompiliavimas iš kodo, tinklo stebėjimas.
 
+Apsaugos, neleidžiančios modeliui perrašyti tavo teksto, turi automatines
+patikras — jos veikia kiekvieno pakeitimo metu, ir kiekviena parašyta iš realaus
+gedimo. Paleisti pačiam: `swift run GuardChecks`.
+
 ## Dokumentacija
 
 - 📥 **[Diegimas](docs/DIEGIMAS.md)** — parsisiuntimas, Gatekeeper, leidimai, API raktai
