@@ -92,3 +92,32 @@ tiksliausias lietuviškai ir greičiausias. `whisper-1` lieka kaip atsarginis.
 ---
 
 Kažkas neveikia? → [Problemų sprendimas](PROBLEMOS.md)
+
+---
+
+## Įrašų atkūrimas (modelių palyginimui)
+
+Skirta ne kasdieniam naudojimui, o tada, kai nori palyginti du modelius arba
+patikrinti, ar pakeitimas nieko nesugadino.
+
+**Problema, kurią tai sprendžia:** pakartojus tas pačias frazes balsu, tai jau
+**kitas įrašas** — kitas tempas, kitas atstumas iki mikrofono, kitas tarimas.
+Vadinasi, lygini ne du modelius, o du savo pasakymus.
+
+**Kaip naudoti:**
+
+1. **Settings → Diagnostics → „Save recordings"** ✅
+2. Padiktuok savo testines frazes **vieną kartą**, įprastai
+3. Išjunk „Save recordings" — daugiau įrašinėti nereikia
+4. Pakeisk, ką nori palyginti (modelį, teikėją, žodyną)
+5. Spausk **„Replay N"** — visos frazės praeis tą pačią grandinę su tuo pačiu garsu
+
+Ataskaitoje kiekvienoje eilutėje matysi **`Replay: 003.wav`**, tad du raundus
+gali skaityti greta eilutė po eilutės.
+
+> ⚠️ Atkūrimas naudoja **tikras API užklausas** ir kainuoja tiek pat, kiek tiek
+> pat diktavimų. Tarp įrašų daroma 6 sek. pauzė, kad neatsitrenktum į užklausų
+> limitą.
+
+Įrašai guli `~/Library/Application Support/Balsrastis/Fixtures` — mygtukas
+**„Show Recordings"** atidaro tą aplanką. Nereikalingus tiesiog ištrink.

@@ -166,6 +166,10 @@ struct DictationMetrics: Identifiable {
     /// Cleanup models this run was sent to, and their answers. Same split as the
     /// STT pair above: the intended list is fixed at dictation time so an
     /// unfinished comparison reads as "still running" rather than "did not run".
+    /// Which fixture produced this row, empty for a live dictation. Printed in
+    /// the report so two replay rounds can be read side by side.
+    var replaySource: String = ""
+
     var comparedAIModels: [String] = []
     var aiComparison: [AIComparisonResult] = []
 
@@ -230,6 +234,9 @@ struct DictationMetrics: Identifiable {
         if !transcribedText.isEmpty { block += "\nRaw STT: \(transcribedText)" }
         if !processedText.isEmpty { block += "\nFinal: \(processedText)" }
 
+        if !replaySource.isEmpty {
+            block += "\nReplay: \(replaySource)"
+        }
         if !comparedAIModels.isEmpty {
             block += "\nCleanup comparison: \(aiComparison.count)/\(comparedAIModels.count)"
                   + (aiComparison.count == comparedAIModels.count ? " complete" : " — still running")

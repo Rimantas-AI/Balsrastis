@@ -101,12 +101,25 @@ private struct DiagnosticsSettingsView: View {
                         .controlSize(.small)
                         .font(.caption)
                         .help("Records the raw Whisper transcript and the AI-reshaped result for each run, so Copy Report can show what STT vs. AI actually changed. Off by default \u{2014} turn on only for a deliberate test round, then off again.")
+                    Toggle("Save recordings", isOn: $prefs.saveRecordings)
+                        .toggleStyle(.checkbox)
+                        .controlSize(.small)
+                        .font(.caption)
+                        .help("Keeps a WAV of each successful dictation, so the same audio can be replayed against a different model later — a comparison on identical input rather than on a fresh performance of the same sentences. Off by default; needed only for a test round.")
                     Toggle("Log statistics to disk", isOn: $prefs.logUsageStatistics)
                         .toggleStyle(.checkbox)
                         .controlSize(.small)
                         .font(.caption)
                         .help("Appends one row per dictation to a CSV file that survives quitting, so a week of real use can be reviewed. Numbers only \u{2014} timings, outcome, word count and speech rate. Never the dictated text and never audio.")
                     HStack(spacing: 8) {
+                        if prefs.saveRecordings || fixtureCount > 0 {
+                            Button("Replay \(fixtureCount)") { replayFixtures() }
+                                .controlSize(.small)
+                                .disabled(fixtureCount == 0)
+                                .help("Runs every saved recording through the pipeline again — same guards, same models — so a model change can be judged on identical audio. Costs one API call per recording.")
+                            Button("Show Recordings") { NSWorkspace.shared.open(AudioFixtures.folder) }
+                                .controlSize(.small)
+                        }
                         if prefs.logUsageStatistics {
                             Button("Show Log") { revealLog() }
                                 .controlSize(.small)
@@ -160,6 +173,13 @@ private struct DiagnosticsSettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private var fixtureCount: Int { AudioFixtures.all().count }
+
+    private func replayFixtures() {
+        (NSApp.delegate as? AppDelegate)?.replayFixtures()
+        showToast("Replaying \(fixtureCount) recordings\u{2026}")
     }
 
     private func format(_ value: TimeInterval?) -> String {

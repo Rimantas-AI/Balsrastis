@@ -114,6 +114,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let samples = audioManager.stop()
         let quality = audioManager.signalQuality
 
+        // Keep the audio when asked, so this dictation can be replayed later
+        // against a different model without saying it again. Failure is logged
+        // and ignored: losing a fixture must never cost the user the dictation
+        // they are actually doing.
+        if AppPreferences.shared.saveRecordings, quality == .speech {
+            do { print("[AppDelegate] 💾 Fixture saved: \(try AudioFixtures.save(samples: samples).lastPathComponent)") }
+            catch { print("[AppDelegate] ⚠️ Could not save fixture: \(error.localizedDescription)") }
+        }
+
         var metrics = DictationMetrics()
         metrics.spokenSeconds = Double(samples.count) / 16_000
         metrics.aboveThresholdSeconds = audioManager.aboveThresholdSeconds
@@ -122,6 +131,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         metrics.silenceWait = max(0, stoppedAt - (audioManager.lastSpeechAt ?? stoppedAt))
         metrics.wasAutoStopped = audioManager.didAutoStop
         metrics.mode = AppPreferences.shared.selectedMode.displayName
+
+        process(samples: samples, quality: quality, metrics: metrics)
+    }
+
+    /// Runs one fixture through the pipeline as if the microphone had just
+    /// stopped.
+    ///
+    /// The VAD figures are left at zero rather than invented: silence timing and
+    /// above-threshold duration are properties of a live recording, and a replay
+    /// row claiming them would corrupt the very numbers these rounds exist to
+    /// compare. Quality is `.speech` because `save` only keeps recordings that
+    /// already passed that guard.
+    private func process(samples: [Float], replayingFrom name: String) {
+        var metrics = DictationMetrics()
+        metrics.spokenSeconds = Double(samples.count) / 16_000
+        metrics.mode = AppPreferences.shared.selectedMode.displayName
+        metrics.replaySource = name
+        process(samples: samples, quality: .speech, metrics: metrics)
+    }
+
+    /// Everything after the audio exists: guards, transcription, reshaping,
+    /// insertion. Shared so a replayed fixture cannot drift from a spoken one.
+    private func process(samples: [Float], quality: SignalQuality, metrics incoming: DictationMetrics) {
+        var metrics = incoming
 
         menuBarManager?.updateState(.processing)
         WindowManager.shared.updateHUD(phase: .transcribing)
@@ -333,6 +366,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                               outcome: "Failed",
                               failure: error.localizedDescription)
             }
+        }
+    }
+
+    /// Runs every saved fixture through the pipeline, one after another.
+    ///
+    /// Each one takes the path a real dictation takes from the moment the
+    /// microphone stops — same guards, same models, same Diagnostics rows — so a
+    /// replay round is comparable with a spoken one line for line. What it skips
+    /// is the recording, which is the part that cannot be repeated identically.
+    ///
+    /// Sequential on purpose. Firing twenty dictations at once would rate-limit
+    /// the key and make the timings meaningless, and the timings are half the
+    /// reason to run it.
+    func replayFixtures() {
+        let urls = AudioFixtures.all()
+        guard !urls.isEmpty else {
+            WindowManager.shared.showFailure("No saved recordings to replay.")
+            return
+        }
+        Task { @MainActor in
+            for (index, url) in urls.enumerated() {
+                print("[AppDelegate] ▶️ Replaying \(index + 1)/\(urls.count): \(url.lastPathComponent)")
+                do {
+                    process(samples: try AudioFixtures.load(url), replayingFrom: url.lastPathComponent)
+                } catch {
+                    print("[AppDelegate] ⚠️ Could not read \(url.lastPathComponent): \(error.localizedDescription)")
+                    continue
+                }
+                // Enough for the previous run's requests to finish before the
+                // next starts, so the report reads in order.
+                try? await Task.sleep(nanoseconds: 6_000_000_000)
+            }
+            print("[AppDelegate] ✅ Replay finished — \(urls.count) recordings.")
         }
     }
 

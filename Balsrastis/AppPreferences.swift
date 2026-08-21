@@ -83,6 +83,7 @@ final class AppPreferences: ObservableObject {
     // day old with no testers on it. Anyone who had changed it re-records once.
     private let hotkeyKey = "Balsrastis.hotkeyV2"
     private let hotkeyChosenKey = "Balsrastis.hotkeyChosen"
+    private let saveRecordingsKey = "Balsrastis.saveRecordings"
 
     /// Context the speech recogniser should expect.
     ///
@@ -212,6 +213,16 @@ final class AppPreferences: ObservableObject {
     /// Separate from `hotkey` having a value, because `hotkey` always has one —
     /// it falls back to ⌥Space. This records that a *decision* was made, so the
     /// first-run prompt appears exactly once.
+    /// Keeps a WAV of each successful dictation, so the same audio can be
+    /// replayed against a different model later.
+    ///
+    /// Off by default and never needed for daily use: it exists so a model
+    /// comparison can be run on identical input instead of on a fresh
+    /// performance of the same sentences.
+    @Published var saveRecordings: Bool {
+        didSet { defaults.set(saveRecordings, forKey: saveRecordingsKey) }
+    }
+
     @Published var hotkeyChosen: Bool {
         didSet { defaults.set(hotkeyChosen, forKey: hotkeyChosenKey) }
     }
@@ -252,6 +263,7 @@ final class AppPreferences: ObservableObject {
         logUsageStatistics = defaults.bool(forKey: logUsageStatisticsKey)
         compareAICleanup = defaults.bool(forKey: compareAICleanupKey)
         hotkeyChosen = defaults.bool(forKey: hotkeyChosenKey)
+        saveRecordings = defaults.bool(forKey: saveRecordingsKey)
         hotkey = defaults.data(forKey: hotkeyKey)
             .flatMap { try? JSONDecoder().decode(HotkeyCombo.self, from: $0) }
             ?? .default
