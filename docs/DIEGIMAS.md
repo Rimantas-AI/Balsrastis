@@ -50,8 +50,8 @@ Tada dukart spustelėk `Balsrastis.app`. Jei vis tiek klausia — **dešinys pel
 klavišas → Open → Open**, arba: **System Settings → Privacy & Security** →
 apačioje **„Open Anyway“**.
 
-> Meniu juostos viršuje (dešinėje, prie laikrodžio) atsiras **mikrofono ikona**.
-> **Lango nebus — tai normalu.** Spausk ikoną → matysi meniu (Settings, Quit).
+> Meniu juostos viršuje (dešinėje, prie laikrodžio) atsiras **mikrofono piktograma**.
+> **Lango nebus — tai normalu.** Spausk piktogramą → matysi meniu (Settings, Quit).
 
 ---
 
@@ -73,7 +73,7 @@ naujo** (Accessibility įsigalioja tik po perkrovimo).
 
 ## 4. Įvesk API raktus
 
-Meniu ikona → **Settings… → API Keys**:
+Meniu piktograma → **Settings… → API Keys**:
 
 - **GPT (OpenAI)** laukelyje → įklijuok OpenAI raktą (`sk-...` arba `sk-proj-...`)
 - **Claude** laukelyje → įklijuok Anthropic raktą (`sk-ant-...`)

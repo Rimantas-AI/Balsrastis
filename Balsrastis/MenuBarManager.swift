@@ -33,6 +33,14 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
     private let statusItem: NSStatusItem
     private let statusMenuItem = NSMenuItem()   // Shows "Balsraštis – <state>" as info row.
     private let hotkeyHintItem = NSMenuItem()   // Shows the currently chosen shortcut.
+    private let dictateItem = NSMenuItem()      // Starts/stops dictation without the keyboard.
+
+    /// Starts or stops dictation — the same action the shortcut triggers.
+    ///
+    /// Asked for by a reader who pointed out that a keyboard shortcut is the
+    /// only way in, which is a problem for anyone whose preferred combination
+    /// is taken and for anyone who simply reaches for the menu first.
+    var onToggleDictation: (() -> Void)?
 
     private(set) var currentState: AppState = .idle {
         didSet { refreshButton() }
@@ -54,7 +62,14 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
     /// when the preference changes — no subscription to keep in sync, and the
     /// text is correct whenever anyone can actually read it.
     func menuWillOpen(_ menu: NSMenu) {
-        hotkeyHintItem.title = "Activate: \(AppPreferences.shared.hotkey.displayName)"
+        hotkeyHintItem.title = "Or press: \(AppPreferences.shared.hotkey.displayName)"
+        // Labelled from the current state, so the menu is also how you find out
+        // whether it is still listening.
+        dictateItem.title = currentState == .idle ? "Start Dictation" : "Stop Dictation"
+    }
+
+    @objc private func toggleDictation() {
+        onToggleDictation?()
     }
 
     // MARK: – Public API
@@ -99,6 +114,12 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
         menu.addItem(statusMenuItem)
 
         menu.addItem(.separator())
+
+        // --- Start / stop dictation ---
+        dictateItem.title = "Start Dictation"
+        dictateItem.action = #selector(toggleDictation)
+        dictateItem.target = self
+        menu.addItem(dictateItem)
 
         // --- Hotkey hint ---
         // Title is set here and refreshed in `menuWillOpen`, so it follows the

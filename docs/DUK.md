@@ -60,6 +60,12 @@ Versija yra viena, ir ji naudoja būtent šiuos teikėjus.
 Be Accessibility programa negali nei išgirsti klavišo, nei įrašyti teksto į
 kitą programą.
 
+### Ar galiu naudoti tik vieną paslaugų teikėją?
+
+Kol kas ne — reikia abiejų. Bet tai **pagrįstas priekaištas**, ir vieno teikėjo
+režimas (viskas per OpenAI) yra svarstomas būtent todėl, kad dvi paskyros su
+kortele yra reali kliūtis.
+
 ### Ar mano balsas ar tekstas kur nors kaupiami?
 
 Iš tavo turinio išeina du dalykai: **garsas** į `api.openai.com` ir
@@ -70,6 +76,25 @@ nekeliauja per mane. Diagnostikos statistika (pagal nutylėjimą **išjungta**)
 rašoma į failą tavo kompiuteryje ir joje nėra nei teksto, nei garso.
 
 Pasitikrinti: [`SECURITY.md`](../SECURITY.md).
+
+### O ką su jais daro OpenAI ir Anthropic?
+
+Teisingas klausimas, ir jis svarbesnis už ankstesnį: tai, kad **aš** duomenų
+nerenku, nereiškia, kad jų negauna trečios šalys.
+
+Abu teikėjai savo **API** sąlygose nurodo, kad **API duomenys nenaudojami
+modeliams apmokyti** be atskiro sutikimo — tai galioja nuo 2023 m. OpenAI ir
+yra Anthropic API politikoje ([OpenAI](https://openai.com/policies/how-your-data-is-used-to-improve-model-performance/),
+[Anthropic](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention)).
+Tai **kitos sąlygos nei ChatGPT ar Claude pokalbių languose**, kur numatytieji
+nustatymai kitokie.
+
+Vis dėlto duomenys **pas juos patenka** ir kurį laiką saugomi. Todėl vertas
+dėmesio niuansas: **balsu žmonės pasako daugiau, nei parašytų.** Diktuojant
+lengva užsimiršti ir ištarti tai, ko nenorėtum perduoti trečiai šaliai.
+
+Jei diktuoji ką nors konfidencialaus — vertink taip pat, kaip vertintum
+rašymą į bet kurią debesijos paslaugą.
 
 ### Su kokiais Mac veikia?
 

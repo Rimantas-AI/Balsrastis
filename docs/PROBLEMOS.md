@@ -10,7 +10,7 @@
 |---|---|
 | **„Balsraštis is damaged“ / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/Balsrastis.app`, tada paleisk |
 | **„Safari can't open the file“** | Neatidarinėk iš Safari — eik per **Finder → Applications** |
-| **Paleidus nieko nerodo** | Tai normalu — ieškok **mikrofono ikonos ekrano viršuje dešinėje**, ne lango |
+| **Paleidus nieko nerodo** | Tai normalu — ieškok **mikrofono piktogramos ekrano viršuje dešinėje**, ne lango |
 | **Klavišų derinys neveikia** | Įjunk **Accessibility** (macOS 12: dar ir **Input Monitoring**) → **paleisk iš naujo**. Jei derinys užimtas kitos programos — **Settings → General → Shortcut → Change…** ir įrašyk kitą |
 | **Tekstas neatsiranda** | Pažiūrėk **Settings → Diagnostics** — ten matysi, kuriame etape sustojo. Dažniausiai — neįvesti ar blogi API raktai |
 | **Transkripcija „🎵🎵🎵“** | Mikrofonas negauna balso: **Sound → Input** pasirink teisingą mikrofoną ir žiūrėk, kad „Input level“ juostelė judėtų kalbant; išjunk foninę muziką |
@@ -18,7 +18,7 @@
 | **Klaida „API key was rejected“ (401)** | Blogas arba sukeistas raktas. Settings → API Keys → **Remove** → įvesk teisingą (`sk-...` OpenAI, `sk-ant-...` Claude) |
 | **Klaida „429“ / „insufficient_quota“** | OpenAI paskyroje nėra kredito — pridėk skiltyje „Billing“ |
 | **„Network Error“** | Nėra interneto |
-| **Kelios mikrofono ikonos meniu juostoje** | Terminale: `killall Balsrastis`, tada paleisk vieną kartą iš Applications |
+| **Kelios mikrofono piktogramos meniu juostoje** | Terminale: `killall Balsrastis`, tada paleisk vieną kartą iš Applications |
 | **Keychain klausia slaptažodžio** | Įrašyk **Mac** slaptažodį (ne API raktą) → **Always Allow** |
 | **Po naujos versijos derinys nustojo veikti** | Naujas parašas → „Accessibility“ leidimą reikės suteikti iš naujo: pašalink seną „−“, pridėk naują „+“, perkrauk |
 
@@ -26,7 +26,7 @@
 
 ## Pirmas žingsnis: Diagnostics
 
-**Meniu ikona → Settings… → Diagnostics.**
+**Meniu piktograma → Settings… → Diagnostics.**
 
 Ten matysi kiekvieno diktavimo eigą: kiek truko įrašymas, transkripcija, AI
 valymas ir įterpimas, ir kuriame etape kas nors nutrūko. Dažniausiai to užtenka

@@ -35,6 +35,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // 1. Status item must exist before anything else updates its icon.
         let mbm = MenuBarManager()
+        // Dictation must be startable without the keyboard: the shortcut may be
+        // taken by another app, and some people reach for the menu first.
+        mbm.onToggleDictation = { [weak self] in self?.toggleDictation() }
         menuBarManager = mbm
 
         // 2. Audio pipeline. Wire its callbacks to the dictation coordinator.
