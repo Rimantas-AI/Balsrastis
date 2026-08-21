@@ -31,6 +31,11 @@ jobs:
 
       # Apsaugų patikros pirma: jos veikia per sekundes ir tikrina būtent tai,
       # kas saugo naudotojo dokumentą. Nepavykus — statyti nebeverta.
+      # Naujas .swift failas kompiliuojasi per `swift build`, bet be įrašo
+      # project.pbxproj `xcodebuild` jo nemato. Trys tokie atvejai — užtenka.
+      - name: Check every source file is in the Xcode project
+        run: ./scripts/check-xcode-sources.sh
+
       - name: Run guard checks
         run: swift run GuardChecks
 
