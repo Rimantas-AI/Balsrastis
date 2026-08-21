@@ -37,7 +37,7 @@ Everything hangs off one cycle in `AppDelegate.finishDictation()`:
       OR ⌥Space again                     … or manual stop
   → AudioSessionManager.stop() → [Float]  the captured samples
   → CloudWhisperService.transcribe()      OpenAI Whisper API → Lithuanian text
-  → AILayerCoordinator.process(text,mode) Claude (Anthropic) reshapes per mode
+  → AILayerCoordinator.process(text,mode) Claude (default) or OpenAI reshapes per mode
   → TextInjector.inject(processed)         save clipboard → set text → ⌘V → restore clipboard
   → back to idle, HUD hidden
 ```
@@ -74,6 +74,7 @@ first; §7 is the fallback.
 - `AudioSessionManager.swift` — `AVAudioEngine`, taps input, converts to 16 kHz mono Float32, feeds VAD; handles device changes; removes tap **before** stopping engine.
 - `VoiceActivityDetector.swift` — RMS-based; only counts silence **after** it has first detected speech above threshold (0.012). Fires `onSilenceTimeout` once after ~1.2 s silence, and `onPreSpeechTimeout` after 6 s with no speech at all.
 - `STTResult.swift` — provider-agnostic result `{ text, language, audioDuration, source }`.
+- `AudioFixtures.swift` — saves each dictation as a 16 kHz WAV and replays it through the pipeline later, so a model comparison runs on **identical audio** instead of a fresh performance of the same sentences.
 
 **STT (speech → text)**
 - `CloudWhisperService.swift` — **THE ACTIVE TRANSCRIBER.** Uploads a 16 kHz mono WAV to the **OpenAI Whisper API** (`/v1/audio/transcriptions`, `language=lt`). Needs the **OpenAI** Keychain key.
@@ -81,12 +82,14 @@ first; §7 is the fallback.
 
 **AI reshaping (text → text)**
 - `AIProviderProtocol.swift` — `AIProviderProtocol { process(text:mode:) }`, `AIProviderID { claude, gemini, openai }`, `AIError`.
-- `ProcessingMode.swift` — enum `{ ltTyping, email, code, messenger, translation }`, each carries a system prompt. `.ltTyping` = grammar cleanup keeping original language.
+- `ProcessingMode.swift` — enum `{ ltTyping, email, code, messenger, translation }`, each carries a system prompt. `.ltTyping` = grammar cleanup keeping original language. Also holds `cleanupRejectionReason` — **the four rules that decide whether a reply may be pasted at all**.
+- `TranscriptGuards.swift` — `looksLikeNoSpeech`, `exceedsPlausibleSpeechRate`, `echoesPrompt`, and the vocabulary prompt. Foundation-only on purpose: that is what lets `swift run GuardChecks` compile them without Xcode.
 - `ClaudeService.swift` — Anthropic Messages API via raw `URLSession` (no Swift SDK). Model `claude-opus-4-8`. **No** temperature/top_p (rejected on Opus 4.7/4.8). 10 s timeout. Needs the **Claude** Keychain key.
-- `AILayerCoordinator.swift` — factory routing to the selected provider. **Only `ClaudeService` is registered**; Gemini/OpenAI-as-reshaper are not implemented.
+- `AILayerCoordinator.swift` — factory routing to the selected provider. **`ClaudeService` and `OpenAIService` are registered**; Gemini is not, and `AIProviderID.implemented` is what the picker lists so an unimplemented choice can never be selected.
+- `OpenAIService.swift` — the **single-key path**: cleanup via Chat Completions on the *same* Keychain entry the transcriber uses, so one account covers both steps. Read its header before changing the model — `gpt-4o-mini` was tried and changed a number.
 
 **Security**
-- `KeychainManager.swift` — generic-password CRUD keyed by provider `rawValue` under service `com.omniscribe.app.apikeys`. Keys **never** touch UserDefaults. **Per-machine** (keys do not travel with the app).
+- `KeychainManager.swift` — generic-password CRUD keyed by provider `rawValue` under service `lt.balsrastis.app.apikeys` (with a one-time read-through to the pre-rename namespace, see the file). Keys **never** touch UserDefaults. **Per-machine** (keys do not travel with the app).
 
 **Diagnostics / observability** (added v1.2.0 onward — the tooling every later
 decision was made from; see §12)
@@ -98,7 +101,11 @@ decision was made from; see §12)
 - `SettingsView.swift` — native `TabView` (General + API Keys + Diagnostics) + `Form` + `Picker`. No iOS `NavigationView`. General: shortcut recorder, mode, provider, STT model, comparison toggles. API Keys: one `SecureField` per provider (Save/Remove), backed by Keychain. Diagnostics: timings, per-model summaries, Copy Report.
 - `RecordingHUDView.swift` — SwiftUI HUD content (listening/processing).
 - `HUDPanel.swift` — non-activating `NSPanel`, `.floating` level, `ignoresMouseEvents`, `canBecomeKey = false` (must never steal focus).
-- `WindowManager.swift` — presents the Settings window and the HUD panel safely for an `LSUIElement` app.
+- `WindowManager.swift` — presents the Settings window, the first-run chooser and the HUD panel safely for an `LSUIElement` app.
+- `FirstRunShortcutView.swift` — asks for the shortcut once, before the first dictation. Its header explains why picking a default failed twice.
+
+**Tests**
+- `Tests/GuardChecks/main.swift` — 31 checks over the guards above, every input a real transcript or reply from a test round. Deliberately **not XCTest** (which needs full Xcode); run with `swift run GuardChecks`. CI runs it before the Xcode build, together with `scripts/check-xcode-sources.sh`, which catches a new `.swift` file missing from `project.pbxproj` — a mistake that broke the build three times.
 
 ---
 
