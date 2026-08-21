@@ -60,11 +60,22 @@ Versija yra viena, ir ji naudoja būtent šiuos teikėjus.
 Be Accessibility programa negali nei išgirsti klavišo, nei įrašyti teksto į
 kitą programą.
 
-### Ar galiu naudoti tik vieną paslaugų teikėją?
+### Ar galiu apsieiti su vienu raktu?
 
-Kol kas ne — reikia abiejų. Bet tai **pagrįstas priekaištas**, ir vieno teikėjo
-režimas (viskas per OpenAI) yra svarstomas būtent todėl, kad dvi paskyros su
-kortele yra reali kliūtis.
+**Taip.** Settings → General → **AI Provider** → **GPT (OpenAI)**.
+
+Tada viskas — ir atpažinimas, ir teksto tvarkymas — vyksta per OpenAI, o
+naudojamas **tas pats vienas raktas**. Anthropic paskyros nereikia.
+
+| | Raktai | Pastaba |
+|---|---|---|
+| **Claude (Anthropic)** — numatytasis | Du | Tikslesnis lietuviškai; ištestuotas 60 frazių |
+| **GPT (OpenAI)** | **Vienas** | Paprasčiau pradėti; teksto kokybė netikrinta tiek pat kruopščiai |
+
+Claude paliktas numatytuoju todėl, kad **jis realiai išmatuotas** — buvo
+lyginamas su pigesniu modeliu ant tų pačių 60 frazių, ir pigesnis suklupo ties
+prasme. OpenAI kelias tokio raundo dar nepraėjo, todėl siūlomas kaip sąmoningas
+pasirinkimas, o ne tyliai pakeičiamas numatytuoju.
 
 ### Ar mano balsas ar tekstas kur nors kaupiami?
 

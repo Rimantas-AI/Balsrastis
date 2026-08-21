@@ -26,7 +26,7 @@ Paspaudi **⌥Space**, kalbi lietuviškai, o Balsraštis **perrašo, sutvarko ir
 
 Programa gyvena meniu juostoje: jokio lango, jokios piktogramos „Dock“ juostoje. Balsą į tekstą
 verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
-(Anthropic).
+(Anthropic) — arba irgi OpenAI, jei nori apsieiti su vienu raktu.
 
 ## Kaip tai veikia
 
@@ -57,7 +57,8 @@ verčia **GPT-4o mini Transcribe** (OpenAI), tekstą sutvarko **Claude**
 
 | | |
 |---|---|
-| **Kaina** | Programa nemokama. Naudoji **savo** OpenAI ir Anthropic raktus, tad apmoki savo naudojimą — apytiksliai keli eurai per mėnesį |
+| **Kaina** | Programa nemokama. Naudoji **savo** API raktus, tad apmoki savo naudojimą — apytiksliai keli eurai per mėnesį |
+| **Raktai** | Užtenka **vieno** (OpenAI), jei nustatymuose pasirinksi „GPT (OpenAI)“. Numatytasis Claude tikslesnis lietuviškai, bet reikia antro rakto |
 | **Reikia** | macOS 12 (Monterey) ar naujesnės. Veikia ir su **Intel**, ir su Apple Silicon |
 | **Senesnis Mac tinka** | MacBook Air ir Pro nuo 2015 m., Mac mini nuo 2014 m., iMac nuo 2015 m. |
 | **Parašas** | ⚠️ **Programa nėra notarizuota „Apple“.** Diegiant reikės rankomis pašalinti karantiną |
@@ -72,12 +73,13 @@ Toliau — **[diegimo instrukcija](docs/DIEGIMAS.md)**.
 
 ## Kur dingsta tavo duomenys ir raktai
 
-Programa prašo dviejų API raktų, todėl klausimas „Ar ji jų kur nors nenusiųs?“
+Programa prašo API raktų, todėl klausimas „Ar ji jų kur nors nenusiųs?“
 yra teisingas klausimas.
 
 - **Raktai laikomi macOS Keychain** — ne faile, ne programos viduje
 - **Iš tavo turinio siunčiami tik du dalykai:** garsas į `api.openai.com`,
-  tekstas į `api.anthropic.com`. Tai vieninteliai du adresai visame kode
+  tekstas į `api.anthropic.com` (arba irgi į OpenAI, jei pasirinkai vieno rakto
+  režimą). Tai vieninteliai du adresai visame kode
 - **Savo serverio neturiu** — nei statistikai, nei atnaujinimams
 - **Jokios telemetrijos.** Diagnostikos statistika (pagal nutylėjimą išjungta)
   lieka tavo kompiuteryje

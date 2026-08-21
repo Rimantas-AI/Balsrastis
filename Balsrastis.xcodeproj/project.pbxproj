@@ -21,6 +21,7 @@
 		00000000000000000000E2 /* AIProviderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000D2 /* AIProviderProtocol.swift */; };
 		00000000000000000000E3 /* ProcessingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000D3 /* ProcessingMode.swift */; };
 		00000000000000000000E4 /* ClaudeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000D4 /* ClaudeService.swift */; };
+		0000000000000000000A01 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000B01 /* OpenAIService.swift */; };
 		00000000000000000000E5 /* AILayerCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000D5 /* AILayerCoordinator.swift */; };
 		00000000000000000000E6 /* ClipboardState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000D6 /* ClipboardState.swift */; };
 		00000000000000000000E7 /* TextInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000D7 /* TextInjector.swift */; };
@@ -54,6 +55,7 @@
 		00000000000000000000D2 /* AIProviderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProviderProtocol.swift; sourceTree = "<group>"; };
 		00000000000000000000D3 /* ProcessingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessingMode.swift; sourceTree = "<group>"; };
 		00000000000000000000D4 /* ClaudeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeService.swift; sourceTree = "<group>"; };
+		0000000000000000000B01 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
 		00000000000000000000D5 /* AILayerCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILayerCoordinator.swift; sourceTree = "<group>"; };
 		00000000000000000000D6 /* ClipboardState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardState.swift; sourceTree = "<group>"; };
 		00000000000000000000D7 /* TextInjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInjector.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 				00000000000000000000D2 /* AIProviderProtocol.swift */,
 				00000000000000000000D3 /* ProcessingMode.swift */,
 				00000000000000000000D4 /* ClaudeService.swift */,
+				0000000000000000000B01 /* OpenAIService.swift */,
 				00000000000000000000D5 /* AILayerCoordinator.swift */,
 				00000000000000000000D1 /* KeychainManager.swift */,
 				00000000000000000000D6 /* ClipboardState.swift */,
@@ -213,6 +216,7 @@
 				00000000000000000000E2 /* AIProviderProtocol.swift in Sources */,
 				00000000000000000000E3 /* ProcessingMode.swift in Sources */,
 				00000000000000000000E4 /* ClaudeService.swift in Sources */,
+				0000000000000000000A01 /* OpenAIService.swift in Sources */,
 				00000000000000000000E5 /* AILayerCoordinator.swift in Sources */,
 				00000000000000000000E1 /* KeychainManager.swift in Sources */,
 				00000000000000000000E6 /* ClipboardState.swift in Sources */,
@@ -356,7 +360,7 @@
 				CODE_SIGN_ENTITLEMENTS = Balsrastis/Balsrastis.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -365,7 +369,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.8.0;
 				PRODUCT_BUNDLE_IDENTIFIER = lt.balsrastis.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -381,7 +385,7 @@
 				CODE_SIGN_ENTITLEMENTS = Balsrastis/Balsrastis.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -390,7 +394,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.8.0;
 				PRODUCT_BUNDLE_IDENTIFIER = lt.balsrastis.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

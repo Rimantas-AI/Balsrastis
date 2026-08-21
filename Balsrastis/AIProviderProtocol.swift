@@ -16,6 +16,26 @@ enum AIProviderID: String, CaseIterable, Codable {
         case .openai: return "GPT (OpenAI)"
         }
     }
+
+    /// Providers with a registered implementation.
+    ///
+    /// `allCases` still lists Gemini, which has no service behind it — showing
+    /// it in a picker offered the user a choice that could only fail at the end
+    /// of a dictation, with the recording already spent.
+    static let implemented: [AIProviderID] = [.claude, .openai]
+
+    /// One line under the picker explaining what the choice costs, since the
+    /// real difference is the number of accounts required, not the vendor.
+    var pickerNote: String {
+        switch self {
+        case .claude:
+            return "Tikslesnis lietuviškai (ištestuota 60 frazių). Reikia ANTRO rakto."
+        case .openai:
+            return "Užtenka VIENO rakto — to paties, kuris naudojamas atpažinimui."
+        case .gemini:
+            return ""
+        }
+    }
 }
 
 /// Errors surfaced by any AI provider. Each carries a user-facing message so the

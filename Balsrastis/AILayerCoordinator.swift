@@ -15,7 +15,10 @@ final class AILayerCoordinator {
     private let selectedProviderKey = "Balsrastis.selectedProvider"
     private let defaults: UserDefaults
 
-    init(providers: [AIProviderProtocol] = [ClaudeService()],
+    /// Claude stays first and stays the default: it is the configuration the
+    /// C1 round actually measured. OpenAI is registered so the whole app can run
+    /// on the single key the transcriber already needs — see `OpenAIService`.
+    init(providers: [AIProviderProtocol] = [ClaudeService(), OpenAIService()],
          defaults: UserDefaults = .standard) {
         self.providers = Dictionary(uniqueKeysWithValues: providers.map { ($0.providerID, $0) })
         self.defaults = defaults

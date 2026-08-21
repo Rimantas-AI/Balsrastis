@@ -565,10 +565,14 @@ private struct GeneralSettingsView: View {
                 }
 
                 Picker("AI Provider", selection: $prefs.selectedProvider) {
-                    ForEach(AIProviderID.allCases, id: \.self) { provider in
+                    ForEach(AIProviderID.implemented, id: \.self) { provider in
                         Text(provider.displayName).tag(provider)
                     }
                 }
+
+                Text(prefs.selectedProvider.pickerNote)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 Toggle("Compare cleanup models", isOn: $prefs.compareAICleanup)
                     .help("Sends the same transcript to every cleanup model and shows all results in Diagnostics. Only the primary model's text is ever pasted. Doubles Anthropic usage \u{2014} for a deliberate test round, not daily use.")
