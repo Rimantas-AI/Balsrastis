@@ -537,6 +537,37 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   `UsageLog.rotateIfHeaderChanged` renames the old file instead. **Any future
   column change must keep this working; a week of runs is not something to
   discard because a field was added.**
+- ⚠️ **Two findings from real use that the test scripts missed. Read both
+  before trusting a clean round.**
+
+  **1. gpt-4o over-edits in natural dictation.** It passed a 22-phrase
+  adversarial script — every number preserved, no command obeyed — and then, in
+  ten dictations of ordinary work, changed meaning three times:
+  `promtą` → `prašymą` (a *prompt* became a *request*, in a user whose work is
+  prompts); `yra pakeitimai padaryti` → `ar pakeitimai padaryti`, turning a
+  statement into a question; and `paraš pridėti … kad promptas` → `Pridėk … kad
+  jis`. It also invented a word — `kasdienių darbą` → `kasdienių darbų sąrašą`.
+  None tripped a guard: all are same-language, similar-length substitutions,
+  the blind spot that has now cost four times.
+  **An adversarial script and ordinary use test different things.** The script
+  asks "will it do something forbidden"; daily use asks "will it leave alone
+  what it was not asked to touch". gpt-4o answers the first well and the second
+  badly. Claude was not compared on the same audio, so the honest claim is that
+  this *happened*, not that Claude would have done better — the fixture replay
+  in v1.10.0 exists to settle exactly that.
+
+  **2. `gpt-4o-transcribe` fabricated a transcript from the vocabulary prompt.**
+  Told "Sukurk sąrašą iš trijų punktų", it returned
+  `1) Mac slaptažodis, 2) API raktas, 3) Keychain` — the first three terms of
+  the vocabulary prompt, as **Raw STT**, before any cleanup ran. The recogniser
+  executed an instruction it heard and answered from its own prompt.
+  This is the documented reason it is not the default (see the v1.6.2 note); it
+  recurred the moment the model was selected by hand. **Nothing catches it**:
+  the text has letters, eight words over four seconds is a normal rate, it
+  shares no long run with the prompt, and cleanup left it untouched so there was
+  nothing to reject. A fabricated transcript reaching the document is currently
+  guarded only by the user noticing.
+
 - **Single-key mode settled (v1.8.0 → v1.10.0).** A reader with no Anthropic
   account asked whether one provider could do both jobs. It can — transcription
   already goes to OpenAI, so routing cleanup there too means one key instead of

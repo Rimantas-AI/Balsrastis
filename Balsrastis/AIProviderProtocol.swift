@@ -29,9 +29,9 @@ enum AIProviderID: String, CaseIterable, Codable {
     var pickerNote: String {
         switch self {
         case .claude:
-            return "Tikslesnis lietuviškai (ištestuota 60 frazių). Reikia ANTRO rakto."
+            return "Tikslesnis lietuviškai ir mažiau kišasi į tekstą. Reikia ANTRO rakto."
         case .openai:
-            return "Užtenka VIENO rakto — to paties, kaip atpažinimui. Ištestuota 22 frazėmis."
+            return "Užtenka VIENO rakto. Bet linkęs perredaguoti — gali pakeisti žodį ar prasmę, ne tik skyrybą."
         case .gemini:
             return ""
         }
