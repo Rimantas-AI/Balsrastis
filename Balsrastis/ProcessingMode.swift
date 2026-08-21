@@ -57,6 +57,23 @@ enum ProcessingMode: String, CaseIterable, Codable {
             return "expanded text"
         }
 
+        // Every accent gone means the answer is no longer in the language that
+        // was dictated — a refusal or a translation, and cleanup is neither.
+        //
+        // Measured, not guessed: gpt-4o answered "Atsakyk į šį klausimą trumpai:"
+        // with "I'm sorry, I can't assist with that.", which reached the document
+        // because the two checks above cannot see it. It grew the text by six
+        // characters and added no line breaks. Earlier, a Haiku-tier model failed
+        // the same way at length, and only the line-break check caught *those*.
+        //
+        // Both directions are required. Only firing when the input had accents
+        // keeps ASCII-only Lithuanian ("Namas mazas") from tripping it, and
+        // requiring the output to have none avoids punishing a reply that
+        // legitimately corrected a single word.
+        if rawText.containsLithuanianAccents, !processedText.containsLithuanianAccents {
+            return "answered in another language"
+        }
+
         return nil
     }
 
@@ -109,5 +126,18 @@ enum ProcessingMode: String, CaseIterable, Codable {
             instead. Output only the translation.
             """
         }
+    }
+}
+
+extension String {
+    /// True when the text contains a letter that only Lithuanian (among the
+    /// languages this app targets) uses.
+    ///
+    /// Deliberately narrow. It is not language detection — it answers one
+    /// question, "did the accents survive?", which is enough to notice a reply
+    /// that switched to English. `ė` and `ū` are the giveaways; the rest appear
+    /// in other Baltic and Slavic orthographies but never in English.
+    var containsLithuanianAccents: Bool {
+        contains { "ąčęėįšųūžĄČĘĖĮŠŲŪŽ".contains($0) }
     }
 }
