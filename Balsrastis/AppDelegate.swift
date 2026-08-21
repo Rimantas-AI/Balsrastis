@@ -386,11 +386,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         Task { @MainActor in
+            var unreadable = 0
             for (index, url) in urls.enumerated() {
                 print("[AppDelegate] ▶️ Replaying \(index + 1)/\(urls.count): \(url.lastPathComponent)")
                 do {
                     process(samples: try AudioFixtures.load(url), replayingFrom: url.lastPathComponent)
                 } catch {
+                    // Skipping one unreadable fixture is right — the rest of the
+                    // round is still worth running. Skipping *every* one in
+                    // silence is not: a replay that reads nothing looks exactly
+                    // like a replay that never started, and the user is left
+                    // waiting on a report that will never appear. Count them and
+                    // say so at the end.
+                    unreadable += 1
                     print("[AppDelegate] ⚠️ Could not read \(url.lastPathComponent): \(error.localizedDescription)")
                     continue
                 }
@@ -398,7 +406,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 // next starts, so the report reads in order.
                 try? await Task.sleep(nanoseconds: 6_000_000_000)
             }
-            print("[AppDelegate] ✅ Replay finished — \(urls.count) recordings.")
+            print("[AppDelegate] ✅ Replay finished — \(urls.count) recordings, \(unreadable) unreadable.")
+            if unreadable == urls.count {
+                WindowManager.shared.showFailure(
+                    "Replay read none of the \(urls.count) saved recordings. "
+                    + "The files are still there; the app could not decode them.")
+            }
         }
     }
 

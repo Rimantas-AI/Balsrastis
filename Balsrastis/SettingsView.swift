@@ -177,8 +177,30 @@ private struct DiagnosticsSettingsView: View {
 
     private var fixtureCount: Int { AudioFixtures.all().count }
 
+    /// Starts a replay, or says why it could not start.
+    ///
+    /// This used to be an optional-chained call followed by an unconditional
+    /// toast. When the cast failed, the click did nothing at all and the toast
+    /// still claimed a replay had begun — the one combination that is worse than
+    /// either an error or silence, because it sends the user looking for results
+    /// that were never going to arrive. Found on 2026-08-21, on the first real
+    /// attempt to use replay: button read "Replay 11", the toast appeared, and
+    /// not one recording was processed.
+    ///
+    /// The rule this encodes: a control that starts work must report the work
+    /// starting, never the click landing.
     private func replayFixtures() {
-        (NSApp.delegate as? AppDelegate)?.replayFixtures()
+        guard let delegate = NSApp.delegate as? AppDelegate else {
+            WindowManager.shared.showFailure(
+                "Replay could not reach the app controller. Quit Balsra\u{161}tis from the "
+                + "menu bar and open it again \u{2014} the saved recordings are untouched.")
+            return
+        }
+        guard fixtureCount > 0 else {
+            WindowManager.shared.showFailure("No saved recordings to replay.")
+            return
+        }
+        delegate.replayFixtures()
         showToast("Replaying \(fixtureCount) recordings\u{2026}")
     }
 
