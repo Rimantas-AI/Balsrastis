@@ -48,15 +48,60 @@ enum AudioFixtures {
 
     // MARK: – Writing
 
+    /// The next free number, taken from the **highest** existing one rather than
+    /// from how many files are present.
+    ///
+    /// Counting was the original rule and it silently destroyed recordings.
+    /// With `001`, `002`, `003` on disk, deleting `002` leaves a count of 2, so
+    /// the next save computed 3 and `AVAudioFile(forWriting:)` overwrote the
+    /// existing `003` without a word. Any gap reproduces it, and gaps are easy
+    /// to make on purpose: dropping one bad take, or moving an earlier round
+    /// aside before a replay comparison — which is exactly what happened on
+    /// 2026-08-21 while preparing the Claude/OpenAI round.
+    ///
+    /// Taking the maximum also keeps a new recording sorting *after* the ones
+    /// already there, which is what `all()`'s filename order depends on: a
+    /// replay report is read row by row against the previous one, so a fresh
+    /// clip appearing at the top would misalign every row beneath it.
+    ///
+    /// Pure and name-based so `GuardChecks` can exercise it without an
+    /// Application Support directory to set up. Names that are not `NNN.wav`
+    /// are ignored rather than rejected — a stray note or a hand-dropped clip
+    /// must not stop a dictation from being saved.
+    ///
+    /// Known limit, accepted: past `999` the `%03d` name grows a fourth digit
+    /// and `1000.wav` sorts *before* `999.wav`. Numbering stays correct; only
+    /// the replay order would break, and a round is tens of clips, not a
+    /// thousand. Widen the padding here and in `save` if that ever changes.
+    static func nextIndex(after names: [String]) -> Int {
+        let highest = names.compactMap { name -> Int? in
+            guard name.lowercased().hasSuffix(".wav") else { return nil }
+            let stem = name.dropLast(4)
+            guard !stem.isEmpty, stem.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
+            return Int(stem)
+        }.max() ?? 0
+        return highest + 1
+    }
+
     /// Writes captured samples as a numbered WAV and returns where it landed.
     ///
-    /// The number is a zero-padded count, not a timestamp: a replay report is
+    /// The number is a zero-padded sequence, not a timestamp: a replay report is
     /// read next to the previous one, and `003` lines up where `2026-08-21T…`
     /// does not.
+    ///
+    /// The existence check is a second lock on the same door as `nextIndex`.
+    /// That function should already have returned a free number, so reaching
+    /// the throw means an assumption broke — a file appeared between the scan
+    /// and the write, or the naming rule was changed without changing both
+    /// halves. Refusing costs one recording; overwriting costs one that was
+    /// already on disk, and says nothing about it.
     @discardableResult
     static func save(samples: [Float]) throws -> URL {
-        let index = all().count + 1
+        let index = nextIndex(after: all().map(\.lastPathComponent))
         let url = folder.appendingPathComponent(String(format: "%03d.wav", index))
+        guard !FileManager.default.fileExists(atPath: url.path) else {
+            throw FixtureError.wouldOverwrite(url.lastPathComponent)
+        }
         try write(samples: samples, to: url)
         return url
     }
@@ -137,6 +182,15 @@ enum AudioFixtures {
 
     enum FixtureError: LocalizedError {
         case bufferAllocation
-        var errorDescription: String? { "Could not allocate an audio buffer for the fixture." }
+        case wouldOverwrite(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .bufferAllocation:
+                return "Could not allocate an audio buffer for the fixture."
+            case .wouldOverwrite(let name):
+                return "A recording named \(name) is already saved — refusing to overwrite it."
+            }
+        }
     }
 }

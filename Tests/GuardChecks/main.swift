@@ -135,6 +135,47 @@ equal("⌘⇧D yra Mail Send", combo(2, [.maskCommand, .maskShift]).reservedBy, 
 check("nežinomas derinys neturi savininko", combo(2, [.maskControl, .maskAlternate]).reservedBy == nil)
 check("numatytasis turi žinomą konfliktą", HotkeyCombo.default.advisory != nil)
 
+// MARK: – Fixture numbering
+//
+// The rule used to be `all().count + 1`, which overwrote a saved recording
+// whenever the sequence had a gap. Every case below is a gap someone can make
+// without doing anything unusual.
+
+// The plain case: nothing removed, next number follows the last.
+equal("tuščias katalogas pradeda nuo 1", AudioFixtures.nextIndex(after: []), 1)
+equal("po 003 eina 004",
+      AudioFixtures.nextIndex(after: ["001.wav", "002.wav", "003.wav"]), 4)
+
+// The data-loss case this fix exists for: one bad take deleted from the middle.
+// Counting gave 3 here and wrote straight over the existing 003.wav.
+equal("spraga viduryje neperrašo esamo failo",
+      AudioFixtures.nextIndex(after: ["001.wav", "003.wav"]), 4)
+
+// The case that produced the fix: an earlier round moved aside before a replay
+// comparison. Counting gave 12, which sorts *before* 022 and would have put a
+// new clip at the top of a report meant to be read row by row.
+equal("perkėlus ankstesnį raundą naujas įrašas lieka gale",
+      AudioFixtures.nextIndex(after: (22...32).map { String(format: "%03d.wav", $0) }), 33)
+
+// Order on disk is not guaranteed; the answer must not depend on it.
+equal("tvarka sąraše nesvarbi",
+      AudioFixtures.nextIndex(after: ["003.wav", "001.wav", "002.wav"]), 4)
+
+// A note or a hand-dropped clip must not stop a dictation from being saved.
+equal("ne NNN.wav vardai ignoruojami",
+      AudioFixtures.nextIndex(after: ["pastaba.wav", "002.wav", "readme.txt", ".DS_Store"]), 3)
+equal("vien tik svetimi vardai duoda 1",
+      AudioFixtures.nextIndex(after: ["pastaba.wav", "readme.txt"]), 1)
+
+// Case comes from the filesystem, not from us.
+equal("didžiosios raidės plėtinyje priimamos",
+      AudioFixtures.nextIndex(after: ["007.WAV"]), 8)
+
+// Past 999 the number keeps counting even though the name grows a digit — the
+// documented limit is the sort order, not the numbering.
+equal("virš 999 numeracija nesulūžta",
+      AudioFixtures.nextIndex(after: ["999.wav"]), 1000)
+
 // MARK: – Picker labels
 //
 // The picker label is the only warning `gpt-4o-transcribe` carries. Nothing in
