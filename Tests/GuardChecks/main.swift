@@ -135,6 +135,46 @@ equal("⌘⇧D yra Mail Send", combo(2, [.maskCommand, .maskShift]).reservedBy, 
 check("nežinomas derinys neturi savininko", combo(2, [.maskControl, .maskAlternate]).reservedBy == nil)
 check("numatytasis turi žinomą konfliktą", HotkeyCombo.default.advisory != nil)
 
+// MARK: – Picker labels
+//
+// The picker label is the only warning `gpt-4o-transcribe` carries. Nothing in
+// the pipeline catches a transcript it invented from the vocabulary prompt —
+// the text has letters, the pace is ordinary, and it shares no long run with
+// the prompt — so if this string quietly reverts to a neutral word like
+// "experimental" during some later tidy-up, the warning is simply gone and
+// nothing fails. These checks are what makes that a failure.
+
+let experimentalLabel = AppPreferences.roleDescription(for: "gpt-4o-transcribe")
+check("gpt-4o-transcribe etiketė įspėja apie prasimanytą tekstą",
+      experimentalLabel.localizedCaseInsensitiveContains("invent"))
+check("gpt-4o-transcribe etiketė sako, ką daryti",
+      experimentalLabel.localizedCaseInsensitiveContains("check every result"))
+// "can", not "does": the failure is intermittent, and a label that overstates
+// it is the one a reader learns to discount.
+check("gpt-4o-transcribe etiketė nesako, kad tai nutinka visada",
+      experimentalLabel.localizedCaseInsensitiveContains("can invent"))
+// "Do not use" and "present in the picker" contradict each other. If the model
+// should really be gone, remove it from availableSTTModels instead.
+check("etiketė nebara vietoj pašalinimo",
+      !experimentalLabel.localizedCaseInsensitiveContains("do not use"))
+
+// The other two must stay distinguishable from it, or the warning reads as
+// boilerplate attached to every row.
+check("numatytasis modelis pažymėtas rekomenduojamu",
+      AppPreferences.roleDescription(for: AppPreferences.defaultSTTModel)
+          .localizedCaseInsensitiveContains("recommended"))
+check("rekomenduojamas modelis neįspėja apie prasimanymą",
+      !AppPreferences.roleDescription(for: AppPreferences.defaultSTTModel)
+          .localizedCaseInsensitiveContains("invent"))
+// Every offered model needs a role; an unannotated identifier in the list is
+// the state this labelling replaced.
+check("visi siūlomi modeliai turi paaiškinimą",
+      AppPreferences.availableSTTModels.allSatisfy {
+          AppPreferences.roleDescription(for: $0) != $0
+      })
+check("numatytasis modelis yra sąraše",
+      AppPreferences.availableSTTModels.contains(AppPreferences.defaultSTTModel))
+
 // MARK: – Result
 
 if failures.isEmpty {

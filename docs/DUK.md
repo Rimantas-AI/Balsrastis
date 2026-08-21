@@ -46,6 +46,13 @@ bet datos nežadu.
 - **Balsas → tekstas:** `gpt-4o-mini-transcribe` (OpenAI). Pasirinktas po 45
   garso įrašų palyginimo — buvo tiksliausias lietuviškai ir greičiausias.
   `whisper-1` ir `gpt-4o-transcribe` pasirenkami nustatymuose.
+  `whisper-1` turi vieną pranašumą — skaičius rašo skaitmenimis
+  („862-345-678"), kur naujesni modeliai juos išrašo žodžiais.
+  `gpt-4o-transcribe` **kartais grąžina prasimanytą tekstą**: paprašytas
+  transkribuoti, jis atsakė trimis terminais iš programos žodyno sąrašo, kurių
+  niekas nesakė. Nutinka ne visada, bet nė viena apsauga to nepagauna — tekstas
+  sklandus ir normalaus ilgio. Pasirinkus šį modelį rezultatą reikia perskaityti
+  pačiam.
 - **Teksto tvarkymas:** `claude-opus-4-8` (Anthropic).
 
 Versija yra viena, ir ji naudoja būtent šiuos teikėjus.

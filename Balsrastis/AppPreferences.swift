@@ -167,10 +167,18 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(compareSTTModels, forKey: compareSTTModelsKey) }
     }
 
-    /// `gpt-4o-transcribe`/`-mini` are OpenAI's newer transcription models,
-    /// reported to improve word-error-rate and language recognition over the
-    /// original Whisper models — worth comparing directly on Lithuanian speech
-    /// rather than assuming the newer model wins for this specific language.
+    /// Order is the order they are offered in, and it is the answer to the
+    /// comparison rather than a list of candidates: 45 clips over two rounds
+    /// settled this (see the v1.6.2–v1.6.4 notes in `AGENTS.md`). The newer
+    /// model did **not** win for Lithuanian merely by being newer — `-mini` won
+    /// on measured accuracy and latency, and its larger sibling lost.
+    ///
+    /// All three stay selectable, for three different reasons. `-mini` is the
+    /// default. `whisper-1` keeps one genuine advantage — it writes numbers as
+    /// digits ("862-345-678") where the gpt-4o models spell them out — which is
+    /// unresolved and worth having a switch for. `gpt-4o-transcribe` stays only
+    /// so a comparison can be re-run against it; see `roleDescription` for what
+    /// its label must keep saying and why.
     static let availableSTTModels = ["gpt-4o-mini-transcribe", "whisper-1", "gpt-4o-transcribe"]
 
     /// Chosen from the 30-clip round, not from reputation: `gpt-4o-mini-transcribe`
@@ -186,11 +194,34 @@ final class AppPreferences: ObservableObject {
 
     /// How each model is meant to be used, shown in the picker so the choice is
     /// not just three opaque identifiers.
+    ///
+    /// `gpt-4o-transcribe` read "experimental" until 2026-08-21, and that word
+    /// is what this note exists to prevent going back to. "Experimental" reads
+    /// as *newer, less proven* — an invitation to try it. What the model
+    /// actually does is occasionally answer with a transcript it invented from
+    /// the vocabulary prompt: asked to transcribe "Sukurk sąrašą iš trijų
+    /// punktų" it returned `1) Mac slaptažodis, 2) API raktas, 3) Keychain` —
+    /// the prompt's first three terms — as **raw STT**, before any cleanup ran.
+    /// It recurred the moment the model was selected by hand, which is exactly
+    /// the moment the picker label is the only thing being read.
+    ///
+    /// The label says "can", not "does": this is intermittent, not every run.
+    /// That is precisely why it needs naming. **No guard catches it** — the text
+    /// has letters (`looksLikeNoSpeech` passes it), eight words over four
+    /// seconds is an ordinary pace (`exceedsPlausibleSpeechRate` passes it), it
+    /// shares no long run with the prompt (`echoesPrompt` passes it), and
+    /// cleanup left it untouched so there was nothing to reject. Reading the
+    /// result is the only remaining check, so the label says so instead of
+    /// advising unfollowable care.
+    ///
+    /// The model stays in the list on purpose. "Do not use" and "here it is in
+    /// the picker" contradict each other; if we ever mean the former, remove it
+    /// from `availableSTTModels` rather than scolding through a label.
     static func roleDescription(for model: String) -> String {
         switch model {
         case "gpt-4o-mini-transcribe": return "\(model) — recommended"
         case "whisper-1":              return "\(model) — reliable fallback"
-        case "gpt-4o-transcribe":      return "\(model) — experimental"
+        case "gpt-4o-transcribe":      return "\(model) — can invent text, check every result"
         default:                       return model
         }
     }
