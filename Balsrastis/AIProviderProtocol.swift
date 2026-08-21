@@ -31,7 +31,7 @@ enum AIProviderID: String, CaseIterable, Codable {
         case .claude:
             return "Tikslesnis lietuviškai (ištestuota 60 frazių). Reikia ANTRO rakto."
         case .openai:
-            return "Užtenka VIENO rakto — to paties, kuris naudojamas atpažinimui."
+            return "Užtenka VIENO rakto — to paties, kaip atpažinimui. Kokybė lietuviškai tikrinta mažiau."
         case .gemini:
             return ""
         }

@@ -29,8 +29,9 @@ struct FirstRunShortcutView: View {
             Text("Pasirink diktavimo derinį")
                 .font(.title2).bold()
 
-            Text("Balsraštis šį derinį **perims iš visų programų**, kol veiks. "
-                 + "Todėl geriau pasirinkti tokį, kurio pats nenaudoji.")
+            // One literal, not two joined with `+`: SwiftUI only parses Markdown
+            // out of a static string, so concatenating printed the asterisks.
+            Text("Balsraštis šį derinį **perims iš visų programų**, kol veiks. Todėl geriau pasirinkti tokį, kurio pats nenaudoji.")
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 12) {
@@ -67,9 +68,7 @@ struct FirstRunShortcutView: View {
 
             // The known collision is stated here rather than left to be found,
             // because the people most likely to hit it are the target users.
-            Text("⌥Space yra įprastas pasirinkimas, bet juo rašomas **nelaužtinas "
-                 + "tarpas** — jį sąmoningai naudoja žurnalistai, redaktoriai ir "
-                 + "vertėjai. Jei esi vienas iš jų, rinkis kitą.")
+            Text("⌥Space yra įprastas pasirinkimas, bet juo rašomas **nelaužtinas tarpas** — jį sąmoningai naudoja žurnalistai, redaktoriai ir vertėjai. Jei esi vienas iš jų, rinkis kitą.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

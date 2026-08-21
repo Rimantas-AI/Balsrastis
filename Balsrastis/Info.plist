@@ -42,10 +42,10 @@
 	     CFBundleShortVersionString, so a stale value silently mislabels which
 	     build produced a set of measurements. -->
 	<key>CFBundleVersion</key>
-	<string>23</string>
+	<string>24</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>1.9.0</string>
+	<string>1.9.1</string>
 
 	<!-- Blank in every CI-built release. For a closed-pilot copy, this is
 	     stamped with the tester's name after the build, so Settings and Copy

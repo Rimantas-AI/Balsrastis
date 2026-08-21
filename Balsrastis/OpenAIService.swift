@@ -28,10 +28,21 @@ final class OpenAIService: AIProviderProtocol {
     private let endpoint = URL(string: "https://api.openai.com/v1/chat/completions")!
     private let session: URLSession
 
-    /// `gpt-4o-mini` rather than the full `gpt-4o`: the cleanup task is short and
-    /// this keeps the cost close to what the transcription already costs, which
-    /// is the point of the single-key path. Switchable here if it proves weak.
-    init(model: String = "gpt-4o-mini", maxTokens: Int = 8192) {
+    /// `gpt-4o`, not `gpt-4o-mini`.
+    ///
+    /// Mini was the first choice — the task is short, and keeping the cost near
+    /// the transcription's is the point of a single-key path. Ten dictations
+    /// settled it: mini rewrote **"devyniolika" as "aštuoniolika"**, turning
+    /// nineteen into eighteen in text it was only asked to punctuate. It also
+    /// twice replaced "Butas" with "Bet" and restructured a sentence, changing
+    /// "ir" to "Jei" and dropping a clause.
+    ///
+    /// That is the same failure that disqualified the Haiku-tier model in the C1
+    /// round, and worse: Haiku reformatted numbers, this one changed a value. No
+    /// speed saving compensates for a cleanup pass that edits the facts, and the
+    /// length/line-break rejection check cannot see a same-length word swap —
+    /// a blind spot already recorded in AGENTS.md.
+    init(model: String = "gpt-4o", maxTokens: Int = 8192) {
         self.model = model
         self.maxTokens = maxTokens
 
