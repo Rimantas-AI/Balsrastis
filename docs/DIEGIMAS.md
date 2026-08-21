@@ -50,6 +50,10 @@ Tada dukart spustelėk `Balsrastis.app`. Jei vis tiek klausia — **dešinys pel
 klavišas → Open → Open**, arba: **System Settings → Privacy & Security** →
 apačioje **„Open Anyway“**.
 
+> **Pirmą kartą paleidus** programa paklaus, kokį klavišų derinį nori naudoti
+> diktavimui. Derinį ji perima iš visų programų, tad verta pasirinkti tokį,
+> kurio pats nenaudoji. Vėliau pakeisi: Settings → General → Shortcut.
+>
 > Meniu juostos viršuje (dešinėje, prie laikrodžio) atsiras **mikrofono piktograma**.
 > **Lango nebus — tai normalu.** Spausk piktogramą → matysi meniu (Settings, Quit).
 

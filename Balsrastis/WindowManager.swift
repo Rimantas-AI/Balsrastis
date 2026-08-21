@@ -41,6 +41,32 @@ final class WindowManager {
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
 
+    // MARK: – First run
+
+    private var firstRunWindow: NSWindow?
+
+    /// Shows the shortcut chooser once, before the first dictation. Does nothing
+    /// on later launches, so it can be called unconditionally at startup.
+    func showFirstRunIfNeeded() {
+        guard !AppPreferences.shared.hotkeyChosen, firstRunWindow == nil else { return }
+
+        let controller = NSHostingController(rootView: FirstRunShortcutView { [weak self] in
+            self?.firstRunWindow?.close()
+            self?.firstRunWindow = nil
+        })
+        let window = NSWindow(contentViewController: controller)
+        window.title = "Balsraštis"
+        // No close button: leaving without a decision is what this exists to
+        // prevent, and both buttons in the view dismiss it.
+        window.styleMask = [.titled]
+        window.isReleasedWhenClosed = false
+        window.center()
+        firstRunWindow = window
+
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+    }
+
     // MARK: – Recording HUD
 
     let hudState = RecordingHUDState()

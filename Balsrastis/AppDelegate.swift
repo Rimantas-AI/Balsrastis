@@ -68,6 +68,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.hotkeyManager = HotkeyManager { [weak self] in
                 self?.toggleDictation()
             }
+
+            // 6. Ask for the shortcut once, after permissions so the two prompts
+            //    don't stack. Silent on every later launch.
+            WindowManager.shared.showFirstRunIfNeeded()
         }
     }
 

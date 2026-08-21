@@ -82,6 +82,7 @@ final class AppPreferences: ObservableObject {
     // one of its five entries (⌘⇧D) was Apple Mail's Send, and the build was a
     // day old with no testers on it. Anyone who had changed it re-records once.
     private let hotkeyKey = "Balsrastis.hotkeyV2"
+    private let hotkeyChosenKey = "Balsrastis.hotkeyChosen"
 
     /// Context the speech recogniser should expect.
     ///
@@ -210,6 +211,15 @@ final class AppPreferences: ObservableObject {
     /// Recorded from the user's own keypress — see `HotkeyCombo` for why a list
     /// of suggested combinations was withdrawn. Read live on every key event, so
     /// a change takes effect on the next press without reinstalling the tap.
+    /// Whether the user has been asked to pick a shortcut yet.
+    ///
+    /// Separate from `hotkey` having a value, because `hotkey` always has one —
+    /// it falls back to ⌥Space. This records that a *decision* was made, so the
+    /// first-run prompt appears exactly once.
+    @Published var hotkeyChosen: Bool {
+        didSet { defaults.set(hotkeyChosen, forKey: hotkeyChosenKey) }
+    }
+
     @Published var hotkey: HotkeyCombo {
         didSet {
             guard let data = try? JSONEncoder().encode(hotkey) else { return }
@@ -245,6 +255,7 @@ final class AppPreferences: ObservableObject {
         compareSTTModels = defaults.bool(forKey: compareSTTModelsKey)
         logUsageStatistics = defaults.bool(forKey: logUsageStatisticsKey)
         compareAICleanup = defaults.bool(forKey: compareAICleanupKey)
+        hotkeyChosen = defaults.bool(forKey: hotkeyChosenKey)
         hotkey = defaults.data(forKey: hotkeyKey)
             .flatMap { try? JSONDecoder().decode(HotkeyCombo.self, from: $0) }
             ?? .default

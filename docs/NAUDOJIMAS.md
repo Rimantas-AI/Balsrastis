@@ -20,7 +20,8 @@ diegimui ar problemų sprendimui.
 
 ## Klavišų derinys
 
-Numatytasis — **⌥Space**. Pasikeisti galima:
+Derinio programa paklausia **per pirmą paleidimą** — būtent tam, kad nieko
+neatimtų nepaklaususi. Pasikeisti galima bet kada:
 **Settings → General → Shortcut → Change…** ir paspausti tą derinį, kurio nori.
 
 Verta pasikeisti, jei ⌥Space tau jau užimtas — pavyzdžiui, jei juo perjungi
