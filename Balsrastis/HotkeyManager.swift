@@ -21,6 +21,15 @@ final class HotkeyManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
+    /// Whether the event tap is actually running.
+    ///
+    /// `false` means the shortcut is dead — Accessibility was not granted when
+    /// the app launched, and `install()` returned without creating the tap. It
+    /// is not retried, so the app must be relaunched after granting. This used
+    /// to be reported only by a `print`, which meant the shortcut silently did
+    /// nothing and the menu button was the only way in.
+    private(set) static var isInstalled = false
+
     /// Set while Settings is capturing a new shortcut.
     ///
     /// The tap is session-wide, so it sees the keys being recorded too — without
@@ -45,6 +54,7 @@ final class HotkeyManager {
 
     private func install() {
         guard AXIsProcessTrusted() else {
+            Self.isInstalled = false
             print("[HotkeyManager] ⚠️  Accessibility not granted – event tap NOT installed. " +
                   "Grant access in System Settings and relaunch.")
             return
@@ -82,6 +92,7 @@ final class HotkeyManager {
         CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
 
+        Self.isInstalled = true
         print("[HotkeyManager] ✅ Global hotkey \(AppPreferences.shared.hotkey.displayName) registered.")
     }
 

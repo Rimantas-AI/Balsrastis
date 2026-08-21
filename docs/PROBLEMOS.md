@@ -11,6 +11,7 @@
 | **„Balsraštis is damaged“ / neatidaro** | Terminale: `xattr -dr com.apple.quarantine /Applications/Balsrastis.app`, tada paleisk |
 | **„Safari can't open the file“** | Neatidarinėk iš Safari — eik per **Finder → Applications** |
 | **Paleidus nieko nerodo** | Tai normalu — ieškok **mikrofono piktogramos ekrano viršuje dešinėje**, ne lango |
+| **Klavišų derinys neveikia, o meniu mygtukas veikia** | Beveik visada — **nesuteiktas Accessibility leidimas**. Klavišams perimti jis būtinas, meniu mygtukui — ne. Suteik jį programai **Balsrastis** ir **paleisk iš naujo** (leidimas neįsigalioja veikiančiai programai). Meniu juostoje ir Settings lange tokiu atveju matysi oranžinį įspėjimą |
 | **Klavišų derinys neveikia** | Įjunk **Accessibility** (macOS 12: dar ir **Input Monitoring**) → **paleisk iš naujo**. Jei derinys užimtas kitos programos — **Settings → General → Shortcut → Change…** ir įrašyk kitą |
 | **Tekstas neatsiranda** | Pažiūrėk **Settings → Diagnostics** — ten matysi, kuriame etape sustojo. Dažniausiai — neįvesti ar blogi API raktai |
 | **Transkripcija „🎵🎵🎵“** | Mikrofonas negauna balso: **Sound → Input** pasirink teisingą mikrofoną ir žiūrėk, kad „Input level“ juostelė judėtų kalbant; išjunk foninę muziką |

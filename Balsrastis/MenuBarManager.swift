@@ -62,7 +62,11 @@ final class MenuBarManager: NSObject, NSMenuDelegate {
     /// when the preference changes — no subscription to keep in sync, and the
     /// text is correct whenever anyone can actually read it.
     func menuWillOpen(_ menu: NSMenu) {
-        hotkeyHintItem.title = "Or press: \(AppPreferences.shared.hotkey.displayName)"
+        // When the tap failed to install the shortcut does nothing, and saying
+        // "Or press: ⌃⌥X" would be a lie the user has no way to check.
+        hotkeyHintItem.title = HotkeyManager.isInstalled
+            ? "Or press: \(AppPreferences.shared.hotkey.displayName)"
+            : "⚠️ Shortcut off — grant Accessibility, then relaunch"
         // Labelled from the current state, so the menu is also how you find out
         // whether it is still listening.
         dictateItem.title = currentState == .idle ? "Start Dictation" : "Stop Dictation"

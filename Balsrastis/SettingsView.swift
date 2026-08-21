@@ -489,7 +489,15 @@ private struct ShortcutRecorderRow: View {
                 }
             }
 
-            if rejected {
+            if !HotkeyManager.isInstalled {
+                // Shown first: while the tap is missing, nothing else in this row
+                // matters — recording a new combination cannot make it work.
+                Text("\u{26A0}\u{FE0F} Klavišų derinys neveikia: nesuteiktas Accessibility leidimas. "
+                     + "System Settings \u{2192} Privacy & Security \u{2192} Accessibility \u{2192} pridėk Balsrastis, "
+                     + "tada paleisk programą iš naujo. Kol kas diktavimą pradėk per meniu juostą.")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            } else if rejected {
                 Text("Add \u{2318}, \u{2325} or \u{2303}. A shortcut without one would fire while you type.")
                     .font(.caption)
                     .foregroundStyle(.orange)
