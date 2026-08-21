@@ -70,7 +70,7 @@ naudojamas **tas pats vienas raktas**. Anthropic paskyros nereikia.
 | | Raktai | Pastaba |
 |---|---|---|
 | **Claude (Anthropic)** — numatytasis | Du | Tikslesnis lietuviškai; ištestuotas 60 frazių |
-| **GPT (OpenAI)** | **Vienas** | Paprasčiau pradėti; teksto kokybė netikrinta tiek pat kruopščiai |
+| **GPT (OpenAI)** | **Vienas** | Paprasčiau pradėti. Ištestuota 22 frazėmis: skaičiai nepaliesti, nurodymai nevykdyti |
 
 Claude paliktas numatytuoju todėl, kad **jis realiai išmatuotas** — buvo
 lyginamas su pigesniu modeliu ant tų pačių 60 frazių, ir pigesnis suklupo ties

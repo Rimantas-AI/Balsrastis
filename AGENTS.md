@@ -530,6 +530,26 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   `UsageLog.rotateIfHeaderChanged` renames the old file instead. **Any future
   column change must keep this working; a week of runs is not something to
   discard because a field was added.**
+- **Single-key mode settled (v1.8.0 → v1.10.0).** A reader with no Anthropic
+  account asked whether one provider could do both jobs. It can — transcription
+  already goes to OpenAI, so routing cleanup there too means one key instead of
+  two — but the model choice took two rounds to get right.
+  `gpt-4o-mini` **failed on the one criterion that matters**: asked only to
+  punctuate "Butas devyniolika", it returned "Bet aštuoniolika" — nineteen
+  became eighteen. Same class of failure as the Haiku-tier model in C1, and
+  worse: Haiku reformatted numbers, mini changed a value. It also swapped
+  "Butas" for "Bet" twice and restructured a sentence.
+  `gpt-4o` passed twice, 22 phrases the second time: every number preserved,
+  no false corrections on near-homophones, no restructuring, and all four
+  command-phrased sentences returned as text. Two commas correctly added before
+  "ir".
+  ⚠️ But the first `gpt-4o` round produced **one English refusal that was
+  pasted** ("I'm sorry, I can't assist with that."), and the second did not —
+  same sentence, differing only by a colon versus a full stop in the transcript.
+  **The failure is non-deterministic**, so the v1.9.2 language guard is what
+  makes this path safe, not the model's good behaviour. Do not remove it on the
+  strength of a clean round.
+  Claude stays the default: it has 60 phrases behind it, this has 22.
 - v1.6.14 — **the shortcut says what already owns it.** Recording ⌃Space,
   ⌘Space, ⌘Tab, a screenshot combination or Mail's ⌘⇧D now names the owner
   instead of leaving the collision to surface later.
