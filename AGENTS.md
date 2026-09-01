@@ -1137,6 +1137,60 @@ for the full reasoning — condensed here):**
    - The gap this product sits in is real and confirmed: **Apple still does not
      support Lithuanian dictation**, ten years after MacArena wrote that it
      would not come soon.
+   - **The competitive picture, researched 2026-09-01 after the question "is
+     this worth continuing with two big competitors in the market?"** The
+     premise was wrong in both directions and both corrections matter.
+     **There are not two competitors; the category is crowded.** System-wide
+     Mac dictation with AI cleanup is a well-populated market: Soniox Voice
+     Typing (macOS/Windows/iOS, 60+ languages, free tier with weekly credits,
+     style options), Superwhisper (100+ languages, on-device option), Wispr
+     Flow — whose own description, "cleans up your rambling into polished
+     prose", is this product's value proposition stated verbatim — plus
+     MacWhisper, FluidVoice, Parakeety, VoiceInk and others. Lithuanian is
+     already a checked box for all of them.
+     **But none of them is actually Lithuanian.** Soniox's Lithuanian Voice
+     Typing page reads like a Lithuanian product and is not one: its visible
+     text is **99.8% identical** to the same page for Latvian and Estonian, and
+     the only word unique to the Lithuanian version is "Latvian", from a
+     language list. It is programmatic SEO across 60+ languages, and "unmatched
+     accuracy in Lithuanian" is the sentence they also write about Slovak.
+     Re-check it the same way before trusting any competitor's language claim:
+     fetch two language variants of the page, strip the language names,
+     diff the visible text.
+     **So the position "built for Lithuanian" is genuinely vacant** — but only
+     if it means something measurable, which is the next point.
+     ⚠️ **The sharpest risk is not competition, it is the foundation.** Soniox
+     publishes Lithuanian WER of 9.4% against OpenAI's 25.2%. If that is even
+     roughly right, this product is a Lithuanian-tuned layer on a recogniser
+     that is materially worse at Lithuanian than a competitor's default, and no
+     vocabulary prompt closes a 2.5× WER gap. The 11-clip rounds are consistent
+     with a real error rate: `GitHub'e` → `gidąbe`, `promptą` → `programą`,
+     `repo` → `reklamą`, two of which changed meaning and reached the document
+     past every guard, because they are ordinary Lithuanian words at an
+     ordinary pace. **The strategic question and the pending technical test are
+     the same question**, which is why the Soniox async REST comparison — half
+     an hour, on fixtures that already exist, no product code — is worth more
+     than any further market reading.
+     **Market ceiling, so nobody re-derives it optimistically.** Statcounter,
+     2026-08: Apple's desktop share in Lithuania is **18.76%** (macOS 7.01% +
+     OS X 11.75%). ~2.8M native speakers in Lithuania, ~3.5M with the diaspora.
+     Working through it: ~800k–1M people working with text on a computer →
+     ~150–180k of them on a Mac → dictation is still niche at ~2–5% → 3–9k
+     realistic users → 10–20% of those paying → **300–1,800 paying users at the
+     optimistic end**, and the top of that range assumes owning most of the
+     entire Lithuanian Mac dictation market. At €7.99 gross / €6.09 net that is
+     a good single-person income at best, and matches what the outside
+     summary's own §6 concluded: not enough for a team.
+     **What this does not settle, and what actually decides it.** Competitors
+     existing is evidence the market is real; their absence would be the worse
+     signal. The unresolved risk is that after months of measured engineering —
+     203 logged dictations, a guard stack, two same-audio model rounds — **not
+     one person other than the author has run the app.** Two cheap
+     measurements answer more than further research: the Soniox comparison
+     above, and five people using it long enough to show whether anyone opens
+     it in a second week unprompted. Until both exist, further polish is
+     guesswork; notarization (4c) is worth doing first precisely because it
+     removes the friction standing in the way of the second one.
 6. Only after pilot feedback: Raw Dictation mode, faster/cheaper models for
    simple modes, and any Pro/paid tier — let real usage patterns decide what's
    actually worth building, not speculation.
