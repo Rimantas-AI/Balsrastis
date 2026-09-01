@@ -555,6 +555,8 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   badly. Claude was not compared on the same audio, so the honest claim is that
   this *happened*, not that Claude would have done better — the fixture replay
   in v1.10.0 exists to settle exactly that.
+  ✅ **Settled 2026-09-01 by the replay round below: it is a pattern, and Claude
+  did do better on the same recordings.**
 
   **2. `gpt-4o-transcribe` fabricated a transcript from the vocabulary prompt.**
   Told "Sukurk sąrašą iš trijų punktų", it returned
@@ -568,6 +570,78 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   nothing to reject. A fabricated transcript reaching the document is currently
   guarded only by the user noticing.
 
+- **Claude vs OpenAI cleanup, on the same 11 recordings (2026-09-01). Verdict:
+  keep `claude-opus-4-8`.** The first round the fixture replay was ever used
+  for, and the answer to the "gpt-4o over-edits" finding above.
+  Method: 11 phrases from real work dictated with Claude selected, `Save
+  recordings` on; then the provider switched to OpenAI and the same WAVs
+  replayed. Both arms are in Diagnostics with `Raw STT:`/`Final:`.
+  **gpt-4o changed the text in 6 of 11 runs, Claude in 3 of 11 — and the
+  difference is what the changes were.** All three of Claude's were correct and
+  minimal: two dashes added, one real STT error fixed (`ilges` → `ilgį`), one
+  genitive fixed (`kasdienes` → `kasdienės`). gpt-4o got two right (`programtą`
+  → `programą`, a stray `ta` removed) and then:
+  - **restructured a sentence and dropped words** — `…evoliucija iš dviejų
+    padaryk vieną gerą` became `…"evoliucija" į vieną gerą promptą`. `iš dviejų`
+    and `padaryk` are simply gone, and quotation marks appeared around two words
+    that were never quoted. Claude, on near-identical input, added two dashes and
+    touched no word.
+  - **changed imperative to infinitive** — `įvertink`/`pažiūrėk` →
+    `įvertinti`/`pažiūrėti`, plus reordered clauses. Same class as the mood/tense
+    changes that disqualified the Haiku-tier model in C1.
+  - **expanded an abbreviation the user actually said** — `repo` →
+    `repozitorijoje`.
+  - **made a garbled token read as deliberate** — STT turned `GitHub'e` into
+    `gidąbe`, and cleanup rendered it `reklamą, gidą,` with commas. The error was
+    not corrected but *concealed*: nonsense now scans as a fluent phrase. This is
+    the worst of the four, because it removes the reader's own last check.
+  And one miss: gpt-4o left `kasdienes` uncorrected where Claude fixed it —
+  worse at the job cleanup exists for, not just more eager beyond it.
+  **Speed does not rescue it, and do not read `Total` here.** Replay bypasses
+  VAD, so every replayed row shows `Silence: 0.00` and `Above threshold: 0.00`
+  and its `Total` omits ~1.2 s that a live dictation pays. Comparing only the AI
+  stage: gpt-4o median **1.19 s** vs Claude **1.48 s** — 0.29 s faster, with
+  *two* spikes over 3 s against Claude's one. Per the decision rule pre-declared
+  in C1, speed does not win against a meaning error.
+  ⚠️ **Methodological limit found by this round, and it weakens the fixture
+  design: STT is not deterministic on identical audio.** Same model, same
+  vocabulary prompt, same WAV, and 6 of 11 transcripts came back different —
+  `Sujungsiu`/`Sujunk`, `programą`/`programtą`, `Tada dar`/`Tai dabar`,
+  `GitHub'e`/`gidąbe`. So "same audio" does **not** guarantee the cleanup arms
+  received the same input text, and `AudioFixtures`' own header overstates this
+  when it says the pipeline "cannot tell the difference". It still beats
+  re-dictating by a wide margin — but a future round should compare the two
+  `Raw STT` columns before trusting any cleanup difference.
+  **The verdict survives that limit**: all four over-edits are visible *within*
+  gpt-4o's own `Raw:`→`Final:` pairs, so none of them depends on what Claude was
+  handed.
+- **Replay never worked until 2026-09-01, and the way it failed is the lesson.**
+  `SettingsView` reached *up* for its controller —
+  `(NSApp.delegate as? AppDelegate)?.replayFixtures()` — and on macOS 15.7.7 that
+  cast returns nil: SwiftUI's `@NSApplicationDelegateAdaptor` creates the
+  delegate but does not promise `NSApp.delegate` hands the same instance back.
+  Optional chaining then did nothing, and the line *below* it showed a success
+  toast unconditionally. So the button reported the click landing, not the work
+  starting — the one outcome worse than an error or silence, because it sends
+  the user hunting for results that were never coming.
+  It cost most of a day to find, and almost none of that was the bug: the code
+  had no way to say what went wrong, so every hypothesis had to be excluded from
+  outside (fixture files re-read by a standalone script, settings read from
+  `defaults`, build identity checked in the binary, run state from `ps`).
+  Two traps worth keeping:
+  - **`strings` cannot prove a build is old.** Swift stores literals of ≤15 UTF-8
+    bytes inline, so `Show Recordings` and `Show Log` never appear. An early
+    conclusion that the installed build predated the feature was wrong for this
+    reason. Check a *long* string, or `Info.plist`.
+  - **Launching the app from a terminal to read `print` output does not work
+    here** — nothing is printed at startup, so an empty log proves nothing, and
+    stdout is block-buffered unless given a pty. (Replay itself never opens the
+    microphone, so §7's permission trap does not apply to *it* — but that does
+    not make the technique useful.)
+  Fixed by handing the closure down at launch through `WindowManager`, which is
+  how everything else here already talks backwards (`MenuBarManager
+  .onToggleDictation`, `FirstRunShortcutView`'s completion). **A view should not
+  have to go looking for its controller.**
 - **Single-key mode settled (v1.8.0 → v1.10.0).** A reader with no Anthropic
   account asked whether one provider could do both jobs. It can — transcription
   already goes to OpenAI, so routing cleanup there too means one key instead of
@@ -588,6 +662,9 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   makes this path safe, not the model's good behaviour. Do not remove it on the
   strength of a clean round.
   Claude stays the default: it has 60 phrases behind it, this has 22.
+  ✅ Reinforced 2026-09-01 on identical audio — see the replay round above. The
+  single-key path remains a real option for someone without an Anthropic
+  account, but it is the cheaper trade, not the equal one.
 - v1.6.14 — **the shortcut says what already owns it.** Recording ⌃Space,
   ⌘Space, ⌘Tab, a screenshot combination or Mail's ⌘⇧D now names the owner
   instead of leaving the collision to surface later.
@@ -735,6 +812,24 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   takes have different pronunciation/pace/mic distance, which confounds the
   comparison. Same-audio-multiple-models is the only valid comparison design (see
   Roadmap).
+  **Same audio is necessary but not sufficient, measured 2026-09-01.** Replaying
+  identical WAVs through the identical model and prompt returned a *different*
+  transcript in 6 of 11 runs. Same-audio removes the performance variable; it
+  does not remove the recogniser's own. When comparing anything downstream of
+  STT, diff the two `Raw STT` columns first and discard the rows where the input
+  already differs — or read the change *within* one arm's own `Raw:`→`Final:`
+  pair, which needs no cross-arm assumption at all.
+- **A control that starts work must report the work starting, not the click
+  landing.** Replay showed a success toast on a code path that did nothing, and
+  that turned a one-line bug into a day of blind elimination. Any button that
+  hands off to something else needs its handoff to be a `guard`, not an optional
+  chain with a message underneath.
+- **Verify the build under test before trusting a negative result.** Two rounds
+  were spent on "it still does nothing" while the machine ran the previous
+  binary, because a CI artifact has to be downloaded and installed by hand and a
+  failed install looks exactly like a successful one (§6). Check the app's
+  `Info.plist` version and a long string unique to the new code first. Do **not**
+  use short strings for this — see the ≤15-byte inlining note above.
 - Median latency, not average, is the number to optimize against — rare cloud
   API latency spikes (~15-20s, both STT- and AI-side observed) skew the average
   without reflecting typical experience.

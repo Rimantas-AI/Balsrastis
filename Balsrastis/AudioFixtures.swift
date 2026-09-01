@@ -18,6 +18,15 @@ import Foundation
 /// same audio can be replayed against any model, any prompt, any guard change,
 /// as often as needed.
 ///
+/// **What this does not buy, measured on the first real round (2026-09-01):**
+/// identical audio does not produce an identical transcript. Replaying these
+/// same WAVs through the same model with the same vocabulary prompt returned a
+/// different `Raw STT` in 6 of 11 runs — `Sujungsiu`/`Sujunk`,
+/// `programą`/`programtą`, `GitHub'e`/`gidąbe`. So a fixture removes the
+/// *performance* variable, not the recogniser's own. Anything compared
+/// downstream of STT must check that both arms actually received the same text
+/// before attributing a difference to the thing under test.
+///
 /// Deliberately **not** part of the test suite: replaying calls the real APIs and
 /// costs money, so it stays a thing the user starts on purpose.
 enum AudioFixtures {

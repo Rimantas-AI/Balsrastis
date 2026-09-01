@@ -1,6 +1,23 @@
 # Claude prieš OpenAI — palyginimas ant to paties garso
 
-Neįvykdytas. Frazės — iš **tikro darbo**, ne sugalvotos: būtent jos atskleidė
+✅ **ĮVYKDYTA 2026-09-01. Verdiktas: lieka `claude-opus-4-8`.**
+Pilnas rezultatas ir skaičiai — `AGENTS.md` §12, įrašas „Claude vs OpenAI cleanup,
+on the same 11 recordings". Čia paliekamas tik planas ir tai, kas pasitvirtino.
+
+**Kas pasitvirtino:** gpt-4o perredagavimas yra dėsnis, ne vienkartinis atvejis.
+Jis pakeitė tekstą 6 kartus iš 11 (Claude — 3), ir keturi pakeitimai buvo
+perredagavimai: perstatytas sakinys su dingusiais žodžiais, liepiamoji nuosaka
+paversta bendratimi, `repo` išplėsta į `repozitorijoje`, o iš atpažinimo šiukšlės
+`gidąbe` padarytas sklandžiai skambantis `gidą` — klaida ne ištaisyta, o paslėpta.
+Plius vieną tikrą klaidą (`kasdienes`) jis paliko, o Claude ją ištaisė.
+
+⚠️ **Rasta metodologinė riba:** atpažinimas nėra deterministinis. Tas pats WAV,
+tas pats modelis ir promptas davė kitokį `Raw STT` 6 kartus iš 11. Kitą kartą
+pirma sugretinti abi `Raw STT` skiltis ir atmesti eilutes, kur jau skiriasi
+įvestis. Verdikto tai negriauna: visi keturi perredagavimai matomi gpt-4o
+paties `Raw:`→`Final:` poroje.
+
+Frazės — iš **tikro darbo**, ne sugalvotos: būtent jos atskleidė
 gpt-4o perredagavimą, kurio 22 frazių scenarijus nepagavo.
 
 ## Paruošimas
