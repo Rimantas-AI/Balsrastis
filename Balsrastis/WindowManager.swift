@@ -16,11 +16,21 @@ final class WindowManager {
 
     private var settingsWindow: NSWindow?
 
+    /// Handed down by `AppDelegate` at launch and passed into `SettingsView`,
+    /// because the Settings window is built here and the controller that does
+    /// the work is not reachable from a SwiftUI view.
+    ///
+    /// Set this **before** the window can first be opened. `showSettings()`
+    /// builds the view once and keeps it, so a handler assigned afterwards
+    /// would never reach the copy the user is clicking.
+    var onReplayRequested: (() -> Void)?
+
     /// Opens (or re-focuses) the Settings window. Re-openable from the menu bar
     /// after the user closes it; never full screen, always closable.
     func showSettings() {
         if settingsWindow == nil {
-            let controller = NSHostingController(rootView: SettingsView())
+            let controller = NSHostingController(
+                rootView: SettingsView(onReplay: onReplayRequested))
             let window = NSWindow(contentViewController: controller)
             window.title = "Balsraštis Settings"
             // .resizable lets the Diagnostics tab be enlarged — useful both for

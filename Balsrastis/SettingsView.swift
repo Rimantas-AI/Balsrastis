@@ -21,6 +21,25 @@ private extension View {
 /// or back buttons. The window itself (title bar, close button, size) is managed
 /// by `WindowManager`; this view only supplies content and a fixed size.
 struct SettingsView: View {
+
+    /// What to run when the user asks for a replay, handed in by `AppDelegate`
+    /// through `WindowManager` at launch.
+    ///
+    /// This used to be `NSApp.delegate as? AppDelegate` read at click time, and
+    /// on macOS 15 that cast returns nil: SwiftUI's `@NSApplicationDelegateAdaptor`
+    /// does not guarantee that the instance it creates is what `NSApp.delegate`
+    /// hands back. The button therefore did nothing, on every machine, every
+    /// time — verified 2026-08-22 by the guard added the day before.
+    ///
+    /// Injecting it is also how the rest of this app already talks backwards:
+    /// `MenuBarManager.onToggleDictation` and `FirstRunShortcutView`'s completion
+    /// are both closures handed down at construction, not lookups reaching up.
+    let onReplay: (() -> Void)?
+
+    init(onReplay: (() -> Void)? = nil) {
+        self.onReplay = onReplay
+    }
+
     var body: some View {
         TabView {
             GeneralSettingsView()
@@ -29,7 +48,7 @@ struct SettingsView: View {
             APIKeysSettingsView()
                 .tabItem { Label("API Keys", systemImage: "key") }
 
-            DiagnosticsSettingsView()
+            DiagnosticsSettingsView(onReplay: onReplay)
                 .tabItem { Label("Diagnostics", systemImage: "stopwatch") }
         }
         // Resizable (not a fixed frame) so the Diagnostics tab can be enlarged to
@@ -59,6 +78,8 @@ struct SettingsView: View {
 /// manufactures failures that do not exist in normal use. So the timings have to
 /// be visible here.
 private struct DiagnosticsSettingsView: View {
+    let onReplay: (() -> Void)?
+
     @ObservedObject private var store = MetricsStore.shared
     @ObservedObject private var prefs = AppPreferences.shared
     @State private var toast: String?
@@ -190,17 +211,20 @@ private struct DiagnosticsSettingsView: View {
     /// The rule this encodes: a control that starts work must report the work
     /// starting, never the click landing.
     private func replayFixtures() {
-        guard let delegate = NSApp.delegate as? AppDelegate else {
+        guard let onReplay else {
+            // Reaching this now means the wiring in `AppDelegate` was dropped,
+            // not that a runtime lookup failed — a build-time mistake showing up
+            // at runtime, so it names the cause rather than asking the user to
+            // restart, which is what the previous version wrongly suggested.
             WindowManager.shared.showFailure(
-                "Replay could not reach the app controller. Quit Balsra\u{161}tis from the "
-                + "menu bar and open it again \u{2014} the saved recordings are untouched.")
+                "Replay is not wired up in this build. The saved recordings are untouched.")
             return
         }
         guard fixtureCount > 0 else {
             WindowManager.shared.showFailure("No saved recordings to replay.")
             return
         }
-        delegate.replayFixtures()
+        onReplay()
         showToast("Replaying \(fixtureCount) recordings\u{2026}")
     }
 

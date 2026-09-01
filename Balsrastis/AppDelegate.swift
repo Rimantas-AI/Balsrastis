@@ -33,6 +33,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // at launch, but setting .accessory here guarantees it programmatically.
         NSApp.setActivationPolicy(.accessory)
 
+        // 0. Replay is started from the Settings window, which SwiftUI builds
+        //    without a route back here. Hand the closure over before the window
+        //    can be opened — `showSettings()` builds its view once and keeps it.
+        WindowManager.shared.onReplayRequested = { [weak self] in self?.replayFixtures() }
+
         // 1. Status item must exist before anything else updates its icon.
         let mbm = MenuBarManager()
         // Dictation must be startable without the keyboard: the shortcut may be
