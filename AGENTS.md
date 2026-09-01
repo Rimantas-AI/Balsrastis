@@ -509,6 +509,20 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   VAD silence 23.8%, paste 2.9%. Local STT cannot fix the dominant cost — this is
   why a local-Whisper spike was proposed and declined.
 
+  **Recomputed 2026-09-01 over the whole rotated log** (199 successful runs,
+  2026-07-29 → 08-14, not the ~132 of the validation week alone), because an
+  outside summary quoted a different set and it was worth settling which is
+  right: median total **4.42 s**, STT **1.13 s**, AI **1.89 s**, paste 0.13 s.
+  Shares: **AI 43.4%, VAD silence 27.6%, STT 26.0%, paste 3.3%.** The headline
+  holds — cleanup is the dominant cost — but **silence is a bigger share than
+  the validation week suggested and is now the second lever, ahead of STT.**
+  Where the logs actually live, which is not obvious: the rename left the
+  pre-v1.7 history behind in `Application Support/**OmniScribe**/` —
+  `usage-log-previous.csv` (the rotation from adding `failure_category`,
+  2026-07-29 → 08-14) and `usage-log.csv` (08-14 → 08-21). The current file
+  under `Balsrastis/` starts at 08-21 and contains none of the validation week.
+  Analyse all three, or say which one a number came from.
+
   Read the numbers with three limits in mind, all of them real:
   1. **"Zero hallucinations" means zero *detectable*.** The log holds no text by
      design. A short, plausibly-paced hallucination would not show up here.
@@ -838,6 +852,20 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   release shipped independently testable so a regression is easy to isolate.
 
 **Known open gaps (not yet built, deliberately deferred):**
+- **The 1.2 s silence wait is the second-biggest latency lever and nobody has
+  measured a change to it.** Recomputed over the full log it is **27.6%** of
+  total, ahead of STT — a bigger share than the validation week implied, and the
+  only large cost that needs no vendor and no new dependency. The idea worth
+  testing (raised by an outside summary, 2026-08-23): scale `silenceDuration`
+  with clip length, since a fixed 1.2 s is longer than some short answers take
+  to say.
+  **Not obviously safe.** 2.0 → 1.2 s was itself an evidence-driven change, and
+  the failure mode of cutting further is cutting a sentence off mid-word, which
+  is worse than waiting: a truncated dictation costs the whole take, a slow one
+  costs a second. Anything here needs the same treatment the VAD history got —
+  measure on real dictations, including the slow deliberate ones, before
+  shipping. Do **not** bundle it with a `250 ms` confirmation change; those are
+  separate settings with separate evidence behind them.
 - **Continuous background noise disables auto-stop.** Confirmed in real use on
   2026-07-29, day one of the usage log: a laptop fan spinning up holds the input
   above the 0.012 RMS threshold *continuously*, so speech is confirmed, silence
@@ -850,8 +878,12 @@ read this section before touching VAD, the vocabulary prompt, or the STT pipelin
   stopped, so `total_s` on these rows is *optimistically biased*: it omits the
   time spent noticing the app had not stopped. **Segment these rows out before
   computing median/P95 for the week.**
-  Measured at **7.6% of runs** (10/132) over the validation week. Still not
-  fixed, and an independent review agreed: it is one machine in one acoustic
+  Measured at **7.6% of runs** (10/132) over the validation week, and **5.0%
+  (10/199) over the whole rotated log** — the same ten rows against a larger
+  denominator, so the rate fell without a single new clean run being earned.
+  Quote whichever you like, but say which. Removing them moves the median from
+  4.42 s to 4.46 s: they flatter the numbers, as recorded above, but only just.
+  Still not fixed, and an independent review agreed: it is one machine in one acoustic
   environment, manual ⌥Space works, and the guard chain is currently stable and
   verified. Revisit if the pilot shows it across several users' machines or above
   ~5% of their dictations. Until then it belongs in onboarding, not in the VAD:
@@ -940,6 +972,16 @@ for the full reasoning — condensed here):**
       this without a new model generation to test — the failure mode here is
       behavioral (Haiku mischaracterizing its own scope), not a prompt wording
       issue worth iterating on.
+      ⚠️ **It was reopened anyway, and this is why the note is here.** An
+      outside context summary (2026-08-23) made "switch cleanup to Haiku, it
+      could cut ~1 s" its **number-one** recommendation — while its own open
+      questions asked which model was currently the default. Latency arithmetic
+      alone will keep producing that answer, because the cost of the slower
+      model is measurable and the cost of the faster one is a wrong word nobody
+      logged. Anyone arriving with a latency profile: **the 43% is known, and
+      buying it back with a cheaper cleanup model has been tried twice.** The
+      2026-09-01 provider round is the second data point — gpt-4o was 0.29 s
+      faster per call and over-edited four times in eleven runs.
    c. Developer ID signing, hardened runtime, `notarytool` + `stapler`, and a
       clean-install check on **both** macOS 12 and 15, plus an update check that
       permissions and Keychain keys survive. **Blocked on 4a resuming.**
@@ -983,6 +1025,15 @@ for the full reasoning — condensed here):**
      modules, ~800 uses/day, deployed at LRT. It is a different category —
      audio *files* in, text out, not live dictation into the focused app — so
      it is not a competitor for this product, but it does own those verticals.
+   - ⚠️ **Soniox ships its own Lithuanian "Voice Typing" and aims it at expats**
+     (found 2026-08-23 by an outside summary, recorded here 2026-09-01). Unlike
+     SEMANTIKA this *is* the same category — live dictation, not file
+     transcription — and unlike this product it runs on the vendor's own model,
+     so its recognition cost is close to zero. Treat it as the direct
+     competitor. It also complicates any plan to build **on** Soniox: check
+     their terms before assuming a consumer product may sit on their API.
+     Not yet verified independently — confirm the product and its language
+     coverage before planning around it.
    - The gap this product sits in is real and confirmed: **Apple still does not
      support Lithuanian dictation**, ten years after MacArena wrote that it
      would not come soon.
