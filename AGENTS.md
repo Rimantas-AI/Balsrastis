@@ -985,6 +985,57 @@ for the full reasoning — condensed here):**
    c. Developer ID signing, hardened runtime, `notarytool` + `stapler`, and a
       clean-install check on **both** macOS 12 and 15, plus an update check that
       permissions and Keychain keys survive. **Blocked on 4a resuming.**
+
+      **Researched 2026-09-01. It is smaller than it looks, and it buys back the
+      worst recurring cost in the project.** Sources in the session; the parts
+      that change the work:
+
+      **Why it is worth the $99 beyond Gatekeeper.** Ad-hoc signing has no
+      stable designated requirement, so TCC identifies the app by its `CDHash`,
+      which changes on every build — macOS cannot tell that build N+1 is the
+      same app as N, and **Accessibility is dropped every single time.** That is
+      why §6's re-granting dance exists; it was performed three times in one
+      session on 2026-09-01. A Developer ID signature carries a stable
+      `TeamIdentifier`, and a permission granted once survives updates. For a
+      30-day pilot with several builds, this is the difference between one
+      setup per tester and one per release.
+
+      **Entitlements are already right, and this is the pleasant surprise.**
+      Hardened runtime is mandatory for notarization and gates microphone access
+      behind `com.apple.security.device.audio-input` — which
+      `Balsrastis.entitlements` already sets, alongside
+      `NSMicrophoneUsageDescription`. Nothing to add there.
+      The hardened runtime's prohibitions are JIT, unsigned executable memory,
+      DYLD environment variables, third-party plugin loading and debugger
+      attachment. **This app does none of them** — plain Swift and `URLSession`,
+      no dependencies since WhisperKit was removed — so it should need **no
+      `com.apple.security.cs.*` opt-out entitlement at all.** If one appears to
+      be needed, that is a signal something else changed, not a box to tick.
+      CGEventTap and the Accessibility API are **not** entitlement-gated; they
+      are TCC-gated, and work under a notarized hardened-runtime app once the
+      user grants Accessibility. Verify on both macOS 12 and 15 anyway — that
+      check was already required here for other reasons.
+
+      **No local Xcode is not a blocker.** `notarytool` ships with Xcode 13+ and
+      the CI runner has a full Xcode; the whole chain happens there. Order, and
+      the one step that is easy to get wrong:
+      1. Developer ID Application certificate + App Store Connect API key
+         (`.p8`, Key ID, Issuer ID) as GitHub secrets
+      2. import the certificate into a temporary keychain in the job
+      3. `codesign --options runtime --timestamp` (hardened runtime)
+      4. `xcrun notarytool submit --wait`
+      5. `xcrun stapler staple` the **`.app`**, and zip *after* that — stapling
+         the archive instead of the bundle is the classic mistake
+      `--timestamp` matters beyond ceremony: a timestamped signature keeps
+      validating after the certificate expires, so letting the membership lapse
+      does not brick copies already shipped. Confirm that before relying on it.
+
+      **Budget the waiting, not the work.** Individual enrollment needs no
+      D-U-N-S, typically 24–72 h. Notarization is usually minutes — but early
+      2026 saw submissions stuck for hours to days, so **`--wait` needs an
+      explicit timeout** or one bad afternoon hangs the job until the runner
+      limit kills it. Do not schedule a release for the same hour as a first
+      notarization attempt.
    Also before the pilot: walk the whole first-run path as a non-developer would
    — mic permission, Accessibility, both API keys present and valid, a
    comprehensible message for credit/rate-limit errors, a test dictation that
@@ -1009,6 +1060,34 @@ for the full reasoning — condensed here):**
      own keys and it runs. This was briefly written down as a protection and it
      was wrong. What the pilot actually leans on is the private repo, the
      licence, the consent reply and the stamped name.
+   - **BYOK is, however, the recruitment barrier — and the obvious fix has a
+     cost that is legal, not technical.** Asking a non-technical tester to open
+     two API accounts with a card is the largest single ask in onboarding, and
+     it is why the intake form screens for it. Serving the keys from a proxy
+     removes that ask. What it also does, researched 2026-09-01:
+     **Today the author is not in the data path at all.** The tester's own key
+     sends their audio to OpenAI; nothing is seen, stored or forwarded here. A
+     proxy makes the author a **controller** and puts them inside a transfer
+     chain to US processors. That is a change of legal status, not of
+     configuration — lawful basis, privacy notice, DPAs with each sub-processor,
+     retention, and SCCs for the transfers.
+     The lighter half of the news: **plain transcription does not trigger GDPR
+     Article 9.** Voice is special-category data only when processed to identify
+     a person (voiceprint); speech-to-text is content conversion. But *transcript
+     content* can carry Article 9 data — someone dictates about their health —
+     which is a further argument for the existing rule that no text is ever
+     stored. The Article 30 record cannot be waived on size either: the
+     under-250 exemption needs processing to be "occasional", and a running
+     pilot is not. That is one page, not a project — but it is a page that does
+     not exist today and is not needed today.
+     **Weigh it against what the server does not fix: notarization.** A proxy
+     removes the key barrier and leaves the install barrier — download,
+     quarantine, Accessibility, re-granted on every ad-hoc build — completely
+     untouched. And it weakens the answer that settled the Facebook trust
+     thread, which was "read the source": a proxy adds a part no reader can
+     check. Establish that key creation is what actually loses testers — by
+     walking five people through it by hand — before building the thing that
+     removes it.
    - A full licence/activation backend is **deliberately not built**. For 5-10
      known people it is disproportionate, and it would not hide the prompts or
      the VAD from anyone determined to read the binary. Revisit before a 50-100
@@ -1034,6 +1113,27 @@ for the full reasoning — condensed here):**
      their terms before assuming a consumer product may sit on their API.
      Not yet verified independently — confirm the product and its language
      coverage before planning around it.
+     **Their terms were read on 2026-09-01, and there is one clause that
+     matters more than the pricing.** Building a consumer app *on* the API is
+     explicitly allowed — outputs may be used "in your own applications,
+     products, and workflows". But it is prohibited to use "the Services,
+     outputs, or **any data derived from the Services** to train, fine-tune,
+     improve, distill, or develop any … competing product or service."
+     Read that against the moat idea an outside summary proposed — a personal
+     Lithuanian correction layer accumulated from usage and fed back as
+     `context.terms`. Built on Soniox transcripts, that layer *is* data derived
+     from the Services, used to improve a product, and Soniox ships a
+     Lithuanian dictation product of its own. **The single asset anyone has
+     named as a real moat is the one their terms appear to forbid building on
+     their output.**
+     Two practical consequences: an internal accuracy benchmark **is**
+     permitted (only *publishing* comparisons "in a false, misleading,
+     deceptive, or commercially disparaging manner" is barred), so the async
+     REST test can be run without worry; and building the product on them
+     should wait for written confirmation that a Lithuanian dictation app is
+     not a "competing product". Also useful if that path is ever taken: they
+     state customer audio is not used for training, and async submissions are
+     deleted after 30 days.
    - The gap this product sits in is real and confirmed: **Apple still does not
      support Lithuanian dictation**, ten years after MacArena wrote that it
      would not come soon.
