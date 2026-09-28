@@ -1,6 +1,8 @@
 # Soniox prieš gpt-4o-mini-transcribe — ant to paties garso
 
-**Neįvykdytas. Paruošta 2026-09-01, daryti 2026-09-02.**
+✅ **ĮVYKDYTA 2026-09-28. Verdiktas: prielaida NELAIKO.**
+Soniox atpažįsta lietuviškai tiksliau ant to paties garso. Rezultatai ir tai, ką
+jie keičia — failo apačioje ir `AGENTS.md` maršruto 5 punkte.
 
 Šis testas atsako ne į techninį, o į **strateginį** klausimą. Soniox skelbia
 lietuvių WER 9,4% prieš OpenAI 25,2%. Jei tai bent apytiksliai tiesa, Balsraštis
@@ -88,3 +90,64 @@ kelią, ir STT yra tik 26% latency. Testas apie tikslumą, ne apie laiką.
 Rezultatą surašyti čia, o verdiktą — į `AGENTS.md` §12, kaip ir provider
 raundą. Jei prielaida nelaikys, tai nebus blogas rezultatas: tai bus
 pigiausiai gautas svarbiausias atsakymas projekte.
+
+---
+
+# REZULTATAI (2026-09-28)
+
+11 fiksūrų, modelis `stt-async-v5`, dvi rankos kiekvienam.
+Neapdoroti duomenys buvo `scratchpad/soniox-rezultatai.json`.
+
+## Keturi aiškūs atvejai — taisyklė suveikė
+
+| Žodis | Balsraštis (du raundai, tas pats garsas) | Soniox |
+|---|---|---|
+| `promptą` (029) | ❌ `programą` · ❌ `programtą` | ✅ `promptą` |
+| `kasdienės` (024) | ❌ `kasdienes` · ❌ `kasdienes` | ✅ `kasdienės` |
+| `GitHub'e` (023) | ✅ · ❌ `gidąbe` | ✅ `GitHub'e` |
+| `repo` (023) | ❌ `reklamą` · ❌ `reklamą` | ⚠️ `repą` |
+
+Trys švariai, ketvirtas dalinai → **3–4 iš 4 → prielaida nelaiko.**
+
+Ketvirtasis vertas atskiro žvilgsnio, nes klaidos **rūšis** skiriasi: `repą` yra
+sulietuvinta galūnė — žodis atpažįstamas, prasmė sveika. `reklamą` yra kitas
+žodis, sklandus ir nematomas skaitant. Tai ne tas pats gedimas.
+
+## Keturi papildomi taškai, kurių nebuvo ieškota
+
+| Failas | Balsraštis | Soniox |
+|---|---|---|
+| 032 | `galime rašyti` | `galim įrašyti` (prasmės skirtumas) |
+| 031 | `Sujungsiu` (1 r.) | `Sujunk` (su kontekstu) |
+| 026 | `ilges` (1 r.) | `ilgį` |
+| 028 | `Tada dar` (1 r.) | `Tai dabar` |
+
+## Svarbiausias radinys — ne lentelėje
+
+**Soniox žodyno konteksto nereikia.** Iš 11 failų abi rankos — su kontekstu ir be
+jo — grąžino **identišką tekstą 10 kartų**. Skyrėsi tik 031, ir ten kontekstas
+padėjo (`Sujunk` vietoj `Sujungsiu`, `promptą` vietoj `promto`).
+
+Palyginimui, v1.6.3: **be** prompto šio projekto atpažintuve trumpi lietuviški
+žodžiai subyra į kitas kalbas — „Taip" → `طيب`, `Тайпа`, `Tey`; „Ne" → `네`.
+
+Iš to seka nemaloni, bet tiesi išvada: **didelė dalis „lietuviško derinimo" čia
+yra kompensacija už silpnesnį atpažintuvą, ne pranašumas.** Žodyno promptas, jo
+sukeliama haliucinacijų rizika, `echoesPrompt`, `exceedsPlausibleSpeechRate` —
+visa grandinė yra atsakas į problemą, kurios geresnis atpažintuvas neturi.
+
+## Ribos
+
+11 klipų, vienas balsas, vienas įrašymo seansas, po kartą kiekvienas. Ir
+2026-09-01 nustatyta, kad atpažinimas **nėra deterministinis** — tas pats failas
+pakartojus gali duoti kitą tekstą. Kryptis nuosekli per kelis nepriklausomus
+žodžius, bet tai ne 200 bandymų.
+
+## Praktika, jei kas kartotų
+
+Nemokamų **API** kreditų Soniox nebeturi — nutraukė dėl piktnaudžiavimo.
+Savaitiniai nemokami kreditai galioja tik **programėlei**. Konsolės playground
+remiasi tuo pačiu organizacijos balansu, tad ir jis be lėšų neveikia.
+Pats testas suryja ~pusę cento (72 s garso × 2 rankos), bet balansą papildyti
+reikia. Įkelti failai po testo **ištrinti iš jų paskyros** (22 vnt., 2026-09-28);
+automatiškai jie būtų dingę po 30 dienų.

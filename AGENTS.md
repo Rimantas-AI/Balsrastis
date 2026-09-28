@@ -1171,6 +1171,43 @@ for the full reasoning — condensed here):**
      the same question**, which is why the Soniox async REST comparison — half
      an hour, on fixtures that already exist, no product code — is worth more
      than any further market reading.
+     ✅ **RUN 2026-09-28. The assumption does not hold.** Full results in
+     `docs/archyvas/TESTING-SONIOX.md`; the decision rule was declared before
+     the run and it fired. On the same 11 recordings, three of four disputed
+     words came back clean where this app got them wrong twice each:
+     `promptą` (against `programą`/`programtą`), `kasdienės` (against
+     `kasdienes` twice), `GitHub'e` (against `gidąbe`). The fourth, `repo`,
+     came back `repą` — a Lithuanian case ending on a recognisable word, where
+     this app produced `reklamą`, a different word entirely. **Note the class,
+     not just the count: one error is visible to the reader, the other is not.**
+     Four more differences nobody was looking for went the same way —
+     `galim įrašyti` against `galime rašyti` (a change of meaning), `Sujunk`,
+     `ilgį`, `Tai dabar`.
+     ⚠️ **The finding that matters most is not in that table: Soniox does not
+     need the vocabulary prompt.** Ten of eleven files returned byte-identical
+     text with and without the context arm. Set that against v1.6.3, where
+     dropping the prompt here made short Lithuanian words collapse into other
+     languages — "Taip" as `طيب`, `Тайпа`, `Tey`; "Ne" as `네`. **So much of
+     what this project calls "tuned for Lithuanian" is compensation for a
+     weaker recogniser rather than an advantage over anyone.** The vocabulary
+     prompt, the hallucination risk it supplies, `echoesPrompt` and
+     `exceedsPlausibleSpeechRate` are all answers to a problem a better
+     recogniser does not have. Anyone tempted to present the guard stack as the
+     product's moat should read that sentence twice.
+     **What it does not settle.** The cleanup layer is separate and still real:
+     Soniox returned `il- ilgai` — a faithful transcription of a stutter — and
+     invented quotation marks in another clip, which is exactly what `.ltTyping`
+     is for, and the Claude-vs-gpt-4o round showed cleanup quality is not a
+     given. Adoption is also not free: their terms forbid using outputs or data
+     derived from them to develop a competing product, and they ship a
+     Lithuanian dictation app, so moving onto them needs written confirmation
+     first. And the sample is eleven clips, one voice, one session, each run
+     once — against a recogniser that this project already proved is not
+     deterministic on identical audio.
+     **Read honestly: the ceiling on recognition quality here is set by the
+     vendor, not by the tuning.** That does not decide whether to continue, but
+     it does mean the differentiation story can no longer be "better Lithuanian
+     recognition", because on this evidence it is not.
      **Market ceiling, so nobody re-derives it optimistically.** Statcounter,
      2026-08: Apple's desktop share in Lithuania is **18.76%** (macOS 7.01% +
      OS X 11.75%). ~2.8M native speakers in Lithuania, ~3.5M with the diaspora.
